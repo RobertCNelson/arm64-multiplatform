@@ -2,21 +2,14 @@
 #
 ARCH=$(uname -m)
 
-config="omap2plus_defconfig"
+config="defconfig"
 
-#toolchain="gcc_linaro_eabi_4_8"
-#toolchain="gcc_linaro_eabi_4_9"
-#toolchain="gcc_linaro_eabi_5"
-#toolchain="gcc_linaro_gnueabi_4_6"
-#toolchain="gcc_linaro_gnueabihf_4_7"
-#toolchain="gcc_linaro_gnueabihf_4_8"
-#toolchain="gcc_linaro_gnueabihf_4_9"
-#toolchain="gcc_linaro_gnueabihf_5"
+toolchain="gcc_linaro_aarch64_gnu_5"
 
 #Kernel/Build
-KERNEL_REL=4.X
+KERNEL_REL=4.3
 KERNEL_TAG=${KERNEL_REL}
-BUILD=x0
+BUILD=aarch64-x0
 kernel_rt=".X-rtY"
 
 #v4.X-rcX + upto SHA
@@ -27,5 +20,6 @@ kernel_rt=".X-rtY"
 #BRANCH="v4.X.x"
 
 DISTRO=cross
-DEBARCH=armhf
+DEBARCH=arm64
+KERNEL_ARCH=arm64
 #
