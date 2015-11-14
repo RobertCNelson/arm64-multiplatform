@@ -1,0 +1,43 @@
+From 21694ca25343b4a0518b2758fb51c8941a89c846 Mon Sep 17 00:00:00 2001
+From: Duc Dang <dhdang@apm.com>
+Date: Wed, 14 Oct 2015 17:32:42 -0700
+Subject: [PATCH 22/27] arm64: dts: Add APM X-Gene v2 SoC Designware GPIO
+ controller DTS entry
+
+This patch adds Designware GPIO controller DTS node for APM
+X-Gene v2 platforms.
+
+Signed-off-by: Duc Dang <dhdang@apm.com>
+---
+ arch/arm64/boot/dts/apm/apm-shadowcat.dtsi | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi b/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
+index e32851e..29879ab 100644
+--- a/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
++++ b/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
+@@ -431,6 +431,21 @@
+ 			#gpio-cells = <2>;
+ 		};
+ 
++		dwgpio: dwgpio@1c024000 {
++			compatible = "snps,dw-apb-gpio";
++			reg = <0x0 0x1c024000 0x0 0x1000>;
++			reg-io-width = <4>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			porta: gpio-controller@0 {
++				compatible = "snps,dw-apb-gpio-port";
++				gpio-controller;
++				snps,nr-gpios = <32>;
++				reg = <0>;
++			};
++		};
++
+ 		sbgpio: sbgpio@17001000{
+ 			compatible = "apm,xgene-gpio-sb";
+ 			reg = <0x0 0x17001000 0x0 0x400>;
+-- 
+2.6.2
+

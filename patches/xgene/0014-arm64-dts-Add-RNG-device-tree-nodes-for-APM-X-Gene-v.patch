@@ -1,0 +1,54 @@
+From d216f5a50e07dcd8bf298cd5f912a6ef10846195 Mon Sep 17 00:00:00 2001
+From: Duc Dang <dhdang@apm.com>
+Date: Mon, 5 Oct 2015 16:36:10 -0700
+Subject: [PATCH 14/27] arm64: dts: Add RNG device tree nodes for APM X-Gene v2
+ platform
+
+This patch adds device tree nodes to enable driver for True Random
+Number Generator (TRNG) on APM X-Gene v2 platforms.
+
+Signed-off-by: Duc Dang <dhdang@apm.com>
+---
+ arch/arm64/boot/dts/apm/apm-shadowcat.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi b/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
+index ddf1e86..630ed4a 100644
+--- a/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
++++ b/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
+@@ -199,6 +199,19 @@
+ 				csr-mask = <0x3>;
+ 				clock-output-names = "xge1clk";
+ 			};
++
++			rngpkaclk: rngpkaclk@17000000 {
++				compatible = "apm,xgene-device-clock";
++				#clock-cells = <1>;
++				clocks = <&socplldiv2 0>;
++				reg = <0x0 0x17000000 0x0 0x2000>;
++				reg-names = "csr-reg";
++				csr-offset = <0xc>;
++				csr-mask = <0x10>;
++				enable-offset = <0x10>;
++				enable-mask = <0x10>;
++				clock-output-names = "rngpkaclk";
++			};
+ 		};
+ 
+ 		scu: system-clk-controller@17000000 {
+@@ -306,5 +319,12 @@
+ 			local-mac-address = [00 01 73 00 00 02];
+ 			phy-connection-type = "xgmii";
+ 		};
++
++		rng: rng@10520000 {
++			compatible = "apm,xgene-rng";
++			reg = <0x0 0x10520000 0x0 0x100>;
++			interrupts = <0x0 0x41 0x4>;
++			clocks = <&rngpkaclk 0>;
++		};
+ 	};
+ };
+-- 
+2.6.2
+

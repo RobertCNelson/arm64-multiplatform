@@ -1,0 +1,35 @@
+From a276a6161abd4fd061825550f6290f7f96ba7d12 Mon Sep 17 00:00:00 2001
+From: Duc Dang <dhdang@apm.com>
+Date: Wed, 14 Oct 2015 16:56:03 -0700
+Subject: [PATCH 19/27] arm64: dts: Add APM X-Gene v1 SoC GFC GPIO controller
+ DTS entries
+
+This patch adds the flash controller muxed gpio dts node for
+APM X-Gene v1 SoC platforms.
+
+Signed-off-by: Duc Dang <dhdang@apm.com>
+---
+ arch/arm64/boot/dts/apm/apm-storm.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+index 47259d0..a4e7f09 100644
+--- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
++++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+@@ -704,6 +704,13 @@
+ 			clocks = <&sdioclk 0>, <&ahbclk 0>;
+ 		};
+ 
++		gfcgpio: gfcgpio0@1701c000 {
++			compatible = "apm,xgene-gpio";
++			reg = <0x0 0x1701c000 0x0 0x40>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
+ 		phy1: phy@1f21a000 {
+ 			compatible = "apm,xgene-phy";
+ 			reg = <0x0 0x1f21a000 0x0 0x100>;
+-- 
+2.6.2
+

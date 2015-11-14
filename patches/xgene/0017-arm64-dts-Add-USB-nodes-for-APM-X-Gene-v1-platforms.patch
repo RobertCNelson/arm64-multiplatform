@@ -1,0 +1,46 @@
+From 91937d1bf4ffc5a6e80f998f9899953ac993013f Mon Sep 17 00:00:00 2001
+From: Duc Dang <dhdang@apm.com>
+Date: Wed, 14 Oct 2015 13:36:24 -0700
+Subject: [PATCH 17/27] arm64: dts: Add USB nodes for APM X-Gene v1 platforms
+
+This patch adds USB nodes into APM X-Gene v1 device tree to enable
+USB support for X-Gene v1 platforms.
+
+Signed-off-by: Duc Dang <dhdang@apm.com>
+---
+ arch/arm64/boot/dts/apm/apm-storm.dtsi | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+index 8738afb..47259d0 100644
+--- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
++++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+@@ -778,6 +778,25 @@
+ 			phy-names = "sata-phy";
+ 		};
+ 
++		/* Do not change dwusb name, coded for backward compatibility */
++		usb0: dwusb@19000000 {
++			status = "disabled";
++			compatible = "snps,dwc3";
++			reg =  <0x0 0x19000000 0x0 0x100000>;
++			interrupts = <0x0 0x89 0x4>;
++			dma-coherent;
++			dr_mode = "host";
++		};
++
++		usb1: dwusb@19800000 {
++			status = "disabled";
++			compatible = "snps,dwc3";
++			reg =  <0x0 0x19800000 0x0 0x100000>;
++			interrupts = <0x0 0x8a 0x4>;
++			dma-coherent;
++			dr_mode = "host";
++		};
++
+ 		sbgpio: sbgpio@17001000{
+ 			compatible = "apm,xgene-gpio-sb";
+ 			reg = <0x0 0x17001000 0x0 0x400>;
+-- 
+2.6.2
+

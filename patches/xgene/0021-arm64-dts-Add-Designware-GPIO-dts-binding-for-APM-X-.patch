@@ -1,0 +1,42 @@
+From b2d4167e2655fe87597bcf40c62f96ff2c9fd7dc Mon Sep 17 00:00:00 2001
+From: Duc Dang <dhdang@apm.com>
+Date: Wed, 14 Oct 2015 17:27:16 -0700
+Subject: [PATCH 21/27] arm64: dts: Add Designware GPIO dts binding for APM
+ X-Gene v1 platform
+
+This patch adds Designware GPIO dts binding for APM X-Gene v1 platform.
+
+Signed-off-by: Duc Dang <dhdang@apm.com>
+---
+ arch/arm64/boot/dts/apm/apm-storm.dtsi | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+index a4e7f09..b104f42 100644
+--- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
++++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+@@ -711,6 +711,21 @@
+ 			#gpio-cells = <2>;
+ 		};
+ 
++		dwgpio: dwgpio@1c024000 {
++			compatible = "snps,dw-apb-gpio";
++			reg = <0x0 0x1c024000 0x0 0x1000>;
++			reg-io-width = <4>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			porta: gpio-controller@0 {
++				compatible = "snps,dw-apb-gpio-port";
++				gpio-controller;
++				snps,nr-gpios = <32>;
++				reg = <0>;
++			};
++		};
++
+ 		phy1: phy@1f21a000 {
+ 			compatible = "apm,xgene-phy";
+ 			reg = <0x0 0x1f21a000 0x0 0x100>;
+-- 
+2.6.2
+

@@ -1,0 +1,108 @@
+From 442a4a3243251d6b8a852fdc337b8222a5b3f8e1 Mon Sep 17 00:00:00 2001
+From: Duc Dang <dhdang@apm.com>
+Date: Mon, 12 Oct 2015 15:31:56 -0700
+Subject: [PATCH 15/27] arm64: dts: Add v2m MSI frame nodes for APM X-Gene v2
+ platforms
+
+This patch adds all 16 v2m MSI frames that APM X-Gene v2 SoC supports
+into APM X-Gene v2 device tree.
+
+Signed-off-by: Duc Dang <dhdang@apm.com>
+---
+ arch/arm64/boot/dts/apm/apm-shadowcat.dtsi | 80 ++++++++++++++++++++++++++++++
+ 1 file changed, 80 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi b/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
+index 630ed4a..b4e5192 100644
+--- a/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
++++ b/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
+@@ -89,6 +89,86 @@
+ 		      <0x0 0x780A0000 0x0 0x20000>,	/* GIC CPU */
+ 		      <0x0 0x780C0000 0x0 0x10000>,	/* GIC VCPU Control */
+ 		      <0x0 0x780E0000 0x0 0x20000>;	/* GIC VCPU */
++		v2m0: v2m@0x00000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0x0 0x0 0x1000>;
++		};
++		v2m1: v2m@0x10000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0x10000 0x0 0x1000>;
++		};
++		v2m2: v2m@0x20000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0x20000 0x0 0x1000>;
++		};
++		v2m3: v2m@0x30000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0x30000 0x0 0x1000>;
++		};
++		v2m4: v2m@0x40000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0x40000 0x0 0x1000>;
++		};
++		v2m5: v2m@0x50000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0x50000 0x0 0x1000>;
++		};
++		v2m6: v2m@0x60000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0x60000 0x0 0x1000>;
++		};
++		v2m7: v2m@0x70000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0x70000 0x0 0x1000>;
++		};
++		v2m8: v2m@0x80000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0x80000 0x0 0x1000>;
++		};
++		v2m9: v2m@0x90000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0x90000 0x0 0x1000>;
++		};
++		v2m10: v2m@0xA0000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0xA0000 0x0 0x1000>;
++		};
++		v2m11: v2m@0xB0000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0xB0000 0x0 0x1000>;
++		};
++		v2m12: v2m@0xC0000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0xC0000 0x0 0x1000>;
++		};
++		v2m13: v2m@0xD0000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0xD0000 0x0 0x1000>;
++		};
++		v2m14: v2m@0xE0000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0xE0000 0x0 0x1000>;
++		};
++		v2m15: v2m@0xF0000 {
++			compatible = "arm,gic-v2m-frame";
++			msi-controller;
++			reg = <0x0 0xF0000 0x0 0x1000>;
++		};
+ 	};
+ 
+ 	pmu {
+-- 
+2.6.2
+

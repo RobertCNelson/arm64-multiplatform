@@ -1,0 +1,42 @@
+From a50e12d47c95850afb9ee70e4e27621591158ed3 Mon Sep 17 00:00:00 2001
+From: Tai Nguyen <ttnguyen@apm.com>
+Date: Wed, 12 Aug 2015 12:32:32 -0700
+Subject: [PATCH 04/27] power: reset: Add syscon poweroff device node for APM
+ X-Gene platform
+
+This patch adds syscon poweroff device node to support poweroff feature
+on APM X-Gene Mustang platform
+
+Signed-off-by: Tai Nguyen <ttnguyen@apm.com>
+Tested-by: dann frazier <dann.frazier@canoncial.com>
+Acked-by: Moritz Fischer <moritz.fischer@ettus.com>
+---
+ arch/arm64/boot/dts/apm/apm-mustang.dts | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/apm/apm-mustang.dts b/arch/arm64/boot/dts/apm/apm-mustang.dts
+index 4c55833..01cdeda 100644
+--- a/arch/arm64/boot/dts/apm/apm-mustang.dts
++++ b/arch/arm64/boot/dts/apm/apm-mustang.dts
+@@ -33,6 +33,18 @@
+ 			interrupts = <0x0 0x2d 0x1>;
+ 		};
+ 	};
++
++	poweroff_mbox: poweroff_mbox@10548000 {
++		compatible = "syscon";
++		reg = <0x0 0x10548000 0x0 0x30>;
++	};
++
++	poweroff: poweroff@10548010 {
++		compatible = "syscon-poweroff";
++		regmap = <&poweroff_mbox>;
++		offset = <0x10>;
++		mask = <0x1>;
++	};
+ };
+ 
+ &pcie0clk {
+-- 
+2.6.2
+

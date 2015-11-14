@@ -1,0 +1,69 @@
+From 30d883c2bd586412603ae957d0400bbe24427704 Mon Sep 17 00:00:00 2001
+From: Duc Dang <dhdang@apm.com>
+Date: Thu, 22 Oct 2015 18:54:57 -0700
+Subject: [PATCH 13/27] arm64: dts: X-Gene: Do not reset or enable/disable
+ clock for AHB block
+
+Remove register information used to reset and enable/disable clock
+for AHB block as reseting AHB or disabling its clock will make other
+peripherals attached to it stop working.
+
+Signed-off-by: Duc Dang <dhdang@apm.com>
+---
+ arch/arm64/boot/dts/apm/apm-shadowcat.dtsi | 11 +++--------
+ arch/arm64/boot/dts/apm/apm-storm.dtsi     | 11 +++--------
+ 2 files changed, 6 insertions(+), 16 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi b/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
+index 718ffc4..ddf1e86 100644
+--- a/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
++++ b/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
+@@ -140,17 +140,12 @@
+ 				clock-output-names = "socplldiv2";
+ 			};
+ 
+-			ahbclk: ahbclk@1f2ac000 {
++			ahbclk: ahbclk@17000000 {
+ 				compatible = "apm,xgene-device-clock";
+ 				#clock-cells = <1>;
+ 				clocks = <&socplldiv2 0>;
+-				reg = <0x0 0x1f2ac000 0x0 0x1000
+-					0x0 0x17000000 0x0 0x2000>;
+-				reg-names = "csr-reg", "div-reg";
+-				csr-offset = <0x0>;
+-				csr-mask = <0x1>;
+-				enable-offset = <0x8>;
+-				enable-mask = <0x1>;
++				reg = <0x0 0x17000000 0x0 0x2000>;
++				reg-names = "div-reg";
+ 				divider-offset = <0x164>;
+ 				divider-width = <0x5>;
+ 				divider-shift = <0x0>;
+diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+index ae5dc68..8738afb 100644
+--- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
++++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+@@ -150,17 +150,12 @@
+ 				clock-output-names = "socplldiv2";
+ 			};
+ 
+-			ahbclk: ahbclk@1f2ac000 {
++			ahbclk: ahbclk@17000000 {
+ 				compatible = "apm,xgene-device-clock";
+ 				#clock-cells = <1>;
+ 				clocks = <&socplldiv2 0>;
+-				reg = <0x0 0x1f2ac000 0x0 0x1000
+-					0x0 0x17000000 0x0 0x2000>;
+-				reg-names = "csr-reg", "div-reg";
+-				csr-offset = <0x0>;
+-				csr-mask = <0x1>;
+-				enable-offset = <0x8>;
+-				enable-mask = <0x1>;
++				reg = <0x0 0x17000000 0x0 0x2000>;
++				reg-names = "div-reg";
+ 				divider-offset = <0x164>;
+ 				divider-width = <0x5>;
+ 				divider-shift = <0x0>;
+-- 
+2.6.2
+

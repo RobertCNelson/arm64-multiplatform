@@ -1,0 +1,33 @@
+From 0e47a74771f0ae4d5eb2a88f3ac1a265d83082b3 Mon Sep 17 00:00:00 2001
+From: Duc Dang <dhdang@apm.com>
+Date: Wed, 21 Oct 2015 19:17:42 -0700
+Subject: [PATCH 26/27] arm64: dts: Add RTC DTS entry for X-Gene v2 SoC
+ platform
+
+Add Dallas DS1337 RTC DTS entry to support RTC function
+on X-Gene v2 evaluation platform.
+
+Signed-off-by: Duc Dang <dhdang@apm.com>
+---
+ arch/arm64/boot/dts/apm/apm-merlin.dts | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/apm/apm-merlin.dts b/arch/arm64/boot/dts/apm/apm-merlin.dts
+index a0092f9..e5ba8d5 100644
+--- a/arch/arm64/boot/dts/apm/apm-merlin.dts
++++ b/arch/arm64/boot/dts/apm/apm-merlin.dts
+@@ -74,3 +74,11 @@
+ &mmc0 {
+ 	status = "ok";
+ };
++
++&i2c4 {
++	rtc68: rtc@68 {
++		compatible = "dallas,ds1337";
++		reg = <0x68>;
++		status = "ok";
++	};
++};
+-- 
+2.6.2
+
