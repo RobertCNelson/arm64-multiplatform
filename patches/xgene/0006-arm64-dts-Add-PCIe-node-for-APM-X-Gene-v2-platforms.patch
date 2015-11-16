@@ -1,7 +1,7 @@
-From 45608b1e73d0dbf581dde4ad0e4fcaa9a86f1a47 Mon Sep 17 00:00:00 2001
+From 00c755d0b17e282f5c3862de1e53e45fbd88f58a Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Mon, 12 Oct 2015 16:09:17 -0700
-Subject: [PATCH 16/27] arm64: dts: Add PCIe node for APM X-Gene v2 platforms
+Subject: [PATCH 06/17] arm64: dts: Add PCIe node for APM X-Gene v2 platforms
 
 This patch adds PCIe node to support PCIe controller with MSI
 capability for APM X-Gene v2 platform.

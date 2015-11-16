@@ -1,7 +1,7 @@
-From 91937d1bf4ffc5a6e80f998f9899953ac993013f Mon Sep 17 00:00:00 2001
+From cb2942736137cce8314218b7f01c7b8de2238cd2 Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Wed, 14 Oct 2015 13:36:24 -0700
-Subject: [PATCH 17/27] arm64: dts: Add USB nodes for APM X-Gene v1 platforms
+Subject: [PATCH 07/17] arm64: dts: Add USB nodes for APM X-Gene v1 platforms
 
 This patch adds USB nodes into APM X-Gene v1 device tree to enable
 USB support for X-Gene v1 platforms.
@@ -12,10 +12,10 @@ Signed-off-by: Duc Dang <dhdang@apm.com>
  1 file changed, 19 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi b/arch/arm64/boot/dts/apm/apm-storm.dtsi
-index 8738afb..47259d0 100644
+index 32f9ba9..72680fa 100644
 --- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
 +++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
-@@ -778,6 +778,25 @@
+@@ -799,6 +799,25 @@
  			phy-names = "sata-phy";
  		};
  

@@ -1,7 +1,7 @@
-From 21694ca25343b4a0518b2758fb51c8941a89c846 Mon Sep 17 00:00:00 2001
+From 4e5c4b536ba1b24102a308af2fa5734c4beec4dc Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Wed, 14 Oct 2015 17:32:42 -0700
-Subject: [PATCH 22/27] arm64: dts: Add APM X-Gene v2 SoC Designware GPIO
+Subject: [PATCH 12/17] arm64: dts: Add APM X-Gene v2 SoC Designware GPIO
  controller DTS entry
 
 This patch adds Designware GPIO controller DTS node for APM

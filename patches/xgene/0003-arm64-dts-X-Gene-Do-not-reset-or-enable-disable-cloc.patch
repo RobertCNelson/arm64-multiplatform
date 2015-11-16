@@ -1,7 +1,7 @@
-From 30d883c2bd586412603ae957d0400bbe24427704 Mon Sep 17 00:00:00 2001
+From 9be5a97a684e399252c0d227ff1cde9a11f6b014 Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Thu, 22 Oct 2015 18:54:57 -0700
-Subject: [PATCH 13/27] arm64: dts: X-Gene: Do not reset or enable/disable
+Subject: [PATCH 03/17] arm64: dts: X-Gene: Do not reset or enable/disable
  clock for AHB block
 
 Remove register information used to reset and enable/disable clock
@@ -40,7 +40,7 @@ index 718ffc4..ddf1e86 100644
  				divider-width = <0x5>;
  				divider-shift = <0x0>;
 diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi b/arch/arm64/boot/dts/apm/apm-storm.dtsi
-index ae5dc68..8738afb 100644
+index 445f68d..32f9ba9 100644
 --- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
 +++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
 @@ -150,17 +150,12 @@

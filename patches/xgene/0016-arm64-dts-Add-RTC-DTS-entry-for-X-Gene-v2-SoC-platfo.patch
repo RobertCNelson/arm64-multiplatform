@@ -1,7 +1,7 @@
-From 0e47a74771f0ae4d5eb2a88f3ac1a265d83082b3 Mon Sep 17 00:00:00 2001
+From 0acb857db55bfe4c30edc54bab23a9f928736139 Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Wed, 21 Oct 2015 19:17:42 -0700
-Subject: [PATCH 26/27] arm64: dts: Add RTC DTS entry for X-Gene v2 SoC
+Subject: [PATCH 16/17] arm64: dts: Add RTC DTS entry for X-Gene v2 SoC
  platform
 
 Add Dallas DS1337 RTC DTS entry to support RTC function

@@ -1,7 +1,7 @@
-From b5adb250563dd63d597420dad14da734531d4e89 Mon Sep 17 00:00:00 2001
+From c4f9b7a38c6f4a9400c9df7e0071c7b6682dd17c Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Wed, 14 Oct 2015 13:44:17 -0700
-Subject: [PATCH 18/27] arm64: dts: Add USB nodes for APM X-Gene v2 platforms
+Subject: [PATCH 08/17] arm64: dts: Add USB nodes for APM X-Gene v2 platforms
 
 This patch adds USB node into APM X-Gene v2 device tree to enable
 USB support for X-Gene v2 platforms.

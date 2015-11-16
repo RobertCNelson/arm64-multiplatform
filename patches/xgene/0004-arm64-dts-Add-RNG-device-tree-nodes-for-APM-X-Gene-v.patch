@@ -1,7 +1,7 @@
-From d216f5a50e07dcd8bf298cd5f912a6ef10846195 Mon Sep 17 00:00:00 2001
+From e208a4a9ae95687d2f179868f0b633878149407a Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Mon, 5 Oct 2015 16:36:10 -0700
-Subject: [PATCH 14/27] arm64: dts: Add RNG device tree nodes for APM X-Gene v2
+Subject: [PATCH 04/17] arm64: dts: Add RNG device tree nodes for APM X-Gene v2
  platform
 
 This patch adds device tree nodes to enable driver for True Random

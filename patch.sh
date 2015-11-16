@@ -114,36 +114,26 @@ xgene () {
 		start_cleanup
 	fi
 
-	${git} "${DIR}/patches/xgene/0001-MAINTAINERS-Add-Applied-Micro-APM-X-Gene-Device-Tree.patch"
-	${git} "${DIR}/patches/xgene/0002-Documentation-arm64-add-SCU-dts-binding-documentatio.patch"
-	${git} "${DIR}/patches/xgene/0003-arm64-dts-Add-X-Gene-reboot-driver-dts-node.patch"
-	${git} "${DIR}/patches/xgene/0004-power-reset-Add-syscon-poweroff-device-node-for-APM-.patch"
-	${git} "${DIR}/patches/xgene/0005-arm64-dts-add-APM-Merlin-Board-device-tree.patch"
-	${git} "${DIR}/patches/xgene/0006-arm64-dts-Add-X-Gene-v2-reboot-driver-dts-node.patch"
-	${git} "${DIR}/patches/xgene/0007-Documentation-arm-pmu-Add-Potenza-PMU-binding.patch"
-	${git} "${DIR}/patches/xgene/0008-arm64-dts-Add-PMU-node-for-APM-X-Gene-Storm-SOC.patch"
-	${git} "${DIR}/patches/xgene/0009-arm64-dts-Add-APM-X-Gene-2-standby-GPIO-controller-D.patch"
-	${git} "${DIR}/patches/xgene/0010-arm64-dts-Add-poweroff-device-nodes-for-APM-X-Gene-2.patch"
-	${git} "${DIR}/patches/xgene/0011-arm64-dts-Add-the-arasan-mmc-DTS-entries-for-APM-X-G.patch"
-	${git} "${DIR}/patches/xgene/0012-arm64-dts-Add-the-arasan-mmc-DTS-entries-for-APm-X-G.patch"
-	${git} "${DIR}/patches/xgene/0013-arm64-dts-X-Gene-Do-not-reset-or-enable-disable-cloc.patch"
-	${git} "${DIR}/patches/xgene/0014-arm64-dts-Add-RNG-device-tree-nodes-for-APM-X-Gene-v.patch"
-	${git} "${DIR}/patches/xgene/0015-arm64-dts-Add-v2m-MSI-frame-nodes-for-APM-X-Gene-v2-.patch"
-	${git} "${DIR}/patches/xgene/0016-arm64-dts-Add-PCIe-node-for-APM-X-Gene-v2-platforms.patch"
-	${git} "${DIR}/patches/xgene/0017-arm64-dts-Add-USB-nodes-for-APM-X-Gene-v1-platforms.patch"
-	${git} "${DIR}/patches/xgene/0018-arm64-dts-Add-USB-nodes-for-APM-X-Gene-v2-platforms.patch"
-	${git} "${DIR}/patches/xgene/0019-arm64-dts-Add-APM-X-Gene-v1-SoC-GFC-GPIO-controller-.patch"
-	${git} "${DIR}/patches/xgene/0020-arm64-dts-Add-APM-X-Gene-v2-SoC-GFC-GPIO-controller-.patch"
-	${git} "${DIR}/patches/xgene/0021-arm64-dts-Add-Designware-GPIO-dts-binding-for-APM-X-.patch"
-	${git} "${DIR}/patches/xgene/0022-arm64-dts-Add-APM-X-Gene-v2-SoC-Designware-GPIO-cont.patch"
-	${git} "${DIR}/patches/xgene/0023-arm64-dts-Add-APM-X-Gene-v2-SoC-EDAC-DTS-entries.patch"
-	${git} "${DIR}/patches/xgene/0024-arm64-dts-Add-Designware-I2C-controller-DTS-entries-.patch"
-	${git} "${DIR}/patches/xgene/0025-arm64-dts-Add-Designware-I2C-controller-DTS-entries-.patch"
-	${git} "${DIR}/patches/xgene/0026-arm64-dts-Add-RTC-DTS-entry-for-X-Gene-v2-SoC-platfo.patch"
-	${git} "${DIR}/patches/xgene/0027-arm64-dts-Add-L2-cache-topology-for-APM-X-Gene-SoC.patch"
+	${git} "${DIR}/patches/xgene/0001-arm64-dts-Add-the-arasan-mmc-DTS-entries-for-APM-X-G.patch"
+	${git} "${DIR}/patches/xgene/0002-arm64-dts-Add-the-arasan-mmc-DTS-entries-for-APm-X-G.patch"
+	${git} "${DIR}/patches/xgene/0003-arm64-dts-X-Gene-Do-not-reset-or-enable-disable-cloc.patch"
+	${git} "${DIR}/patches/xgene/0004-arm64-dts-Add-RNG-device-tree-nodes-for-APM-X-Gene-v.patch"
+	${git} "${DIR}/patches/xgene/0005-arm64-dts-Add-v2m-MSI-frame-nodes-for-APM-X-Gene-v2-.patch"
+	${git} "${DIR}/patches/xgene/0006-arm64-dts-Add-PCIe-node-for-APM-X-Gene-v2-platforms.patch"
+	${git} "${DIR}/patches/xgene/0007-arm64-dts-Add-USB-nodes-for-APM-X-Gene-v1-platforms.patch"
+	${git} "${DIR}/patches/xgene/0008-arm64-dts-Add-USB-nodes-for-APM-X-Gene-v2-platforms.patch"
+	${git} "${DIR}/patches/xgene/0009-arm64-dts-Add-APM-X-Gene-v1-SoC-GFC-GPIO-controller-.patch"
+	${git} "${DIR}/patches/xgene/0010-arm64-dts-Add-APM-X-Gene-v2-SoC-GFC-GPIO-controller-.patch"
+	${git} "${DIR}/patches/xgene/0011-arm64-dts-Add-Designware-GPIO-dts-binding-for-APM-X-.patch"
+	${git} "${DIR}/patches/xgene/0012-arm64-dts-Add-APM-X-Gene-v2-SoC-Designware-GPIO-cont.patch"
+	${git} "${DIR}/patches/xgene/0013-arm64-dts-Add-APM-X-Gene-v2-SoC-EDAC-DTS-entries.patch"
+	${git} "${DIR}/patches/xgene/0014-arm64-dts-Add-Designware-I2C-controller-DTS-entries-.patch"
+	${git} "${DIR}/patches/xgene/0015-arm64-dts-Add-Designware-I2C-controller-DTS-entries-.patch"
+	${git} "${DIR}/patches/xgene/0016-arm64-dts-Add-RTC-DTS-entry-for-X-Gene-v2-SoC-platfo.patch"
+	${git} "${DIR}/patches/xgene/0017-arm64-dts-Add-L2-cache-topology-for-APM-X-Gene-SoC.patch"
 
 	if [ "x${regenerate}" = "xenable" ] ; then
-		number=9
+		number=17
 		cleanup
 	fi
 }

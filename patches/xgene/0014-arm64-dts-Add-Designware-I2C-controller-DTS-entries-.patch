@@ -1,7 +1,7 @@
-From 7e1ed3ae5674b7989a57b24d4ce56aee1262ec83 Mon Sep 17 00:00:00 2001
+From f8bd54a9aedd2a84f95ac5b9961181a97b0331a5 Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Fri, 16 Oct 2015 12:45:24 -0700
-Subject: [PATCH 24/27] arm64: dts: Add Designware I2C controller DTS entries
+Subject: [PATCH 14/17] arm64: dts: Add Designware I2C controller DTS entries
  for X-Gene v1 SoC
 
 This patch adds DTS entries for Designware I2C controller used in
@@ -19,10 +19,10 @@ Signed-off-by: Duc Dang <dhdang@apm.com>
  1 file changed, 26 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi b/arch/arm64/boot/dts/apm/apm-storm.dtsi
-index b104f42..21bc1c6 100644
+index db190a4..6297b7c 100644
 --- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
 +++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
-@@ -406,6 +406,20 @@
+@@ -417,6 +417,20 @@
  				reg-names = "csr-reg";
  				clock-output-names = "dmaclk";
  			};
@@ -43,7 +43,7 @@ index b104f42..21bc1c6 100644
  		};
  
  		msi: msi@79000000 {
-@@ -726,6 +740,18 @@
+@@ -747,6 +761,18 @@
  			};
  		};
  

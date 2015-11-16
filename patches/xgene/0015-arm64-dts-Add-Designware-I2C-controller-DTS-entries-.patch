@@ -1,7 +1,7 @@
-From 283c7ea92276c68343076cdb3ecd05ea1f82bdee Mon Sep 17 00:00:00 2001
+From 399f88b9702586d4bf985392dc9599a917a6cb1a Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Wed, 21 Oct 2015 19:07:28 -0700
-Subject: [PATCH 25/27] arm64: dts: Add Designware I2C controller DTS entries
+Subject: [PATCH 15/17] arm64: dts: Add Designware I2C controller DTS entries
  for X-Gene v2 SoC platform
 
 This patch adds DTS entries for Designware I2C controllers used in

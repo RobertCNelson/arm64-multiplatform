@@ -1,7 +1,7 @@
-From 442a4a3243251d6b8a852fdc337b8222a5b3f8e1 Mon Sep 17 00:00:00 2001
+From 4d65f52ce2e8d55a7995de2098b7b9680b2821d5 Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Mon, 12 Oct 2015 15:31:56 -0700
-Subject: [PATCH 15/27] arm64: dts: Add v2m MSI frame nodes for APM X-Gene v2
+Subject: [PATCH 05/17] arm64: dts: Add v2m MSI frame nodes for APM X-Gene v2
  platforms
 
 This patch adds all 16 v2m MSI frames that APM X-Gene v2 SoC supports

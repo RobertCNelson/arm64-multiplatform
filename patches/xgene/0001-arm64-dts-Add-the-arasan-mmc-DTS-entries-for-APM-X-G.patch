@@ -1,35 +1,37 @@
-From 46af4fff9ddc803398b19c9a720e0c86c2be63f1 Mon Sep 17 00:00:00 2001
-From: Duc Dang <dhdang@apm.com>
-Date: Wed, 16 Sep 2015 17:12:57 +0530
-Subject: [PATCH 12/27] arm64: dts: Add the arasan mmc DTS entries for APm
- X-Gene v2 SoC
+From b2a651bf22657fbe094dd7f0a141601105d6d9e5 Mon Sep 17 00:00:00 2001
+From: Suman Tripathi <stripathi@apm.com>
+Date: Fri, 19 Jun 2015 17:30:26 +0530
+Subject: [PATCH 01/17] arm64: dts: Add the arasan mmc DTS entries for APM
+ X-Gene v1 SoC
 
 This patch adds the arasan mmc nodes to reuse the of-arasan
-driver for APM X-Gene v2 SoC platforms.
+driver for APM X-Gene v1 SoC platforms.
 
+[dhdang: changelog]
+Signed-off-by: Suman Tripathi <stripathi@apm.com>
 Signed-off-by: Duc Dang <dhdang@apm.com>
 ---
- arch/arm64/boot/dts/apm/apm-merlin.dts     |  4 +++
- arch/arm64/boot/dts/apm/apm-shadowcat.dtsi | 44 ++++++++++++++++++++++++++++++
+ arch/arm64/boot/dts/apm/apm-mustang.dts |  4 +++
+ arch/arm64/boot/dts/apm/apm-storm.dtsi  | 44 +++++++++++++++++++++++++++++++++
  2 files changed, 48 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/apm/apm-merlin.dts b/arch/arm64/boot/dts/apm/apm-merlin.dts
-index 119a469..a0092f9 100644
---- a/arch/arm64/boot/dts/apm/apm-merlin.dts
-+++ b/arch/arm64/boot/dts/apm/apm-merlin.dts
-@@ -70,3 +70,7 @@
- &xgenet1 {
+diff --git a/arch/arm64/boot/dts/apm/apm-mustang.dts b/arch/arm64/boot/dts/apm/apm-mustang.dts
+index 01cdeda..178aef2 100644
+--- a/arch/arm64/boot/dts/apm/apm-mustang.dts
++++ b/arch/arm64/boot/dts/apm/apm-mustang.dts
+@@ -74,3 +74,7 @@
+ &xgenet {
  	status = "ok";
  };
 +
 +&mmc0 {
 +	status = "ok";
 +};
-diff --git a/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi b/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
-index c804f8f..718ffc4 100644
---- a/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
-+++ b/arch/arm64/boot/dts/apm/apm-shadowcat.dtsi
-@@ -140,6 +140,40 @@
+diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+index 6c5ed11..445f68d 100644
+--- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
++++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+@@ -150,6 +150,40 @@
  				clock-output-names = "socplldiv2";
  			};
  
@@ -67,11 +69,11 @@ index c804f8f..718ffc4 100644
 +				clock-output-names = "sdioclk";
 +			};
 +
- 			pcie0clk: pcie0clk@1f2bc000 {
+ 			qmlclk: qmlclk {
  				compatible = "apm,xgene-device-clock";
  				#clock-cells = <1>;
-@@ -224,6 +258,16 @@
- 			dma-coherent;
+@@ -686,6 +720,16 @@
+ 			interrupts = <0x0 0x4f 0x4>;
  		};
  
 +		mmc0: mmc@1c000000 {
@@ -84,9 +86,9 @@ index c804f8f..718ffc4 100644
 +			clocks = <&sdioclk 0>, <&ahbclk 0>;
 +		};
 +
- 		sbgpio: sbgpio@17001000{
- 			compatible = "apm,xgene-gpio-sb";
- 			reg = <0x0 0x17001000 0x0 0x400>;
+ 		phy1: phy@1f21a000 {
+ 			compatible = "apm,xgene-phy";
+ 			reg = <0x0 0x1f21a000 0x0 0x100>;
 -- 
 2.6.2
 

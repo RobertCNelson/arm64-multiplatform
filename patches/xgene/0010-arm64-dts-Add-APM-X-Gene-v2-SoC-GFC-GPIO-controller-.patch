@@ -1,7 +1,7 @@
-From 9970d9433154511b29a9a73838d93c4ad46cda82 Mon Sep 17 00:00:00 2001
+From 161054171cb85aa1703bd039c3da99fcdb42db63 Mon Sep 17 00:00:00 2001
 From: Duc Dang <dhdang@apm.com>
 Date: Wed, 14 Oct 2015 17:24:29 -0700
-Subject: [PATCH 20/27] arm64: dts: Add APM X-Gene v2 SoC GFC GPIO controller
+Subject: [PATCH 10/17] arm64: dts: Add APM X-Gene v2 SoC GFC GPIO controller
  DTS entry
 
 This patch adds the flash controller muxed gpio dts node for
