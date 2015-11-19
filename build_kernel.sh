@@ -56,7 +56,12 @@ make_menuconfig () {
 }
 
 make_kernel () {
-	image="Image"
+	if [ "x${KERNEL_ARCH}" = "xarm" ] ; then
+		image="zImage"
+	else
+		image="Image"
+	fi
+
 	unset address
 
 	##uImage, if you really really want a uImage, zreladdr needs to be defined on the build line going forward...
