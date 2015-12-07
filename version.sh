@@ -20,7 +20,7 @@ toolchain="gcc_linaro_aarch64_gnu_5"
 
 #Kernel/Build
 KERNEL_REL=4.4
-KERNEL_TAG=${KERNEL_REL}-rc3
+KERNEL_TAG=${KERNEL_REL}-rc4
 BUILD=aarch64-r0
 kernel_rt=".X-rtY"
 
