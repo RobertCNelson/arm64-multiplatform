@@ -19,8 +19,8 @@ KERNEL_ARCH=arm64
 toolchain="gcc_linaro_aarch64_gnu_5"
 
 #Kernel/Build
-KERNEL_REL=4.4
-KERNEL_TAG=${KERNEL_REL}
+KERNEL_REL=4.5
+KERNEL_TAG=${KERNEL_REL}-rc1
 BUILD=aarch64-r0
 kernel_rt=".X-rtY"
 
@@ -29,7 +29,7 @@ kernel_rt=".X-rtY"
 #KERNEL_SHA=""
 
 #git branch
-BRANCH="v4.4.x"
+BRANCH="v4.5.x"
 
 DISTRO=cross
 DEBARCH=arm64
