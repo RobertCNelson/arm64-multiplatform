@@ -4,7 +4,7 @@ ARCH=$(uname -m)
 
 config="defconfig"
 
-build_prefix="aarch64-r"
+build_prefix="-aarch64-r"
 branch_prefix="v"
 branch_postfix=".x"
 
