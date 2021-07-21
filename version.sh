@@ -10,8 +10,8 @@ branch_postfix=".x"
 
 #https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/changes.rst?h=v5.14-rc1
 #arm
-KERNEL_ARCH=arm
-DEBARCH=armhf
+#KERNEL_ARCH=arm
+#DEBARCH=armhf
 #toolchain="gcc_6_arm"
 #toolchain="gcc_7_arm"
 #toolchain="gcc_8_arm"
@@ -19,7 +19,7 @@ DEBARCH=armhf
 #toolchain="gcc_10_arm"
 #toolchain="gcc_11_arm"
 #arm64
-#KERNEL_ARCH=arm64
+KERNEL_ARCH=arm64
 DEBARCH=arm64
 #toolchain="gcc_6_aarch64"
 #toolchain="gcc_7_aarch64"
@@ -41,7 +41,7 @@ KERNEL_REL=5.14
 KERNEL_TAG=${KERNEL_REL}-rc2
 kernel_rt=".X-rtY"
 #Kernel Build
-BUILD=${build_prefix}0
+BUILD=${build_prefix}0.1
 
 #v5.X-rcX + upto SHA
 #prev_KERNEL_SHA=""
