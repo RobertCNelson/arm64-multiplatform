@@ -205,6 +205,7 @@ packaging () {
 	fi
 
 	${git} "${DIR}/patches/backports/bindeb-pkg/0002-builddeb-Install-our-dtbs-under-boot-dtbs-version.patch"
+	${git} "${DIR}/patches/backports/bindeb-pkg/0003-builddeb-copy-arm64-boot-Image-to-boot.patch"
 }
 
 packaging
