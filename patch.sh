@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Copyright (c) 2009-2021 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2022 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -130,51 +130,6 @@ rt () {
 	dir 'rt'
 }
 
-wireless_regdb () {
-	#https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/
-	#regenerate="enable"
-	if [ "x${regenerate}" = "xenable" ] ; then
-
-		cd ../
-		if [ ! -d ./wireless-regdb ] ; then
-			${git_bin} clone git://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git --depth=1
-			cd ./wireless-regdb
-				wireless_regdb_hash=$(git rev-parse HEAD)
-			cd -
-		else
-			rm -rf ./wireless-regdb || true
-			${git_bin} clone git://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git --depth=1
-			cd ./wireless-regdb
-				wireless_regdb_hash=$(git rev-parse HEAD)
-			cd -
-		fi
-		cd ./KERNEL/
-
-		mkdir -p ./firmware/ || true
-		cp -v ../wireless-regdb/regulatory.db ./firmware/
-		cp -v ../wireless-regdb/regulatory.db.p7s ./firmware/
-		${git_bin} add -f ./firmware/regulatory.*
-		${git_bin} commit -a -m 'Add wireless-regdb regulatory database file' -m "https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/commit/?id=${wireless_regdb_hash}" -s
-
-		${git_bin} format-patch -1 -o ../patches/wireless_regdb/
-		echo "WIRELESS_REGDB: https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/commit/?id=${wireless_regdb_hash}" > ../patches/git/WIRELESS_REGDB
-
-		rm -rf ../wireless-regdb/ || true
-
-		${git_bin} reset --hard HEAD^
-
-		start_cleanup
-
-		${git} "${DIR}/patches/wireless_regdb/0001-Add-wireless-regdb-regulatory-database-file.patch"
-
-		wdir="wireless_regdb"
-		number=1
-		cleanup
-	fi
-
-	dir 'wireless_regdb'
-}
-
 local_patch () {
 	echo "dir: dir"
 	${git} "${DIR}/patches/dir/0001-patch.patch"
@@ -182,13 +137,67 @@ local_patch () {
 
 #external_git
 #rt
-wireless_regdb
 #local_patch
+
+pre_backports () {
+	echo "dir: backports/${subsystem}"
+
+	cd ~/linux-src/
+	${git_bin} pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git master
+	${git_bin} pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git master --tags
+	${git_bin} pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master --tags
+	if [ ! "x${backport_tag}" = "x" ] ; then
+		${git_bin} checkout ${backport_tag} -b tmp
+	fi
+	cd -
+}
+
+post_backports () {
+	if [ ! "x${backport_tag}" = "x" ] ; then
+		cd ~/linux-src/
+		${git_bin} checkout master -f ; ${git_bin} branch -D tmp
+		cd -
+	fi
+
+	rm -f arch/arm/boot/dts/overlays/*.dtbo || true
+	${git_bin} add .
+	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag}" -s
+	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
+		mkdir -p ../patches/backports/${subsystem}/
+	fi
+	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
+}
+
+patch_backports (){
+	echo "dir: backports/${subsystem}"
+	${git} "${DIR}/patches/backports/${subsystem}/0001-backports-${subsystem}-from-linux.git.patch"
+}
+
+backports () {
+	backport_tag="v4.x-y"
+
+	subsystem="xyz"
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		pre_backports
+
+		mkdir -p ./x/
+		cp -v ~/linux-src/x/* ./x/
+
+		post_backports
+		exit 2
+	else
+		patch_backports
+	fi
+}
+
+###
+#backports
 
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v5.10.51"
+		backport_tag="v5.16.7"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
@@ -205,7 +214,6 @@ packaging () {
 	fi
 
 	${git} "${DIR}/patches/backports/bindeb-pkg/0002-builddeb-Install-our-dtbs-under-boot-dtbs-version.patch"
-	${git} "${DIR}/patches/backports/bindeb-pkg/0003-builddeb-copy-arm64-boot-Image-to-boot.patch"
 }
 
 packaging
