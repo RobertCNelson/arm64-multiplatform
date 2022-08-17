@@ -5497,6 +5497,7 @@ CONFIG_DRM_TIDSS=m
 # CONFIG_DRM_GUD is not set
 # CONFIG_DRM_SSD130X is not set
 # CONFIG_DRM_SPRD is not set
+# CONFIG_DRM_POWERVR is not set
 CONFIG_DRM_LEGACY=y
 # CONFIG_DRM_TDFX is not set
 # CONFIG_DRM_R128 is not set

@@ -250,6 +250,8 @@ wireless_regdb
 beagleboard_dtbs
 #local_patch
 
+dir 'PowerVR'
+
 pre_backports () {
 	echo "dir: backports/${subsystem}"
 
