@@ -1,16 +1,16 @@
-From 71efdf82fffb67bbc137d6aeadda02f252746e8e Mon Sep 17 00:00:00 2001
+From 74e800ee0d34c1a82b75b4e20fa5e708a4e63624 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 15 Aug 2022 15:21:01 -0500
+Date: Wed, 17 Aug 2022 11:00:46 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git/tree/v6.0.x-k3
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git/commit/d49cc909565b36d36f71c86f6954d3de128a6a5c
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git/commit/51a18f99363f3a8decd23ed26b5f266f3dad0cc4
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm64/boot/dts/ti/Makefile               |    1 +
- .../boot/dts/ti/k3-j721e-beagleboneai64.dts   | 1142 +++++++++++++++++
- 2 files changed, 1143 insertions(+)
+ .../boot/dts/ti/k3-j721e-beagleboneai64.dts   | 1146 +++++++++++++++++
+ 2 files changed, 1147 insertions(+)
  create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
 
 diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
@@ -24,14 +24,16 @@ index 02e5d80344d0..b9b224af3929 100644
 +dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64.dtb
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
 new file mode 100644
-index 000000000000..5cea72ec2b2e
+index 000000000000..72ad113e6ba1
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
-@@ -0,0 +1,1142 @@
+@@ -0,0 +1,1146 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
++ * https://beagleboard.org/ai-64
 + * Copyright (C) 2022 Texas Instruments Incorporated - https://www.ti.com/
 + * Copyright (C) 2022 Jason Kridner, BeagleBoard.org Foundation
++ * Copyright (C) 2022 Robert Nelson, BeagleBoard.org Foundation
 + */
 +
 +/dts-v1/;
@@ -39,11 +41,18 @@ index 000000000000..5cea72ec2b2e
 +#include "k3-j721e.dtsi"
 +#include <dt-bindings/gpio/gpio.h>
 +#include <dt-bindings/input/input.h>
++#include <dt-bindings/leds/common.h>
 +#include <dt-bindings/net/ti-dp83867.h>
 +
 +/ {
 +	compatible = "beagle,j721e-beagleboneai64", "ti,j721e";
 +	model = "BeagleBoard.org BeagleBone AI-64";
++
++	aliases {
++		serial2 = &main_uart0;
++		mmc0 = &main_sdhci0;
++		mmc1 = &main_sdhci1;
++	};
 +
 +	chosen {
 +		stdout-path = "serial2:115200n8";
@@ -189,55 +198,53 @@ index 000000000000..5cea72ec2b2e
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&sw_pwr_pins_default>;
 +
-+		sw_boot: sw1 {
-+			status = "disabled";
++		sw_boot: switch-1 {
 +			label = "BOOT";
 +			linux,code = <BTN_0>;
 +			gpios = <&wkup_gpio0 0 GPIO_ACTIVE_LOW>;
 +		};
 +
-+		sw_pwr: sw2 {
++		sw_pwr: switch-2 {
 +			label = "POWER";
 +			linux,code = <KEY_POWER>;
 +			gpios = <&wkup_gpio0 4 GPIO_ACTIVE_LOW>;
 +		};
 +	};
 +
-+	gpio_leds: gpio-leds {
++	leds {
 +		compatible = "gpio-leds";
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&led_pins_default>;
 +
-+		usr_led0: usr_led0 {
-+			label = "beaglebone:green:usr0";
-+			default-state = "keep";
-+			linux,default-trigger = "heartbeat";
++		led-0 {
 +			gpios = <&main_gpio0 96 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "heartbeat";
++			function = LED_FUNCTION_HEARTBEAT;
 +		};
 +
-+		usr_led1: usr_led1 {
-+			label = "beaglebone:green:usr1";
-+			default-state = "keep";
-+			linux,default-trigger = "mmc0";
++		led-1 {
 +			gpios = <&main_gpio0 95 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "mmc0";
++			function = LED_FUNCTION_DISK_ACTIVITY;
 +		};
 +
-+		usr_led2: usr_led2 {
-+			label = "beaglebone:green:usr2";
-+			linux,default-trigger = "cpu";
++		led-2 {
 +			gpios = <&main_gpio0 97 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "cpu";
++			function = LED_FUNCTION_CPU;
 +		};
 +
-+		usr_led3: usr_led3 {
-+			label = "beaglebone:green:usr3";
-+			linux,default-trigger = "mmc1";
++		led-3 {
 +			gpios = <&main_gpio0 110 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "mmc1";
++			function = LED_FUNCTION_DISK_ACTIVITY;
 +		};
 +
-+		usr_led4: usr_led4 {
-+			label = "beaglebone:green:usr4";
-+			linux,default-trigger = "netdev";
++		led-4 {
 +			gpios = <&main_gpio0 109 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "phy0tx";
++			function = LED_FUNCTION_WLAN;
++			default-state = "off";
 +		};
 +	};
 +
@@ -309,9 +316,6 @@ index 000000000000..5cea72ec2b2e
 +		regulator-max-microvolt = <3300000>;
 +		gpios = <&main_gpio0 49 GPIO_ACTIVE_HIGH>; /* DP0_PWR_SW_EN */
 +		enable-active-high;
-+
-+		/* Always on for now, until dp-connector driver can handle this */
-+		regulator-always-on;
 +	};
 +
 +	dp0: connector {
@@ -451,7 +455,7 @@ index 000000000000..5cea72ec2b2e
 +		>;
 +	};
 +
-+	mcu_adc0_pins_default: mcu_adc0_pins_default {
++	mcu_adc0_pins_default: mcu-adc0-pins-default {
 +		pinctrl-single,pins = <
 +			J721E_WKUP_IOPAD(0x130, PIN_INPUT, 0) /* (K25) MCU_ADC0_AIN0 */
 +			J721E_WKUP_IOPAD(0x134, PIN_INPUT, 0) /* (K26) MCU_ADC0_AIN1 */
@@ -463,7 +467,7 @@ index 000000000000..5cea72ec2b2e
 +		>;
 +	};
 +
-+	mcu_adc1_pins_default: mcu_adc1_pins_default {
++	mcu_adc1_pins_default: mcu-adc1-pins-default {
 +		pinctrl-single,pins = <
 +			J721E_WKUP_IOPAD(0x150, PIN_INPUT, 0) /* (N23) MCU_ADC1_AIN0 */
 +		>;
@@ -537,7 +541,7 @@ index 000000000000..5cea72ec2b2e
 +};
 +
 +&wkup_uart0 {
-+	/* Wakeup UART is used by System firmware */
++	/* Wakeup UART is used by TIFS firmware. */
 +	status = "reserved";
 +};
 +
@@ -656,7 +660,6 @@ index 000000000000..5cea72ec2b2e
 +};
 +
 +&main_gpio0 {
-+	status = "okay";
 +	gpio-line-names = "", "P9_11", "P9_13", "P8_17", "P8_18", /* 0-4 */
 +		"P8_22", "P8_24", "P8_34", "P8_36", "P8_38A", /* 5-9 */
 +		"P9_23", "P8_37B", "P9_26B", "P9_24B", "P8_08", /* 10-14 */
@@ -686,7 +689,6 @@ index 000000000000..5cea72ec2b2e
 +};
 +
 +&main_gpio1 {
-+	status = "okay";
 +	gpio-line-names = "P9_41", "P9_19A", "P9_20A", "TYPEC_DIR", "TYPEC_INT", /* 0-4 */
 +		"M2_PCIE_WAKE#", "M2_PCIE_CLKREQ#", "M2_I2C_SCL", "M2_I2C_SDA", "TYPEC/CSI1_I2C_SCL", /* 5-9 */
 +		"TYPEC/CSI1_I2C_SDA", "P9_28A", "P9_31A", "P9_30A", "P9_29A", /* 10-14 */
@@ -744,7 +746,7 @@ index 000000000000..5cea72ec2b2e
 +	status = "disabled";
 +};
 +
-+&main_r5fss0_core0{
++&main_r5fss0_core0 {
 +	firmware-name = "pdk-ipc/ipc_echo_test_mcu2_0_release_strip.xer5f";
 +};
 +
@@ -753,9 +755,9 @@ index 000000000000..5cea72ec2b2e
 +};
 +
 +&serdes_ln_ctrl {
-+	idle-states = <J721E_SERDES0_LANE0_IP4_UNUSED>, <J721E_SERDES0_LANE1_IP4_UNUSED>, /* TODO: is this right? */
++	idle-states = <J721E_SERDES0_LANE0_IP4_UNUSED>, <J721E_SERDES0_LANE1_IP4_UNUSED>,
 +		      <J721E_SERDES1_LANE0_PCIE1_LANE0>, <J721E_SERDES1_LANE1_PCIE1_LANE1>,
-+		      <J721E_SERDES2_LANE0_IP1_UNUSED>, <J721E_SERDES2_LANE1_USB3_1>, /* TODO: USB3_0 or USB3_1? */
++		      <J721E_SERDES2_LANE0_IP1_UNUSED>, <J721E_SERDES2_LANE1_USB3_1>,
 +		      <J721E_SERDES3_LANE0_USB3_0_SWAP>, <J721E_SERDES3_LANE1_USB3_0>,
 +		      <J721E_SERDES4_LANE0_EDP_LANE0>, <J721E_SERDES4_LANE1_EDP_LANE1>,
 +		      <J721E_SERDES4_LANE2_EDP_LANE2>, <J721E_SERDES4_LANE3_EDP_LANE3>;
@@ -818,13 +820,15 @@ index 000000000000..5cea72ec2b2e
 +};
 +
 +&tscadc0 {
-+	/* Unused */
-+	status = "disabled";
++	adc {
++		ti,adc-channels = <0 1 2 3 4 5 6 7>;
++	};
 +};
 +
 +&tscadc1 {
-+	/* Unused */
-+	status = "disabled";
++	adc {
++		ti,adc-channels = <0 1 2 3 4 5 6 7>;
++	};
 +};
 +
 +&mcu_cpsw {
