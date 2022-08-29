@@ -287,30 +287,30 @@ patch_backports (){
 }
 
 backports () {
-	backport_tag="v4.x-y"
+	backport_tag="v5.10.139"
 
-	subsystem="xyz"
+	subsystem="uio"
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
 		pre_backports
 
-		mkdir -p ./x/
-		cp -v ~/linux-src/x/* ./x/
+		cp -v ~/linux-src/drivers/uio/uio_pruss.c ./drivers/uio/
 
 		post_backports
 		exit 2
 	else
 		patch_backports
+		dir 'drivers/ti/uio'
 	fi
 }
 
 ###
-#backports
+backports
 
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v5.16.7"
+		backport_tag="v5.19.5"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
