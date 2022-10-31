@@ -1,33 +1,33 @@
-From fc081271a668b446214e624f9056d917f8cba15f Mon Sep 17 00:00:00 2001
+From 2160daf6d0586e21ec29c077b365012d7a3f9b70 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 29 Aug 2022 09:12:56 -0500
+Date: Mon, 31 Oct 2022 13:47:24 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git/tree/v6.0.x-k3
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.1.x
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git/commit/3024caf77fe8d50c36d74820e5fe6af4d6d2b1d3
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/e1a9c2965a84eff33c1b0fe80939ba253fcbf95c
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm64/boot/dts/ti/Makefile               |    1 +
- .../boot/dts/ti/k3-j721e-beagleboneai64.dts   | 1220 +++++++++++++++++
- 2 files changed, 1221 insertions(+)
+ .../boot/dts/ti/k3-j721e-beagleboneai64.dts   | 1113 +++++++++++++++++
+ 2 files changed, 1114 insertions(+)
  create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
 
 diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
-index 02e5d80344d0..b9b224af3929 100644
+index 4555a5be2257..0cf010b1b850 100644
 --- a/arch/arm64/boot/dts/ti/Makefile
 +++ b/arch/arm64/boot/dts/ti/Makefile
-@@ -23,3 +23,4 @@ dtb-$(CONFIG_ARCH_K3) += k3-am642-evm.dtb
- dtb-$(CONFIG_ARCH_K3) += k3-am642-sk.dtb
- 
+@@ -25,3 +25,4 @@ dtb-$(CONFIG_ARCH_K3) += k3-am642-sk.dtb
  dtb-$(CONFIG_ARCH_K3) += k3-am625-sk.dtb
+ 
+ dtb-$(CONFIG_ARCH_K3) += k3-am62a7-sk.dtb
 +dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64.dtb
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
 new file mode 100644
-index 000000000000..ef6d41690a33
+index 000000000000..5c3ab97837d9
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
-@@ -0,0 +1,1220 @@
+@@ -0,0 +1,1113 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * https://beagleboard.org/ai-64
@@ -61,7 +61,6 @@ index 000000000000..ef6d41690a33
 +
 +	chosen {
 +		stdout-path = "serial2:115200n8";
-+		bootargs = "console=ttyS2,115200n8 earlycon=ns16550a,mmio32,0x02800000";
 +	};
 +
 +	memory@80000000 {
@@ -253,7 +252,7 @@ index 000000000000..ef6d41690a33
 +		};
 +	};
 +
-+	evm_12v0: fixedregulator-evm12v0 {
++	evm_12v0: regulator-0 {
 +		/* main supply */
 +		compatible = "regulator-fixed";
 +		regulator-name = "evm_12v0";
@@ -263,7 +262,7 @@ index 000000000000..ef6d41690a33
 +		regulator-boot-on;
 +	};
 +
-+	vsys_3v3: fixedregulator-vsys3v3 {
++	vsys_3v3: regulator-1 {
 +		/* Output of LMS140 */
 +		compatible = "regulator-fixed";
 +		regulator-name = "vsys_3v3";
@@ -274,7 +273,7 @@ index 000000000000..ef6d41690a33
 +		regulator-boot-on;
 +	};
 +
-+	vsys_5v0: fixedregulator-vsys5v0 {
++	vsys_5v0: regulator-2 {
 +		/* Output of LM5140 */
 +		compatible = "regulator-fixed";
 +		regulator-name = "vsys_5v0";
@@ -285,7 +284,7 @@ index 000000000000..ef6d41690a33
 +		regulator-boot-on;
 +	};
 +
-+	vdd_mmc1: fixedregulator-sd {
++	vdd_mmc1: regulator-3 {
 +		compatible = "regulator-fixed";
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&sd_pwr_en_pins_default>;
@@ -298,7 +297,7 @@ index 000000000000..ef6d41690a33
 +		gpios = <&main_gpio0 82 GPIO_ACTIVE_HIGH>;
 +	};
 +
-+	vdd_sd_dv_alt: gpio-regulator-TLV71033 {
++	vdd_sd_dv_alt: regulator-4 {
 +		compatible = "regulator-gpio";
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&vdd_sd_dv_alt_pins_default>;
@@ -312,7 +311,7 @@ index 000000000000..ef6d41690a33
 +			 <3300000 0x1>;
 +	};
 +
-+	dp_pwr_3v3: fixedregulator-dp-prw {
++	dp_pwr_3v3: regulator-5 {
 +		compatible = "regulator-fixed";
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&dp0_3v3_en_pins_default>;
@@ -418,7 +417,7 @@ index 000000000000..ef6d41690a33
 +		>;
 +	};
 +
-+	main_i2c2_pins_default: main_i2c2_pins_default {
++	main_i2c2_pins_default: main-i2c2-pins-default {
 +		pinctrl-single,pins = <
 +			J721E_IOPAD(0x208, PIN_INPUT_PULLUP, 4) /* (W5) MCAN0_RX.I2C2_SCL */
 +			J721E_IOPAD(0x20c, PIN_INPUT_PULLUP, 4) /* (W6) MCAN0_TX.I2C2_SDA */
@@ -434,7 +433,7 @@ index 000000000000..ef6d41690a33
 +		>;
 +	};
 +
-+	main_i2c4_pins_default: main_i2c4_pins_default {
++	main_i2c4_pins_default: main-i2c4-pins-default {
 +		pinctrl-single,pins = <
 +			J721E_IOPAD(0x1e0, PIN_INPUT_PULLUP, 2) /* (Y5) SPI1_D0.I2C4_SCL */
 +			J721E_IOPAD(0x1dc, PIN_INPUT_PULLUP, 2) /* (Y1) SPI1_CLK.I2C4_SDA */
@@ -450,7 +449,7 @@ index 000000000000..ef6d41690a33
 +		>;
 +	};
 +
-+	main_i2c6_pins_default: main_i2c6_pins_default {
++	main_i2c6_pins_default: main-i2c6-pins-default {
 +		pinctrl-single,pins = <
 +			J721E_IOPAD(0x1d0, PIN_INPUT_PULLUP, 2) /* (AA3) SPI0_D1.I2C6_SCL */
 +			J721E_IOPAD(0x1e4, PIN_INPUT_PULLUP, 2) /* (Y2) SPI1_D1.I2C6_SDA */
@@ -578,35 +577,11 @@ index 000000000000..ef6d41690a33
 +};
 +
 +&main_uart0 {
++	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&main_uart0_pins_default>;
 +	/* Shared with ATF on this platform */
 +	power-domains = <&k3_pds 146 TI_SCI_PD_SHARED>;
-+};
-+
-+&main_uart3 {
-+	/* UART not brought out */
-+	status = "disabled";
-+};
-+
-+&main_uart6 {
-+	/* UART not brought out */
-+	status = "disabled";
-+};
-+
-+&main_uart7 {
-+	/* UART not brought out */
-+	status = "disabled";
-+};
-+
-+&main_uart8 {
-+	/* UART not brought out */
-+	status = "disabled";
-+};
-+
-+&main_uart9 {
-+	/* UART not brought out */
-+	status = "disabled";
 +};
 +
 +&main_sdhci0 {
@@ -642,12 +617,14 @@ index 000000000000..ef6d41690a33
 +};
 +
 +&main_i2c0 {
++	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&main_i2c0_pins_default>;
 +	clock-frequency = <400000>;
 +};
 +
 +&main_i2c1 {
++	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&main_i2c1_pins_default &csi1_gpio_pins_default>;
 +	clock-frequency = <400000>;
@@ -655,13 +632,14 @@ index 000000000000..ef6d41690a33
 +
 +&main_i2c2 {
 +	/* BBB Header: P9.19 and P9.20 */
++	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&main_i2c2_pins_default>;
 +	clock-frequency = <100000>;
-+	status = "okay";
 +};
 +
 +&main_i2c3 {
++	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&main_i2c3_pins_default>;
 +	clock-frequency = <400000>;
@@ -669,13 +647,14 @@ index 000000000000..ef6d41690a33
 +
 +&main_i2c4 {
 +	/* BBB Header: P9.24 and P9.26 */
++	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&main_i2c4_pins_default>;
 +	clock-frequency = <100000>;
-+	status = "okay";
 +};
 +
 +&main_i2c5 {
++	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&main_i2c5_pins_default &csi0_gpio_pins_default>;
 +	clock-frequency = <400000>;
@@ -683,6 +662,7 @@ index 000000000000..ef6d41690a33
 +
 +&main_i2c6 {
 +	/* BBB Header: P9.17 and P9.18 */
++	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&main_i2c6_pins_default>;
 +	clock-frequency = <100000>;
@@ -690,6 +670,7 @@ index 000000000000..ef6d41690a33
 +};
 +
 +&wkup_i2c0 {
++	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&wkup_i2c0_pins_default &eeprom_wp_pins_default>;
 +	clock-frequency = <400000>;
@@ -959,66 +940,6 @@ index 000000000000..ef6d41690a33
 +	};
 +};
 +
-+&mcasp0 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp1 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp2 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp3 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp4 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp5 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp6 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp7 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp8 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp9 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp10 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
-+&mcasp11 {
-+	/* Unused */
-+	status = "disabled";
-+};
-+
 +&serdes0 {
 +	serdes0_pcie_link: phy@0 {
 +		reg = <0>;
@@ -1165,34 +1086,6 @@ index 000000000000..ef6d41690a33
 +		ti,mbox-rx = <0 0 0>;
 +		ti,mbox-tx = <1 0 0>;
 +	};
-+};
-+
-+&mailbox0_cluster5 {
-+	status = "disabled";
-+};
-+
-+&mailbox0_cluster6 {
-+	status = "disabled";
-+};
-+
-+&mailbox0_cluster7 {
-+	status = "disabled";
-+};
-+
-+&mailbox0_cluster8 {
-+	status = "disabled";
-+};
-+
-+&mailbox0_cluster9 {
-+	status = "disabled";
-+};
-+
-+&mailbox0_cluster10 {
-+	status = "disabled";
-+};
-+
-+&mailbox0_cluster11 {
-+	status = "disabled";
 +};
 +
 +&mcu_r5fss0_core0 {

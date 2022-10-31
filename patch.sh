@@ -130,6 +130,11 @@ rt () {
 	dir 'rt'
 }
 
+ti_next () {
+	git pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/ti/linux.git ti-next
+	#exit 2
+}
+
 wireless_regdb () {
 	#https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/
 	#regenerate="enable"
@@ -188,7 +193,7 @@ dtb_makefile_append () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.0.x-k3"
+	branch="v6.1.x"
 	https_repo="https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -212,16 +217,16 @@ beagleboard_dtbs () {
 		rm -rf arch/arm64/boot/dts/ti/overlays/ || true
 
 		mkdir -p arch/arm64/boot/dts/ti/overlays/
-		cp -vr ../${work_dir}/src/soc/* arch/arm64/boot/dts/ti/
+		cp -vr ../${work_dir}/src/arm64/* arch/arm64/boot/dts/ti/
 		cp -vr ../${work_dir}/include/dt-bindings/* ./include/dt-bindings/
 
 		device="k3-j721e-beagleboneai64.dtb" ; dtb_makefile_append
 
 		${git_bin} add -f arch/arm64/boot/dts/ti/
 		${git_bin} add -f include/dt-bindings/
-		${git_bin} commit -a -m "Add BeagleBoard.org Device Tree Changes" -m "${https_repo}/tree/${branch}" -m "${https_repo}/commit/${git_hash}" -s
+		${git_bin} commit -a -m "Add BeagleBoard.org Device Tree Changes" -m "https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/${branch}" -m "https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/${git_hash}" -s
 		${git_bin} format-patch -1 -o ../patches/soc/ti/beagleboard_dtbs/
-		echo "BBDTBS: ${https_repo}/commit/${git_hash}" > ../patches/git/BBDTBS
+		echo "BBDTBS: https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/${git_hash}" > ../patches/git/BBDTBS
 
 		rm -rf ../${work_dir}/ || true
 
@@ -246,11 +251,12 @@ local_patch () {
 
 #external_git
 #rt
+ti_next
 wireless_regdb
 beagleboard_dtbs
 #local_patch
 
-dir 'PowerVR'
+#dir 'PowerVR'
 
 pre_backports () {
 	echo "dir: backports/${subsystem}"
@@ -287,7 +293,7 @@ patch_backports (){
 }
 
 backports () {
-	backport_tag="v5.10.139"
+	backport_tag="v5.10.152"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -310,7 +316,7 @@ backports
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v5.19.5"
+		backport_tag="v5.19.17"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
