@@ -103,6 +103,167 @@ external_git () {
 	${git_bin} describe
 }
 
+aufs_fail () {
+	echo "aufs failed"
+	exit 2
+}
+
+aufs () {
+	#https://github.com/sfjro/aufs-standalone/tree/aufs6.1
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		KERNEL_REL=6.1
+		wget https://raw.githubusercontent.com/sfjro/aufs-standalone/aufs${KERNEL_REL}/aufs6-kbuild.patch
+		patch -p1 < aufs6-kbuild.patch || aufs_fail
+		rm -rf aufs6-kbuild.patch
+		${git_bin} add .
+		${git_bin} commit -a -m 'merge: aufs-kbuild' -s
+
+		wget https://raw.githubusercontent.com/sfjro/aufs-standalone/aufs${KERNEL_REL}/aufs6-base.patch
+		patch -p1 < aufs6-base.patch || aufs_fail
+		rm -rf aufs6-base.patch
+		${git_bin} add .
+		${git_bin} commit -a -m 'merge: aufs-base' -s
+
+		wget https://raw.githubusercontent.com/sfjro/aufs-standalone/aufs${KERNEL_REL}/aufs6-mmap.patch
+		patch -p1 < aufs6-mmap.patch || aufs_fail
+		rm -rf aufs6-mmap.patch
+		${git_bin} add .
+		${git_bin} commit -a -m 'merge: aufs-mmap' -s
+
+		wget https://raw.githubusercontent.com/sfjro/aufs-standalone/aufs${KERNEL_REL}/aufs6-standalone.patch
+		patch -p1 < aufs6-standalone.patch || aufs_fail
+		rm -rf aufs6-standalone.patch
+		${git_bin} add .
+		${git_bin} commit -a -m 'merge: aufs-standalone' -s
+
+		${git_bin} format-patch -4 -o ../patches/aufs/
+
+		cd ../
+		if [ -d ./aufs-standalone ] ; then
+			rm -rf ./aufs-standalone || true
+		fi
+
+		${git_bin} clone -b aufs${KERNEL_REL} https://github.com/sfjro/aufs-standalone --depth=1
+		cd ./aufs-standalone/
+			aufs_hash=$(git rev-parse HEAD)
+		cd -
+
+		cd ./KERNEL/
+		KERNEL_REL=6.1
+
+		cp -v ../aufs-standalone/Documentation/ABI/testing/*aufs ./Documentation/ABI/testing/
+		mkdir -p ./Documentation/filesystems/aufs/
+		cp -rv ../aufs-standalone/Documentation/filesystems/aufs/* ./Documentation/filesystems/aufs/
+		mkdir -p ./fs/aufs/
+		cp -v ../aufs-standalone/fs/aufs/* ./fs/aufs/
+		cp -v ../aufs-standalone/include/uapi/linux/aufs_type.h ./include/uapi/linux/
+
+		${git_bin} add .
+		${git_bin} commit -a -m 'merge: aufs' -m "https://github.com/sfjro/aufs-standalone/commit/${aufs_hash}" -s
+
+		${git_bin} format-patch -5 -o ../patches/aufs/
+		echo "AUFS: https://github.com/sfjro/aufs-standalone/commit/${aufs_hash}" > ../patches/git/AUFS
+
+		rm -rf ../aufs-standalone/ || true
+
+		${git_bin} reset --hard HEAD~5
+
+		start_cleanup
+
+		${git} "${DIR}/patches/aufs/0001-merge-aufs-kbuild.patch"
+		${git} "${DIR}/patches/aufs/0002-merge-aufs-base.patch"
+		${git} "${DIR}/patches/aufs/0003-merge-aufs-mmap.patch"
+		${git} "${DIR}/patches/aufs/0004-merge-aufs-standalone.patch"
+		${git} "${DIR}/patches/aufs/0005-merge-aufs.patch"
+
+		wdir="aufs"
+		number=5
+		cleanup
+	fi
+
+	dir 'aufs'
+}
+
+wpanusb () {
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		cd ../
+		if [ -d ./wpanusb ] ; then
+			rm -rf ./wpanusb || true
+		fi
+
+		${git_bin} clone https://git.beagleboard.org/beagleconnect/linux/wpanusb --depth=1
+		cd ./wpanusb
+			wpanusb_hash=$(git rev-parse HEAD)
+		cd -
+
+		cd ./KERNEL/
+
+		cp -v ../wpanusb/wpanusb.h drivers/net/ieee802154/
+		cp -v ../wpanusb/wpanusb.c drivers/net/ieee802154/
+
+		${git_bin} add .
+		${git_bin} commit -a -m 'merge: wpanusb: https://git.beagleboard.org/beagleconnect/linux/wpanusb' -m "https://git.beagleboard.org/beagleconnect/linux/wpanusb/-/commit/${wpanusb_hash}" -s
+		${git_bin} format-patch -1 -o ../patches/wpanusb/
+		echo "WPANUSB: https://git.beagleboard.org/beagleconnect/linux/wpanusb/-/commit/${wpanusb_hash}" > ../patches/git/WPANUSB
+
+		rm -rf ../wpanusb/ || true
+
+		${git_bin} reset --hard HEAD~1
+
+		start_cleanup
+
+		${git} "${DIR}/patches/wpanusb/0001-merge-wpanusb-https-git.beagleboard.org-beagleconnec.patch"
+
+		wdir="wpanusb"
+		number=1
+		cleanup
+
+		exit 2
+	fi
+	dir 'wpanusb'
+}
+
+bcfserial () {
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		cd ../
+		if [ -d ./bcfserial ] ; then
+			rm -rf ./bcfserial || true
+		fi
+
+		${git_bin} clone https://git.beagleboard.org/beagleconnect/linux/bcfserial.git --depth=1
+		cd ./bcfserial
+			bcfserial_hash=$(git rev-parse HEAD)
+		cd -
+
+		cd ./KERNEL/
+
+		cp -v ../bcfserial/bcfserial.c drivers/net/ieee802154/
+
+		${git_bin} add .
+		${git_bin} commit -a -m 'merge: bcfserial: https://git.beagleboard.org/beagleconnect/linux/bcfserial.git' -m "https://git.beagleboard.org/beagleconnect/linux/bcfserial/-/commit/${bcfserial_hash}" -s
+		${git_bin} format-patch -1 -o ../patches/bcfserial/
+		echo "BCFSERIAL: https://git.beagleboard.org/beagleconnect/linux/bcfserial/-/commit/${bcfserial_hash}" > ../patches/git/BCFSERIAL
+
+		rm -rf ../bcfserial/ || true
+
+		${git_bin} reset --hard HEAD~1
+
+		start_cleanup
+
+		${git} "${DIR}/patches/bcfserial/0001-merge-bcfserial-https-git.beagleboard.org-beagleconn.patch"
+
+		wdir="bcfserial"
+		number=1
+		cleanup
+
+		exit 2
+	fi
+	dir 'bcfserial'
+}
+
 rt_cleanup () {
 	echo "rt: needs fixup"
 	exit 2
@@ -130,29 +291,20 @@ rt () {
 	dir 'rt'
 }
 
-ti_next () {
-	git pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/ti/linux.git ti-next
-	#exit 2
-}
-
 wireless_regdb () {
 	#https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
-
 		cd ../
-		if [ ! -d ./wireless-regdb ] ; then
-			${git_bin} clone git://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git --depth=1
-			cd ./wireless-regdb
-				wireless_regdb_hash=$(git rev-parse HEAD)
-			cd -
-		else
+		if [ -d ./wireless-regdb ] ; then
 			rm -rf ./wireless-regdb || true
-			${git_bin} clone git://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git --depth=1
-			cd ./wireless-regdb
-				wireless_regdb_hash=$(git rev-parse HEAD)
-			cd -
 		fi
+
+		${git_bin} clone git://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git --depth=1
+		cd ./wireless-regdb
+			wireless_regdb_hash=$(git rev-parse HEAD)
+		cd -
+
 		cd ./KERNEL/
 
 		mkdir -p ./firmware/ || true
@@ -199,18 +351,15 @@ beagleboard_dtbs () {
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
 		cd ../
-		if [ ! -d ./${work_dir} ] ; then
-			${git_bin} clone -b ${branch} ${https_repo} --depth=1
-			cd ./${work_dir}
-				git_hash=$(git rev-parse HEAD)
-			cd -
-		else
+		if [ -d ./${work_dir} ] ; then
 			rm -rf ./${work_dir} || true
-			${git_bin} clone -b ${branch} ${https_repo} --depth=1
-			cd ./${work_dir}
-				git_hash=$(git rev-parse HEAD)
-			cd -
 		fi
+
+		${git_bin} clone -b ${branch} ${https_repo} --depth=1
+		cd ./${work_dir}
+			git_hash=$(git rev-parse HEAD)
+		cd -
+
 		cd ./KERNEL/
 
 		cleanup_dts_builds
@@ -250,8 +399,10 @@ local_patch () {
 }
 
 #external_git
+aufs
+wpanusb
+bcfserial
 #rt
-#ti_next
 wireless_regdb
 beagleboard_dtbs
 #local_patch
@@ -293,7 +444,7 @@ patch_backports (){
 }
 
 backports () {
-	backport_tag="v5.10.152"
+	backport_tag="v5.10.162"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -310,13 +461,21 @@ backports () {
 	fi
 }
 
+drivers () {
+	#https://github.com/raspberrypi/linux/branches
+	#exit 2
+	dir 'RPi'
+	dir 'boris'
+}
+
 ###
 backports
+drivers
 
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v5.19.17"
+		backport_tag="v6.1.4"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
@@ -337,3 +496,4 @@ packaging () {
 
 packaging
 echo "patch.sh ran successfully"
+#
