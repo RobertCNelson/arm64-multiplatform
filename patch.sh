@@ -251,7 +251,7 @@ local_patch () {
 
 #external_git
 #rt
-ti_next
+#ti_next
 wireless_regdb
 beagleboard_dtbs
 #local_patch
