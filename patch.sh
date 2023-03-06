@@ -109,10 +109,10 @@ aufs_fail () {
 }
 
 aufs () {
-	#https://github.com/sfjro/aufs-standalone/tree/aufs6.1
+	#https://github.com/sfjro/aufs-standalone/tree/aufs6.3
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
-		KERNEL_REL=6.1
+		KERNEL_REL=6.3
 		wget https://raw.githubusercontent.com/sfjro/aufs-standalone/aufs${KERNEL_REL}/aufs6-kbuild.patch
 		patch -p1 < aufs6-kbuild.patch || aufs_fail
 		rm -rf aufs6-kbuild.patch
@@ -150,7 +150,7 @@ aufs () {
 		cd -
 
 		cd ./KERNEL/
-		KERNEL_REL=6.1
+		KERNEL_REL=6.3
 
 		cp -v ../aufs-standalone/Documentation/ABI/testing/*aufs ./Documentation/ABI/testing/
 		mkdir -p ./Documentation/filesystems/aufs/
@@ -345,7 +345,7 @@ dtb_makefile_append () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.1.x"
+	branch="v6.3.x"
 	https_repo="https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -399,12 +399,12 @@ local_patch () {
 }
 
 #external_git
-aufs
-wpanusb
-bcfserial
+#aufs
+#wpanusb
+#bcfserial
 #rt
 wireless_regdb
-beagleboard_dtbs
+#beagleboard_dtbs
 #local_patch
 
 #dir 'PowerVR'
@@ -444,7 +444,7 @@ patch_backports (){
 }
 
 backports () {
-	backport_tag="v5.10.162"
+	backport_tag="v5.10.172"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -464,7 +464,7 @@ backports () {
 drivers () {
 	#https://github.com/raspberrypi/linux/branches
 	#exit 2
-	dir 'RPi'
+	#dir 'RPi'
 	dir 'boris'
 }
 
@@ -475,7 +475,7 @@ drivers
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.1.4"
+		backport_tag="v6.2.1"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
