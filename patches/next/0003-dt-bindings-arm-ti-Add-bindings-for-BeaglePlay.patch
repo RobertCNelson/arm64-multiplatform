@@ -1,0 +1,32 @@
+From 4f0a4e67d9a33fc8f9cfbda39d8ea6e4eb38de59 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Fri, 10 Mar 2023 03:36:52 -0600
+Subject: [PATCH 3/5] dt-bindings: arm: ti: Add bindings for BeaglePlay
+
+This board is based on ti,am625
+
+https://beagleplay.org/
+https://git.beagleboard.org/beagleplay/beagleplay
+
+Co-developed-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+---
+ Documentation/devicetree/bindings/arm/ti/k3.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/ti/k3.yaml b/Documentation/devicetree/bindings/arm/ti/k3.yaml
+index a60a4065caa8..b4703ac88f04 100644
+--- a/Documentation/devicetree/bindings/arm/ti/k3.yaml
++++ b/Documentation/devicetree/bindings/arm/ti/k3.yaml
+@@ -28,6 +28,7 @@ properties:
+       - description: K3 AM625 SoC
+         items:
+           - enum:
++              - beagle,am625-beagleplay
+               - ti,am625-sk
+           - const: ti,am625
+ 
+-- 
+2.39.2
+

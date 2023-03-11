@@ -404,6 +404,7 @@ local_patch () {
 #bcfserial
 #rt
 wireless_regdb
+dir 'next'
 #beagleboard_dtbs
 #local_patch
 
