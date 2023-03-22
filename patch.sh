@@ -402,7 +402,7 @@ local_patch () {
 #aufs
 #wpanusb
 #bcfserial
-#rt
+rt
 wireless_regdb
 dir 'next'
 #beagleboard_dtbs
