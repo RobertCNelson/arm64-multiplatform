@@ -467,6 +467,7 @@ drivers () {
 	#exit 2
 	#dir 'RPi'
 	dir 'boris'
+	dir 'powervr'
 }
 
 ###
