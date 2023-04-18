@@ -466,6 +466,7 @@ drivers () {
 	#https://github.com/raspberrypi/linux/branches
 	#exit 2
 	#dir 'RPi'
+	dir 'soc/ti/pcie'
 	dir 'boris'
 	dir 'powervr'
 }
