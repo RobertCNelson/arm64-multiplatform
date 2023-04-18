@@ -38,8 +38,8 @@ cat_files () {
 		cat ./patches/git/CAN-ISOTP >> ${wfile}
 	fi
 
-	if [ -f ./patches/git/RT ] ; then
-		cat ./patches/git/RT >> ${wfile}
+	if [ -f ./patches/external/git/RT ] ; then
+		cat ./patches/external/git/RT >> ${wfile}
 	fi
 
 	if [ -f ./patches/git/TI_AMX3_CM3 ] ; then
@@ -58,8 +58,8 @@ cat_files () {
 		cat ./patches/git/BCFSERIAL >> ${wfile}
 	fi
 
-	if [ -f ./patches/git/WIRELESS_REGDB ] ; then
-		cat ./patches/git/WIRELESS_REGDB >> ${wfile}
+	if [ -f ./patches/external/git/WIRELESS_REGDB ] ; then
+		cat ./patches/external/git/WIRELESS_REGDB >> ${wfile}
 	fi
 
 	if [ -f ./patches/git/KSMBD ] ; then
