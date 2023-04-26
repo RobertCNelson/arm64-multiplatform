@@ -340,10 +340,6 @@ cleanup_dts_builds () {
 	rm -rf arch/arm64/boot/dts/ti/*dtbo || true
 }
 
-dtb_makefile_append () {
-	echo "dtb-\$(CONFIG_ARCH_K3) += $device" >> arch/arm64/boot/dts/ti/Makefile
-}
-
 beagleboard_dtbs () {
 	branch="v6.3.x"
 	https_repo="https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git"
@@ -369,13 +365,11 @@ beagleboard_dtbs () {
 		cp -vr ../${work_dir}/src/arm64/* arch/arm64/boot/dts/ti/
 		cp -vr ../${work_dir}/include/dt-bindings/* ./include/dt-bindings/
 
-		device="k3-j721e-beagleboneai64.dtb" ; dtb_makefile_append
-
 		${git_bin} add -f arch/arm64/boot/dts/ti/
 		${git_bin} add -f include/dt-bindings/
 		${git_bin} commit -a -m "Add BeagleBoard.org Device Tree Changes" -m "https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/${branch}" -m "https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/${git_hash}" -s
 		${git_bin} format-patch -1 -o ../patches/soc/ti/beagleboard_dtbs/
-		echo "BBDTBS: https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/${git_hash}" > ../patches/git/BBDTBS
+		echo "BBDTBS: https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/${git_hash}" > ../patches/external/git/BBDTBS
 
 		rm -rf ../${work_dir}/ || true
 
@@ -404,11 +398,9 @@ local_patch () {
 #bcfserial
 #rt
 wireless_regdb
+beagleboard_dtbs
 dir 'next'
-#beagleboard_dtbs
 #local_patch
-
-#dir 'PowerVR'
 
 pre_backports () {
 	echo "dir: backports/${subsystem}"
