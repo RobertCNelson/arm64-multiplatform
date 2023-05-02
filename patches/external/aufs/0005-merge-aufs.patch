@@ -1,9 +1,9 @@
-From d11d90889908483ac98b810b1edc2e8617115cf8 Mon Sep 17 00:00:00 2001
+From 98da62e4f85eda09da4d2c30139fa861baa6e6c8 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 17 Jan 2023 09:56:59 -0600
+Date: Tue, 2 May 2023 09:23:49 -0500
 Subject: [PATCH 5/5] merge: aufs
 
-https://github.com/sfjro/aufs-standalone/commit/9e031a3ed9e56b52e3c73adb694842d04e900ed1
+https://github.com/sfjro/aufs-standalone/commit/7ce1f59feeab7cea9ac1ff1e2edebfe7040bbb3b
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  Documentation/ABI/testing/debugfs-aufs        |   55 +
@@ -35,7 +35,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  fs/aufs/dbgaufs.h                             |   53 +
  fs/aufs/dcsub.c                               |  225 ++
  fs/aufs/dcsub.h                               |  137 ++
- fs/aufs/debug.c                               |  444 ++++
+ fs/aufs/debug.c                               |  446 ++++
  fs/aufs/debug.h                               |  226 ++
  fs/aufs/dentry.c                              | 1168 ++++++++++
  fs/aufs/dentry.h                              |  270 +++
@@ -58,13 +58,13 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  fs/aufs/hfsnotify.c                           |  290 +++
  fs/aufs/hfsplus.c                             |   60 +
  fs/aufs/hnotify.c                             |  715 ++++++
- fs/aufs/i_op.c                                | 1512 +++++++++++++
+ fs/aufs/i_op.c                                | 1517 +++++++++++++
  fs/aufs/i_op_add.c                            |  972 +++++++++
  fs/aufs/i_op_del.c                            |  522 +++++
  fs/aufs/i_op_ren.c                            | 1257 +++++++++++
  fs/aufs/iinfo.c                               |  286 +++
  fs/aufs/inode.c                               |  531 +++++
- fs/aufs/inode.h                               |  705 ++++++
+ fs/aufs/inode.h                               |  707 ++++++
  fs/aufs/ioctl.c                               |  220 ++
  fs/aufs/lcnt.h                                |  186 ++
  fs/aufs/loop.c                                |  148 ++
@@ -77,7 +77,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  fs/aufs/opts.h                                |  263 +++
  fs/aufs/plink.c                               |  516 +++++
  fs/aufs/poll.c                                |   51 +
- fs/aufs/posix_acl.c                           |  111 +
+ fs/aufs/posix_acl.c                           |  108 +
  fs/aufs/procfs.c                              |  170 ++
  fs/aufs/rdu.c                                 |  384 ++++
  fs/aufs/rwsem.h                               |   85 +
@@ -90,16 +90,16 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  fs/aufs/sysrq.c                               |  149 ++
  fs/aufs/vdir.c                                |  896 ++++++++
  fs/aufs/vfsub.c                               |  918 ++++++++
- fs/aufs/vfsub.h                               |  358 +++
+ fs/aufs/vfsub.h                               |  390 ++++
  fs/aufs/wbr_policy.c                          |  830 +++++++
  fs/aufs/whout.c                               | 1072 +++++++++
  fs/aufs/whout.h                               |   87 +
  fs/aufs/wkq.c                                 |  372 ++++
  fs/aufs/wkq.h                                 |   89 +
- fs/aufs/xattr.c                               |  368 ++++
+ fs/aufs/xattr.c                               |  365 ++++
  fs/aufs/xino.c                                | 1926 +++++++++++++++++
  include/uapi/linux/aufs_type.h                |  452 ++++
- 93 files changed, 38177 insertions(+)
+ 93 files changed, 38212 insertions(+)
  create mode 100644 Documentation/ABI/testing/debugfs-aufs
  create mode 100644 Documentation/ABI/testing/sysfs-aufs
  create mode 100644 Documentation/filesystems/aufs/README
@@ -3902,7 +3902,7 @@ index 000000000000..2a85d744d2b5
 +}
 diff --git a/fs/aufs/branch.h b/fs/aufs/branch.h
 new file mode 100644
-index 000000000000..01de0f2b46ca
+index 000000000000..6818ba8df8a2
 --- /dev/null
 +++ b/fs/aufs/branch.h
 @@ -0,0 +1,375 @@
@@ -4054,9 +4054,9 @@ index 000000000000..01de0f2b46ca
 +	return br->br_path.dentry;
 +}
 +
-+static inline struct user_namespace *au_br_userns(struct au_branch *br)
++static inline struct mnt_idmap *au_br_idmap(struct au_branch *br)
 +{
-+	return mnt_user_ns(br->br_path.mnt);
++	return mnt_idmap(br->br_path.mnt);
 +}
 +
 +static inline struct super_block *au_br_sb(struct au_branch *br)
@@ -4218,9 +4218,9 @@ index 000000000000..01de0f2b46ca
 +}
 +
 +static inline
-+struct user_namespace *au_sbr_userns(struct super_block *sb, aufs_bindex_t bindex)
++struct mnt_idmap *au_sbr_idmap(struct super_block *sb, aufs_bindex_t bindex)
 +{
-+	return au_br_userns(au_sbr(sb, bindex));
++	return au_br_idmap(au_sbr(sb, bindex));
 +}
 +
 +static inline
@@ -4329,7 +4329,7 @@ index 000000000000..12782f8e0f38
 +-include ${srctree}/${src}/conf_priv.mk
 diff --git a/fs/aufs/cpup.c b/fs/aufs/cpup.c
 new file mode 100644
-index 000000000000..df4c4fb67a88
+index 000000000000..8c8bd5f7b28d
 --- /dev/null
 +++ b/fs/aufs/cpup.c
 @@ -0,0 +1,1459 @@
@@ -4928,19 +4928,19 @@ index 000000000000..df4c4fb67a88
 +{
 +	int err;
 +	struct dentry *h_dentry;
-+	struct inode *h_inode;
-+	struct user_namespace *h_userns;
++	/* struct inode *h_inode; */
++	struct mnt_idmap *h_idmap;
 +
-+	h_userns = mnt_user_ns(h_path->mnt);
++	h_idmap = mnt_idmap(h_path->mnt);
 +	h_dentry = h_path->dentry;
-+	h_inode = d_inode(h_dentry);
++	/* h_inode = d_inode(h_dentry); */
 +	/* forget_all_cached_acls(h_inode)); */
-+	err = vfsub_removexattr(h_userns, h_dentry, XATTR_NAME_POSIX_ACL_ACCESS);
++	err = vfsub_remove_acl(h_idmap, h_dentry, XATTR_NAME_POSIX_ACL_ACCESS);
 +	AuTraceErr(err);
 +	if (err == -EOPNOTSUPP)
 +		err = 0;
 +	if (!err)
-+		err = vfsub_acl_chmod(h_userns, h_inode, mode);
++		err = vfsub_acl_chmod(h_idmap, h_dentry, mode);
 +
 +	AuTraceErr(err);
 +	return err;
@@ -4951,11 +4951,11 @@ index 000000000000..df4c4fb67a88
 +{
 +	int err;
 +	struct inode *dir, *inode;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
-+	h_userns = mnt_user_ns(h_path->mnt);
-+	err = vfsub_removexattr(h_userns, h_path->dentry,
-+				XATTR_NAME_POSIX_ACL_DEFAULT);
++	h_idmap = mnt_idmap(h_path->mnt);
++	err = vfsub_remove_acl(h_idmap, h_path->dentry,
++			       XATTR_NAME_POSIX_ACL_DEFAULT);
 +	AuTraceErr(err);
 +	if (err == -EOPNOTSUPP)
 +		err = 0;
@@ -5434,7 +5434,7 @@ index 000000000000..df4c4fb67a88
 +	struct dentry *dentry, *parent;
 +	struct file *h_file;
 +	struct inode *h_dir;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
 +	dentry = cpg->dentry;
 +	h_file = NULL;
@@ -5448,8 +5448,8 @@ index 000000000000..df4c4fb67a88
 +
 +	parent = dget_parent(dentry);
 +	h_dir = au_h_iptr(d_inode(parent), cpg->bdst);
-+	h_userns = au_sbr_userns(dentry->d_sb, cpg->bdst);
-+	if (!au_test_h_perm_sio(h_userns, h_dir, MAY_EXEC | MAY_WRITE)
++	h_idmap = au_sbr_idmap(dentry->d_sb, cpg->bdst);
++	if (!au_test_h_perm_sio(h_idmap, h_dir, MAY_EXEC | MAY_WRITE)
 +	    && !au_cpup_sio_test(cpg->pin, d_inode(dentry)->i_mode))
 +		err = au_cpup_simple(cpg);
 +	else {
@@ -5619,7 +5619,7 @@ index 000000000000..df4c4fb67a88
 +	struct inode *dir, *h_dir, *h_tmpdir;
 +	struct au_wbr *wbr;
 +	struct au_pin wh_pin, *pin_orig;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
 +	dentry = cpg->dentry;
 +	bdst = cpg->bdst;
@@ -5648,8 +5648,8 @@ index 000000000000..df4c4fb67a88
 +		cpg->pin = &wh_pin;
 +	}
 +
-+	h_userns = au_sbr_userns(dentry->d_sb, bdst);
-+	if (!au_test_h_perm_sio(h_userns, h_tmpdir, MAY_EXEC | MAY_WRITE)
++	h_idmap = au_sbr_idmap(dentry->d_sb, bdst);
++	if (!au_test_h_perm_sio(h_idmap, h_tmpdir, MAY_EXEC | MAY_WRITE)
 +	    && !au_cpup_sio_test(cpg->pin, d_inode(dentry)->i_mode))
 +		err = au_cpup_wh(cpg, file);
 +	else {
@@ -6865,10 +6865,10 @@ index 000000000000..7e4f4eba0343
 +#endif /* __AUFS_DCSUB_H__ */
 diff --git a/fs/aufs/debug.c b/fs/aufs/debug.c
 new file mode 100644
-index 000000000000..6b7d975141f8
+index 000000000000..e14075c4bccc
 --- /dev/null
 +++ b/fs/aufs/debug.c
-@@ -0,0 +1,444 @@
+@@ -0,0 +1,446 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2005-2022 Junjiro R. Okajima
@@ -6998,11 +6998,13 @@ index 000000000000..6b7d975141f8
 +	}
 +
 +	dpri("i%d: %p, i%lu, %s, cnt %d, nl %u, 0%o, sz %llu, blk %llu,"
++	     " acl %p, def_acl %p,"
 +	     " hn %d, ct %lld, np %lu, st 0x%lx, f 0x%x, v %llu, g %x%s%.*s\n",
 +	     bindex, inode,
 +	     inode->i_ino, inode->i_sb ? au_sbtype(inode->i_sb) : "??",
 +	     atomic_read(&inode->i_count), inode->i_nlink, inode->i_mode,
 +	     i_size_read(inode), (unsigned long long)inode->i_blocks,
++	     inode->i_acl, inode->i_default_acl,
 +	     hn, (long long)timespec64_to_ns(&inode->i_ctime) & 0x0ffff,
 +	     inode->i_mapping ? inode->i_mapping->nrpages : 0,
 +	     inode->i_state, inode->i_flags, inode_peek_iversion(inode),
@@ -7547,7 +7549,7 @@ index 000000000000..f757588e5000
 +#endif /* __AUFS_DEBUG_H__ */
 diff --git a/fs/aufs/dentry.c b/fs/aufs/dentry.c
 new file mode 100644
-index 000000000000..8beb43ddc373
+index 000000000000..ed7ce8f6d1a1
 --- /dev/null
 +++ b/fs/aufs/dentry.c
 @@ -0,0 +1,1168 @@
@@ -7587,7 +7589,7 @@ index 000000000000..8beb43ddc373
 +	struct dentry *h_dentry;
 +	struct inode *h_inode;
 +	struct au_branch *br;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +	struct path h_path;
 +	int wh_found, opq;
 +	unsigned char wh_able;
@@ -7599,10 +7601,10 @@ index 000000000000..8beb43ddc373
 +	br = au_sbr(dentry->d_sb, bindex);
 +	h_path.dentry = h_parent;
 +	h_path.mnt = au_br_mnt(br);
-+	h_userns = au_br_userns(br);
++	h_idmap = au_br_idmap(br);
 +	wh_able = !!au_br_whable(br->br_perm);
 +	if (wh_able)
-+		wh_found = au_wh_test(h_userns, &h_path, &args->whname,
++		wh_found = au_wh_test(h_idmap, &h_path, &args->whname,
 +				      ignore_perm);
 +	h_dentry = ERR_PTR(wh_found);
 +	if (!wh_found)
@@ -7620,7 +7622,7 @@ index 000000000000..8beb43ddc373
 +	if (!ignore_perm)
 +		h_dentry = vfsub_lkup_one(args->name, &h_path);
 +	else
-+		h_dentry = au_sio_lkup_one(h_userns, args->name, &h_path);
++		h_dentry = au_sio_lkup_one(h_idmap, args->name, &h_path);
 +	if (IS_ERR(h_dentry)) {
 +		if (PTR_ERR(h_dentry) == -ENAMETOOLONG
 +		    && !allow_neg)
@@ -7656,7 +7658,7 @@ index 000000000000..8beb43ddc373
 +
 +	h_path.dentry = h_dentry;
 +	inode_lock_shared_nested(h_inode, AuLsc_I_CHILD);
-+	opq = au_diropq_test(h_userns, &h_path);
++	opq = au_diropq_test(h_idmap, &h_path);
 +	inode_unlock_shared(h_inode);
 +	if (opq > 0)
 +		au_set_dbdiropq(dentry, bindex);
@@ -7801,13 +7803,13 @@ index 000000000000..8beb43ddc373
 +	return err;
 +}
 +
-+struct dentry *au_sio_lkup_one(struct user_namespace *userns, struct qstr *name,
++struct dentry *au_sio_lkup_one(struct mnt_idmap *idmap, struct qstr *name,
 +			       struct path *ppath)
 +{
 +	struct dentry *dentry;
 +	int wkq_err;
 +
-+	if (!au_test_h_perm_sio(userns, d_inode(ppath->dentry), MAY_EXEC))
++	if (!au_test_h_perm_sio(idmap, d_inode(ppath->dentry), MAY_EXEC))
 +		dentry = vfsub_lkup_one(name, ppath);
 +	else {
 +		struct vfsub_lkup_one_args args = {
@@ -7832,18 +7834,18 @@ index 000000000000..8beb43ddc373
 +	int err;
 +	struct dentry *parent, *h_dentry;
 +	struct au_branch *br;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +	struct path h_ppath;
 +
 +	parent = dget_parent(dentry);
 +	br = au_sbr(dentry->d_sb, bindex);
 +	h_ppath.dentry = au_h_dptr(parent, bindex);
 +	h_ppath.mnt = au_br_mnt(br);
-+	h_userns = au_br_userns(br);
++	h_idmap = au_br_idmap(br);
 +	if (wh)
 +		h_dentry = au_whtmp_lkup(h_ppath.dentry, br, &dentry->d_name);
 +	else
-+		h_dentry = au_sio_lkup_one(h_userns, &dentry->d_name, &h_ppath);
++		h_dentry = au_sio_lkup_one(h_idmap, &dentry->d_name, &h_ppath);
 +	err = PTR_ERR(h_dentry);
 +	if (IS_ERR(h_dentry))
 +		goto out;
@@ -8721,7 +8723,7 @@ index 000000000000..8beb43ddc373
 +};
 diff --git a/fs/aufs/dentry.h b/fs/aufs/dentry.h
 new file mode 100644
-index 000000000000..57e021971235
+index 000000000000..da4c9063d7e1
 --- /dev/null
 +++ b/fs/aufs/dentry.h
 @@ -0,0 +1,270 @@
@@ -8801,7 +8803,7 @@ index 000000000000..57e021971235
 +/* dentry.c */
 +extern const struct dentry_operations aufs_dop, aufs_dop_noreval;
 +struct au_branch;
-+struct dentry *au_sio_lkup_one(struct user_namespace *userns, struct qstr *name,
++struct dentry *au_sio_lkup_one(struct mnt_idmap *idmap, struct qstr *name,
 +			       struct path *ppath);
 +int au_h_verify(struct dentry *h_dentry, unsigned int udba, struct inode *h_dir,
 +		struct dentry *h_parent, struct au_branch *br);
@@ -9558,7 +9560,7 @@ index 000000000000..bf4a94414309
 +}
 diff --git a/fs/aufs/dir.c b/fs/aufs/dir.c
 new file mode 100644
-index 000000000000..3b6a7e918817
+index 000000000000..ee900ea3264b
 --- /dev/null
 +++ b/fs/aufs/dir.c
 @@ -0,0 +1,765 @@
@@ -10201,14 +10203,14 @@ index 000000000000..3b6a7e918817
 +	int err, wkq_err;
 +	struct dentry *h_dentry;
 +	struct inode *h_inode;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
-+	h_userns = au_sbr_userns(dentry->d_sb, arg->bindex);
++	h_idmap = au_sbr_idmap(dentry->d_sb, arg->bindex);
 +	h_dentry = au_h_dptr(dentry, arg->bindex);
 +	h_inode = d_inode(h_dentry);
 +	/* todo: i_mode changes anytime? */
 +	inode_lock_shared_nested(h_inode, AuLsc_I_CHILD);
-+	err = au_test_h_perm_sio(h_userns, h_inode, MAY_EXEC | MAY_READ);
++	err = au_test_h_perm_sio(h_idmap, h_inode, MAY_EXEC | MAY_READ);
 +	inode_unlock_shared(h_inode);
 +	if (!err)
 +		err = do_test_empty(dentry, arg);
@@ -18623,10 +18625,10 @@ index 000000000000..8ca8c98d40a3
 +}
 diff --git a/fs/aufs/i_op.c b/fs/aufs/i_op.c
 new file mode 100644
-index 000000000000..a2416992a593
+index 000000000000..141620c2e0bd
 --- /dev/null
 +++ b/fs/aufs/i_op.c
-@@ -0,0 +1,1512 @@
+@@ -0,0 +1,1517 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2005-2022 Junjiro R. Okajima
@@ -18650,6 +18652,7 @@ index 000000000000..a2416992a593
 + */
 +
 +#include <linux/device_cgroup.h>
++#include <linux/filelock.h>
 +#include <linux/fs_stack.h>
 +#include <linux/iversion.h>
 +#include <linux/security.h>
@@ -18660,7 +18663,7 @@ index 000000000000..a2416992a593
 +{
 +	int err;
 +	const unsigned char write_mask = !!(mask & (MAY_WRITE | MAY_APPEND));
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
 +	err = -EPERM;
 +	if (write_mask && IS_IMMUTABLE(h_inode))
@@ -18680,21 +18683,22 @@ index 000000000000..a2416992a593
 +	 * - nfs always sets SB_POSIXACL regardless its mount option 'noacl.'
 +	 *   in this case, generic_permission() returns -EOPNOTSUPP.
 +	 */
-+	h_userns = mnt_user_ns(h_path->mnt);
++	h_idmap = mnt_idmap(h_path->mnt);
 +	if ((write_mask && !au_br_writable(brperm))
 +	    || (au_test_nfs(h_inode->i_sb) && S_ISDIR(h_inode->i_mode)
 +		&& write_mask && !(mask & MAY_READ))
 +	    || !h_inode->i_op->permission) {
 +		/* AuLabel(generic_permission); */
-+		/* AuDbg("get_acl %ps\n", h_inode->i_op->get_acl); */
-+		err = generic_permission(h_userns, h_inode, mask);
++		/* AuDbg("get_inode_acl %ps\n",
++		   h_inode->i_op->get_inode_acl); */
++		err = generic_permission(h_idmap, h_inode, mask);
 +		if (err == -EOPNOTSUPP && au_test_nfs_noacl(h_inode))
-+			err = h_inode->i_op->permission(h_userns, h_inode,
++			err = h_inode->i_op->permission(h_idmap, h_inode,
 +							mask);
 +		AuTraceErr(err);
 +	} else {
 +		/* AuLabel(h_inode->permission); */
-+		err = h_inode->i_op->permission(h_userns, h_inode, mask);
++		err = h_inode->i_op->permission(h_idmap, h_inode, mask);
 +		AuTraceErr(err);
 +	}
 +
@@ -18707,7 +18711,7 @@ index 000000000000..a2416992a593
 +	return err;
 +}
 +
-+static int aufs_permission(struct user_namespace *userns, struct inode *inode,
++static int aufs_permission(struct mnt_idmap *idmap, struct inode *inode,
 +			   int mask)
 +{
 +	int err;
@@ -19556,7 +19560,7 @@ index 000000000000..a2416992a593
 +	return err;
 +}
 +
-+static int aufs_setattr(struct user_namespace *userns, struct dentry *dentry,
++static int aufs_setattr(struct mnt_idmap *idmap, struct dentry *dentry,
 +			struct iattr *ia)
 +{
 +	int err;
@@ -19564,12 +19568,12 @@ index 000000000000..a2416992a593
 +	struct super_block *sb;
 +	struct file *file;
 +	struct au_icpup_args *a;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
 +	inode = d_inode(dentry);
 +	IMustLock(inode);
 +
-+	err = setattr_prepare(userns, dentry, ia);
++	err = setattr_prepare(idmap, dentry, ia);
 +	if (unlikely(err))
 +		goto out;
 +
@@ -19663,8 +19667,8 @@ index 000000000000..a2416992a593
 +	 * why don't all acl-aware fs call this func from their ->setattr()?
 +	 */
 +	if (!err && (ia->ia_valid & ATTR_MODE)) {
-+		h_userns = mnt_user_ns(a->h_path.mnt);
-+		err = vfsub_acl_chmod(h_userns, a->h_inode, ia->ia_mode);
++		h_idmap = mnt_idmap(a->h_path.mnt);
++		err = vfsub_acl_chmod(h_idmap, a->h_path.dentry, ia->ia_mode);
 +	}
 +	if (!err)
 +		au_cpup_attr_changeable(inode);
@@ -19727,7 +19731,7 @@ index 000000000000..a2416992a593
 +	struct super_block *sb;
 +	struct au_icpup_args *a;
 +	struct inode *h_inode;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
 +	IMustLock(inode);
 +
@@ -19746,13 +19750,13 @@ index 000000000000..a2416992a593
 +	err = au_h_path_to_set_attr(dentry, a, &h_path);
 +	if (unlikely(err))
 +		goto out_di;
-+	h_userns = mnt_user_ns(h_path.mnt);
++	h_idmap = mnt_idmap(h_path.mnt);
 +
 +	inode_unlock(a->h_inode);
 +	switch (arg->type) {
 +	case AU_XATTR_SET:
 +		AuDebugOn(d_is_negative(h_path.dentry));
-+		err = vfsub_setxattr(h_userns, h_path.dentry,
++		err = vfsub_setxattr(h_idmap, h_path.dentry,
 +				     arg->u.set.name, arg->u.set.value,
 +				     arg->u.set.size, arg->u.set.flags);
 +		break;
@@ -19761,7 +19765,7 @@ index 000000000000..a2416992a593
 +		h_inode = d_inode(h_path.dentry);
 +		if (h_inode->i_op->set_acl) {
 +			/* this will call posix_acl_update_mode */
-+			err = h_inode->i_op->set_acl(h_userns, h_inode,
++			err = h_inode->i_op->set_acl(h_idmap, h_path.dentry,
 +						     arg->u.acl_set.acl,
 +						     arg->u.acl_set.type);
 +		}
@@ -19895,7 +19899,7 @@ index 000000000000..a2416992a593
 +	return err;
 +}
 +
-+static int aufs_getattr(struct user_namespace *userns, const struct path *path,
++static int aufs_getattr(struct mnt_idmap *idmap, const struct path *path,
 +			struct kstat *st, u32 request, unsigned int query)
 +{
 +	int err;
@@ -19933,7 +19937,7 @@ index 000000000000..a2416992a593
 +	goto out_di;
 +
 +out_fill:
-+	generic_fillattr(userns, inode, st);
++	generic_fillattr(idmap, inode, st);
 +out_di:
 +	di_read_unlock(dentry, AuLock_IR);
 +out_si:
@@ -20079,6 +20083,7 @@ index 000000000000..a2416992a593
 +	[AuIop_SYMLINK] = {
 +		.permission	= aufs_permission,
 +#ifdef CONFIG_FS_POSIX_ACL
++		.get_inode_acl	= aufs_get_inode_acl,
 +		.get_acl	= aufs_get_acl,
 +		.set_acl	= aufs_set_acl, /* unsupport for symlink? */
 +#endif
@@ -20107,6 +20112,7 @@ index 000000000000..a2416992a593
 +
 +		.permission	= aufs_permission,
 +#ifdef CONFIG_FS_POSIX_ACL
++		.get_inode_acl	= aufs_get_inode_acl,
 +		.get_acl	= aufs_get_acl,
 +		.set_acl	= aufs_set_acl,
 +#endif
@@ -20125,6 +20131,7 @@ index 000000000000..a2416992a593
 +	[AuIop_OTHER] = {
 +		.permission	= aufs_permission,
 +#ifdef CONFIG_FS_POSIX_ACL
++		.get_inode_acl	= aufs_get_inode_acl,
 +		.get_acl	= aufs_get_acl,
 +		.set_acl	= aufs_set_acl,
 +#endif
@@ -20141,7 +20148,7 @@ index 000000000000..a2416992a593
 +};
 diff --git a/fs/aufs/i_op_add.c b/fs/aufs/i_op_add.c
 new file mode 100644
-index 000000000000..65117c09a61c
+index 000000000000..6c6550ae1b7e
 --- /dev/null
 +++ b/fs/aufs/i_op_add.c
 @@ -0,0 +1,972 @@
@@ -20513,7 +20520,7 @@ index 000000000000..65117c09a61c
 +	return err;
 +}
 +
-+int aufs_mknod(struct user_namespace *userns, struct inode *dir,
++int aufs_mknod(struct mnt_idmap *idmap, struct inode *dir,
 +	       struct dentry *dentry, umode_t mode, dev_t dev)
 +{
 +	struct simple_arg arg = {
@@ -20526,7 +20533,7 @@ index 000000000000..65117c09a61c
 +	return add_simple(dir, dentry, &arg);
 +}
 +
-+int aufs_symlink(struct user_namespace *userns, struct inode *dir,
++int aufs_symlink(struct mnt_idmap *idmap, struct inode *dir,
 +		 struct dentry *dentry, const char *symname)
 +{
 +	struct simple_arg arg = {
@@ -20536,7 +20543,7 @@ index 000000000000..65117c09a61c
 +	return add_simple(dir, dentry, &arg);
 +}
 +
-+int aufs_create(struct user_namespace *userns, struct inode *dir,
++int aufs_create(struct mnt_idmap *idmap, struct inode *dir,
 +		struct dentry *dentry, umode_t mode, bool want_excl)
 +{
 +	struct simple_arg arg = {
@@ -20564,7 +20571,7 @@ index 000000000000..65117c09a61c
 +	return add_simple(dir, dentry, &arg);
 +}
 +
-+int aufs_tmpfile(struct user_namespace *userns, struct inode *dir,
++int aufs_tmpfile(struct mnt_idmap *idmap, struct inode *dir,
 +		 struct file *file, umode_t mode)
 +{
 +	int err;
@@ -20575,7 +20582,7 @@ index 000000000000..65117c09a61c
 +	struct dentry *dentry, *parent, *h_parent, *h_dentry;
 +	struct inode *h_dir, *inode;
 +	struct vfsmount *h_mnt;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +	struct file *h_file;
 +	struct au_wr_dir_args wr_dir_args = {
 +		.force_btgt	= -1,
@@ -20626,11 +20633,11 @@ index 000000000000..65117c09a61c
 +	if (unlikely(err))
 +		goto out_parent;
 +
-+	h_userns = mnt_user_ns(h_mnt);
++	h_idmap = mnt_idmap(h_mnt);
 +	h_parent = au_h_dptr(parent, bindex);
 +	h_ppath.mnt = h_mnt;
 +	h_ppath.dentry = h_parent;
-+	h_file = vfs_tmpfile_open(h_userns, &h_ppath, mode, /*open_flag*/0,
++	h_file = vfs_tmpfile_open(h_idmap, &h_ppath, mode, /*open_flag*/0,
 +				  current_cred());
 +	if (IS_ERR(h_file)) {
 +		err = PTR_ERR(h_file);
@@ -21009,7 +21016,7 @@ index 000000000000..65117c09a61c
 +	return err;
 +}
 +
-+int aufs_mkdir(struct user_namespace *userns, struct inode *dir,
++int aufs_mkdir(struct mnt_idmap *idmap, struct inode *dir,
 +	       struct dentry *dentry, umode_t mode)
 +{
 +	int err, rerr;
@@ -21119,7 +21126,7 @@ index 000000000000..65117c09a61c
 +}
 diff --git a/fs/aufs/i_op_del.c b/fs/aufs/i_op_del.c
 new file mode 100644
-index 000000000000..b59dc6d8d32d
+index 000000000000..d85f47cef29f
 --- /dev/null
 +++ b/fs/aufs/i_op_del.c
 @@ -0,0 +1,522 @@
@@ -21222,7 +21229,7 @@ index 000000000000..b59dc6d8d32d
 +	struct path h_ppath;
 +	struct super_block *sb;
 +	struct au_branch *br;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
 +	h_dentry = au_h_dptr(dentry, bindex);
 +	if (d_really_is_positive(dentry)) {
@@ -21262,15 +21269,15 @@ index 000000000000..b59dc6d8d32d
 +	err = -EACCES;
 +	sb = dentry->d_sb;
 +	br = au_sbr(sb, bindex);
-+	h_userns = au_br_userns(br);
++	h_idmap = au_br_idmap(br);
 +	if (unlikely(!au_opt_test(au_mntflags(sb), DIRPERM1)
-+		     && au_test_h_perm(h_userns, d_inode(h_parent),
++		     && au_test_h_perm(h_idmap, d_inode(h_parent),
 +				       MAY_EXEC | MAY_WRITE)))
 +		goto out;
 +
 +	h_ppath.dentry = h_parent;
 +	h_ppath.mnt = au_br_mnt(br);
-+	h_latest = au_sio_lkup_one(h_userns, &dentry->d_name, &h_ppath);
++	h_latest = au_sio_lkup_one(h_idmap, &dentry->d_name, &h_ppath);
 +	err = -EIO;
 +	if (IS_ERR(h_latest))
 +		goto out;
@@ -21647,7 +21654,7 @@ index 000000000000..b59dc6d8d32d
 +}
 diff --git a/fs/aufs/i_op_ren.c b/fs/aufs/i_op_ren.c
 new file mode 100644
-index 000000000000..72ee2a25030f
+index 000000000000..ab69a6ac9a42
 --- /dev/null
 +++ b/fs/aufs/i_op_ren.c
 @@ -0,0 +1,1257 @@
@@ -22612,7 +22619,7 @@ index 000000000000..72ee2a25030f
 +
 +/* ---------------------------------------------------------------------- */
 +
-+int aufs_rename(struct user_namespace *userns,
++int aufs_rename(struct mnt_idmap *idmap,
 +		struct inode *_src_dir, struct dentry *_src_dentry,
 +		struct inode *_dst_dir, struct dentry *_dst_dentry,
 +		unsigned int _flags)
@@ -23202,7 +23209,7 @@ index 000000000000..0d3a2487643b
 +}
 diff --git a/fs/aufs/inode.c b/fs/aufs/inode.c
 new file mode 100644
-index 000000000000..a3eec8840b7b
+index 000000000000..7dbf6a6f2fee
 --- /dev/null
 +++ b/fs/aufs/inode.c
 @@ -0,0 +1,531 @@
@@ -23482,7 +23489,7 @@ index 000000000000..a3eec8840b7b
 +	}
 +	au_cpup_attr_all(inode, /*force*/1);
 +	/*
-+	 * to force calling aufs_get_acl() every time,
++	 * to force calling aufs_get_inode_acl() every time,
 +	 * do not call cache_no_acl() for aufs inode.
 +	 */
 +
@@ -23720,29 +23727,29 @@ index 000000000000..a3eec8840b7b
 +	return err;
 +}
 +
-+int au_test_h_perm(struct user_namespace *h_userns, struct inode *h_inode,
++int au_test_h_perm(struct mnt_idmap *h_idmap, struct inode *h_inode,
 +		   int mask)
 +{
 +	if (uid_eq(current_fsuid(), GLOBAL_ROOT_UID))
 +		return 0;
-+	return inode_permission(h_userns, h_inode, mask);
++	return inode_permission(h_idmap, h_inode, mask);
 +}
 +
-+int au_test_h_perm_sio(struct user_namespace *h_userns, struct inode *h_inode,
++int au_test_h_perm_sio(struct mnt_idmap *h_idmap, struct inode *h_inode,
 +		       int mask)
 +{
 +	if (au_test_nfs(h_inode->i_sb)
 +	    && (mask & MAY_WRITE)
 +	    && S_ISDIR(h_inode->i_mode))
 +		mask |= MAY_READ; /* force permission check */
-+	return au_test_h_perm(h_userns, h_inode, mask);
++	return au_test_h_perm(h_idmap, h_inode, mask);
 +}
 diff --git a/fs/aufs/inode.h b/fs/aufs/inode.h
 new file mode 100644
-index 000000000000..e430ea1bd72e
+index 000000000000..76c3bd49674a
 --- /dev/null
 +++ b/fs/aufs/inode.h
-@@ -0,0 +1,705 @@
+@@ -0,0 +1,707 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Copyright (C) 2005-2022 Junjiro R. Okajima
@@ -23882,9 +23889,9 @@ index 000000000000..e430ea1bd72e
 +struct inode *au_new_inode(struct dentry *dentry, int must_new);
 +int au_test_ro(struct super_block *sb, aufs_bindex_t bindex,
 +	       struct inode *inode);
-+int au_test_h_perm(struct user_namespace *h_userns, struct inode *h_inode,
++int au_test_h_perm(struct mnt_idmap *h_idmap, struct inode *h_inode,
 +		   int mask);
-+int au_test_h_perm_sio(struct user_namespace *h_userns, struct inode *h_inode,
++int au_test_h_perm_sio(struct mnt_idmap *h_idmap, struct inode *h_inode,
 +		       int mask);
 +
 +static inline int au_wh_ino(struct super_block *sb, aufs_bindex_t bindex,
@@ -23960,20 +23967,20 @@ index 000000000000..e430ea1bd72e
 +/* i_op_add.c */
 +int au_may_add(struct dentry *dentry, aufs_bindex_t bindex,
 +	       struct dentry *h_parent, int isdir);
-+int aufs_mknod(struct user_namespace *userns, struct inode *dir,
++int aufs_mknod(struct mnt_idmap *idmap, struct inode *dir,
 +	       struct dentry *dentry, umode_t mode, dev_t dev);
-+int aufs_symlink(struct user_namespace *userns, struct inode *dir,
++int aufs_symlink(struct mnt_idmap *idmap, struct inode *dir,
 +		 struct dentry *dentry, const char *symname);
-+int aufs_create(struct user_namespace *userns, struct inode *dir,
++int aufs_create(struct mnt_idmap *idmap, struct inode *dir,
 +		struct dentry *dentry, umode_t mode, bool want_excl);
 +struct vfsub_aopen_args;
 +int au_aopen_or_create(struct inode *dir, struct dentry *dentry,
 +		       struct vfsub_aopen_args *args);
-+int aufs_tmpfile(struct user_namespace *userns, struct inode *dir,
++int aufs_tmpfile(struct mnt_idmap *idmap, struct inode *dir,
 +		 struct file *file, umode_t mode);
 +int aufs_link(struct dentry *src_dentry, struct inode *dir,
 +	      struct dentry *dentry);
-+int aufs_mkdir(struct user_namespace *userns, struct inode *dir,
++int aufs_mkdir(struct mnt_idmap *idmap, struct inode *dir,
 +	       struct dentry *dentry, umode_t mode);
 +
 +/* i_op_del.c */
@@ -23985,7 +23992,7 @@ index 000000000000..e430ea1bd72e
 +
 +/* i_op_ren.c */
 +int au_wbr(struct dentry *dentry, aufs_bindex_t btgt);
-+int aufs_rename(struct user_namespace *userns,
++int aufs_rename(struct mnt_idmap *idmap,
 +		struct inode *_src_dir, struct dentry *_src_dentry,
 +		struct inode *_dst_dir, struct dentry *_dst_dentry,
 +		unsigned int _flags);
@@ -24069,8 +24076,10 @@ index 000000000000..e430ea1bd72e
 +#endif
 +
 +#ifdef CONFIG_FS_POSIX_ACL
-+struct posix_acl *aufs_get_acl(struct inode *inode, int type, bool rcu);
-+int aufs_set_acl(struct user_namespace *userns, struct inode *inode,
++struct posix_acl *aufs_get_inode_acl(struct inode *inode, int type, bool rcu);
++struct posix_acl *aufs_get_acl(struct mnt_idmap *idmap,
++			       struct dentry *dentry, int type);
++int aufs_set_acl(struct mnt_idmap *idmap, struct dentry *dentry,
 +		 struct posix_acl *acl, int type);
 +#endif
 +
@@ -28183,10 +28192,10 @@ index 000000000000..83defa454c8e
 +}
 diff --git a/fs/aufs/posix_acl.c b/fs/aufs/posix_acl.c
 new file mode 100644
-index 000000000000..f4171169b83c
+index 000000000000..03742bcc6603
 --- /dev/null
 +++ b/fs/aufs/posix_acl.c
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,108 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2014-2022 Junjiro R. Okajima
@@ -28212,7 +28221,7 @@ index 000000000000..f4171169b83c
 +#include <linux/fs.h>
 +#include "aufs.h"
 +
-+struct posix_acl *aufs_get_acl(struct inode *inode, int type, bool rcu)
++struct posix_acl *aufs_get_inode_acl(struct inode *inode, int type, bool rcu)
 +{
 +	struct posix_acl *acl;
 +	int err;
@@ -28242,7 +28251,7 @@ index 000000000000..f4171169b83c
 +	}
 +
 +	/* always topmost only */
-+	acl = get_acl(h_inode, type);
++	acl = get_inode_acl(h_inode, type);
 +	if (IS_ERR(acl))
 +		forget_cached_acl(inode, type);
 +	else
@@ -28257,12 +28266,24 @@ index 000000000000..f4171169b83c
 +	return acl;
 +}
 +
-+int aufs_set_acl(struct user_namespace *userns, struct inode *inode,
++struct posix_acl *aufs_get_acl(struct mnt_idmap *idmap,
++			       struct dentry *dentry, int type)
++{
++	struct posix_acl *acl;
++	struct inode *inode;
++
++	inode = d_inode(dentry);
++	acl = aufs_get_inode_acl(inode, type, /*rcu*/false);
++
++	return acl;
++}
++
++int aufs_set_acl(struct mnt_idmap *idmap, struct dentry *dentry,
 +		 struct posix_acl *acl, int type)
 +{
 +	int err;
 +	ssize_t ssz;
-+	struct dentry *dentry;
++	struct inode *inode;
 +	struct au_sxattr arg = {
 +		.type = AU_ACL_SET,
 +		.u.acl_set = {
@@ -28271,31 +28292,16 @@ index 000000000000..f4171169b83c
 +		},
 +	};
 +
++	inode = d_inode(dentry);
 +	IMustLock(inode);
-+
-+	if (inode->i_ino == AUFS_ROOT_INO)
-+		dentry = dget(inode->i_sb->s_root);
-+	else {
-+		dentry = d_find_alias(inode);
-+		if (!dentry)
-+			dentry = d_find_any_alias(inode);
-+		if (!dentry) {
-+			pr_warn("cannot handle this inode, "
-+				"please report to aufs-users ML\n");
-+			err = -ENOENT;
-+			goto out;
-+		}
-+	}
 +
 +	ssz = au_sxattr(dentry, inode, &arg);
 +	/* forget even it if succeeds since the branch might set differently */
 +	forget_cached_acl(inode, type);
-+	dput(dentry);
 +	err = ssz;
 +	if (ssz >= 0)
 +		err = 0;
 +
-+out:
 +	return err;
 +}
 diff --git a/fs/aufs/procfs.c b/fs/aufs/procfs.c
@@ -32399,7 +32405,7 @@ index 000000000000..fdf7644049c5
 +}
 diff --git a/fs/aufs/vfsub.c b/fs/aufs/vfsub.c
 new file mode 100644
-index 000000000000..0dd02a5d102d
+index 000000000000..bb5123ad9269
 --- /dev/null
 +++ b/fs/aufs/vfsub.c
 @@ -0,0 +1,918 @@
@@ -32653,7 +32659,7 @@ index 000000000000..0dd02a5d102d
 +{
 +	int err;
 +	struct dentry *d;
-+	struct user_namespace *userns;
++	struct mnt_idmap *idmap;
 +
 +	IMustLock(dir);
 +
@@ -32663,10 +32669,10 @@ index 000000000000..0dd02a5d102d
 +	path->dentry = d;
 +	if (unlikely(err))
 +		goto out;
-+	userns = mnt_user_ns(path->mnt);
++	idmap = mnt_idmap(path->mnt);
 +
 +	lockdep_off();
-+	err = vfs_create(userns, dir, path->dentry, mode, want_excl);
++	err = vfs_create(idmap, dir, path->dentry, mode, want_excl);
 +	lockdep_on();
 +	if (!err) {
 +		struct path tmp = *path;
@@ -32688,7 +32694,7 @@ index 000000000000..0dd02a5d102d
 +{
 +	int err;
 +	struct dentry *d;
-+	struct user_namespace *userns;
++	struct mnt_idmap *idmap;
 +
 +	IMustLock(dir);
 +
@@ -32698,10 +32704,10 @@ index 000000000000..0dd02a5d102d
 +	path->dentry = d;
 +	if (unlikely(err))
 +		goto out;
-+	userns = mnt_user_ns(path->mnt);
++	idmap = mnt_idmap(path->mnt);
 +
 +	lockdep_off();
-+	err = vfs_symlink(userns, dir, path->dentry, symname);
++	err = vfs_symlink(idmap, dir, path->dentry, symname);
 +	lockdep_on();
 +	if (!err) {
 +		struct path tmp = *path;
@@ -32723,7 +32729,7 @@ index 000000000000..0dd02a5d102d
 +{
 +	int err;
 +	struct dentry *d;
-+	struct user_namespace *userns;
++	struct mnt_idmap *idmap;
 +
 +	IMustLock(dir);
 +
@@ -32733,10 +32739,10 @@ index 000000000000..0dd02a5d102d
 +	path->dentry = d;
 +	if (unlikely(err))
 +		goto out;
-+	userns = mnt_user_ns(path->mnt);
++	idmap = mnt_idmap(path->mnt);
 +
 +	lockdep_off();
-+	err = vfs_mknod(userns, dir, path->dentry, mode, dev);
++	err = vfs_mknod(idmap, dir, path->dentry, mode, dev);
 +	lockdep_on();
 +	if (!err) {
 +		struct path tmp = *path;
@@ -32769,7 +32775,7 @@ index 000000000000..0dd02a5d102d
 +{
 +	int err;
 +	struct dentry *d;
-+	struct user_namespace *userns;
++	struct mnt_idmap *idmap;
 +
 +	IMustLock(dir);
 +
@@ -32784,10 +32790,10 @@ index 000000000000..0dd02a5d102d
 +	path->dentry = d;
 +	if (unlikely(err))
 +		goto out;
-+	userns = mnt_user_ns(path->mnt);
++	idmap = mnt_idmap(path->mnt);
 +
 +	lockdep_off();
-+	err = vfs_link(src_dentry, userns, dir, path->dentry, delegated_inode);
++	err = vfs_link(src_dentry, idmap, dir, path->dentry, delegated_inode);
 +	lockdep_on();
 +	if (!err) {
 +		struct path tmp = *path;
@@ -32830,10 +32836,10 @@ index 000000000000..0dd02a5d102d
 +	if (unlikely(err))
 +		goto out;
 +
-+	rd.old_mnt_userns = mnt_user_ns(path->mnt);
++	rd.old_mnt_idmap = mnt_idmap(path->mnt);
 +	rd.old_dir = src_dir;
 +	rd.old_dentry = src_dentry;
-+	rd.new_mnt_userns = rd.old_mnt_userns;
++	rd.new_mnt_idmap = rd.old_mnt_idmap;
 +	rd.new_dir = dir;
 +	rd.new_dentry = path->dentry;
 +	rd.delegated_inode = delegated_inode;
@@ -32863,7 +32869,7 @@ index 000000000000..0dd02a5d102d
 +{
 +	int err;
 +	struct dentry *d;
-+	struct user_namespace *userns;
++	struct mnt_idmap *idmap;
 +
 +	IMustLock(dir);
 +
@@ -32873,10 +32879,10 @@ index 000000000000..0dd02a5d102d
 +	path->dentry = d;
 +	if (unlikely(err))
 +		goto out;
-+	userns = mnt_user_ns(path->mnt);
++	idmap = mnt_idmap(path->mnt);
 +
 +	lockdep_off();
-+	err = vfs_mkdir(userns, dir, path->dentry, mode);
++	err = vfs_mkdir(idmap, dir, path->dentry, mode);
 +	lockdep_on();
 +	if (!err) {
 +		struct path tmp = *path;
@@ -32898,7 +32904,7 @@ index 000000000000..0dd02a5d102d
 +{
 +	int err;
 +	struct dentry *d;
-+	struct user_namespace *userns;
++	struct mnt_idmap *idmap;
 +
 +	IMustLock(dir);
 +
@@ -32908,10 +32914,10 @@ index 000000000000..0dd02a5d102d
 +	path->dentry = d;
 +	if (unlikely(err))
 +		goto out;
-+	userns = mnt_user_ns(path->mnt);
++	idmap = mnt_idmap(path->mnt);
 +
 +	lockdep_off();
-+	err = vfs_rmdir(userns, dir, path->dentry);
++	err = vfs_rmdir(idmap, dir, path->dentry);
 +	lockdep_on();
 +	if (!err) {
 +		struct path tmp = {
@@ -33069,7 +33075,7 @@ index 000000000000..0dd02a5d102d
 +	int err;
 +	struct inode *h_inode;
 +	struct super_block *h_sb;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
 +	if (!h_file) {
 +		err = vfsub_truncate(h_path, length);
@@ -33081,11 +33087,11 @@ index 000000000000..0dd02a5d102d
 +	lockdep_off();
 +	sb_start_write(h_sb);
 +	lockdep_on();
-+	err = security_path_truncate(h_path);
++	err = security_file_truncate(h_file);
 +	if (!err) {
-+		h_userns = mnt_user_ns(h_path->mnt);
++		h_idmap = mnt_idmap(h_path->mnt);
 +		lockdep_off();
-+		err = do_truncate(h_userns, h_path->dentry, length, attr,
++		err = do_truncate(h_idmap, h_path->dentry, length, attr,
 +				  h_file);
 +		lockdep_on();
 +	}
@@ -33115,10 +33121,10 @@ index 000000000000..0dd02a5d102d
 +int vfsub_sio_mkdir(struct inode *dir, struct path *path, int mode)
 +{
 +	int err, do_sio, wkq_err;
-+	struct user_namespace *userns;
++	struct mnt_idmap *idmap;
 +
-+	userns = mnt_user_ns(path->mnt);
-+	do_sio = au_test_h_perm_sio(userns, dir, MAY_EXEC | MAY_WRITE);
++	idmap = mnt_idmap(path->mnt);
++	do_sio = au_test_h_perm_sio(idmap, dir, MAY_EXEC | MAY_WRITE);
 +	if (!do_sio) {
 +		lockdep_off();
 +		err = vfsub_mkdir(dir, path, mode);
@@ -33153,10 +33159,10 @@ index 000000000000..0dd02a5d102d
 +int vfsub_sio_rmdir(struct inode *dir, struct path *path)
 +{
 +	int err, do_sio, wkq_err;
-+	struct user_namespace *userns;
++	struct mnt_idmap *idmap;
 +
-+	userns = mnt_user_ns(path->mnt);
-+	do_sio = au_test_h_perm_sio(userns, dir, MAY_EXEC | MAY_WRITE);
++	idmap = mnt_idmap(path->mnt);
++	do_sio = au_test_h_perm_sio(idmap, dir, MAY_EXEC | MAY_WRITE);
 +	if (!do_sio) {
 +		lockdep_off();
 +		err = vfsub_rmdir(dir, path);
@@ -33188,16 +33194,16 @@ index 000000000000..0dd02a5d102d
 +{
 +	struct notify_change_args *a = args;
 +	struct inode *h_inode;
-+	struct user_namespace *userns;
++	struct mnt_idmap *idmap;
 +
 +	h_inode = d_inode(a->path->dentry);
 +	IMustLock(h_inode);
 +
 +	*a->errp = -EPERM;
 +	if (!IS_IMMUTABLE(h_inode) && !IS_APPEND(h_inode)) {
-+		userns = mnt_user_ns(a->path->mnt);
++		idmap = mnt_idmap(a->path->mnt);
 +		lockdep_off();
-+		*a->errp = notify_change(userns, a->path->dentry, a->ia,
++		*a->errp = notify_change(idmap, a->path->dentry, a->ia,
 +					 a->delegated_inode);
 +		lockdep_on();
 +		if (!*a->errp)
@@ -33254,7 +33260,7 @@ index 000000000000..0dd02a5d102d
 +	struct unlink_args *a = args;
 +	struct dentry *d = a->path->dentry;
 +	struct inode *h_inode;
-+	struct user_namespace *userns;
++	struct mnt_idmap *idmap;
 +	const int stop_sillyrename = (au_test_nfs(d->d_sb)
 +				      && au_dcount(d) == 1);
 +
@@ -33274,9 +33280,9 @@ index 000000000000..0dd02a5d102d
 +		ihold(h_inode);
 +	}
 +
-+	userns = mnt_user_ns(a->path->mnt);
++	idmap = mnt_idmap(a->path->mnt);
 +	lockdep_off();
-+	*a->errp = vfs_unlink(userns, a->dir, d, a->delegated_inode);
++	*a->errp = vfs_unlink(idmap, a->dir, d, a->delegated_inode);
 +	lockdep_on();
 +	if (!*a->errp) {
 +		struct path tmp = {
@@ -33323,10 +33329,10 @@ index 000000000000..0dd02a5d102d
 +}
 diff --git a/fs/aufs/vfsub.h b/fs/aufs/vfsub.h
 new file mode 100644
-index 000000000000..75a59ef59338
+index 000000000000..c87fdb49d3a7
 --- /dev/null
 +++ b/fs/aufs/vfsub.h
-@@ -0,0 +1,358 @@
+@@ -0,0 +1,390 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Copyright (C) 2005-2022 Junjiro R. Okajima
@@ -33563,19 +33569,19 @@ index 000000000000..75a59ef59338
 +}
 +
 +#ifdef CONFIG_FS_POSIX_ACL
-+static inline int vfsub_acl_chmod(struct user_namespace *h_userns,
-+				  struct inode *h_inode, umode_t h_mode)
++static inline int vfsub_acl_chmod(struct mnt_idmap *h_idmap,
++				  struct dentry *h_dentry, umode_t h_mode)
 +{
 +	int err;
 +
-+	err = posix_acl_chmod(h_userns, h_inode, h_mode);
++	err = posix_acl_chmod(h_idmap, h_dentry, h_mode);
 +	if (err == -EOPNOTSUPP)
 +		err = 0;
 +	return err;
 +}
 +#else
-+AuStubInt0(vfsub_acl_chmod, struct user_namespace *h_userns,
-+	   struct inode *h_inode, umode_t h_mode);
++AuStubInt0(vfsub_acl_chmod, struct mnt_idmap *h_idmap,
++	   struct dentry *h_dentry, umode_t h_mode);
 +#endif
 +
 +long vfsub_splice_to(struct file *in, loff_t *ppos,
@@ -33658,30 +33664,62 @@ index 000000000000..75a59ef59338
 +
 +/* ---------------------------------------------------------------------- */
 +
-+static inline int vfsub_setxattr(struct user_namespace *userns,
++static inline int vfsub_setxattr(struct mnt_idmap *idmap,
 +				 struct dentry *dentry, const char *name,
 +				 const void *value, size_t size, int flags)
 +{
 +	int err;
 +
 +	lockdep_off();
-+	err = vfs_setxattr(userns, dentry, name, value, size, flags);
++	err = vfs_setxattr(idmap, dentry, name, value, size, flags);
 +	lockdep_on();
 +
 +	return err;
 +}
 +
-+static inline int vfsub_removexattr(struct user_namespace *userns,
++static inline int vfsub_removexattr(struct mnt_idmap *idmap,
 +				    struct dentry *dentry, const char *name)
 +{
 +	int err;
 +
 +	lockdep_off();
-+	err = vfs_removexattr(userns, dentry, name);
++	err = vfs_removexattr(idmap, dentry, name);
 +	lockdep_on();
 +
 +	return err;
 +}
++
++#ifdef CONFIG_FS_POSIX_ACL
++static inline int vfsub_set_acl(struct mnt_idmap *idmap,
++				struct dentry *dentry, const char *name,
++				struct posix_acl *acl)
++{
++	int err;
++
++	lockdep_off();
++	err = vfs_set_acl(idmap, dentry, name, acl);
++	lockdep_on();
++
++	return err;
++}
++
++static inline int vfsub_remove_acl(struct mnt_idmap *idmap,
++				   struct dentry *dentry, const char *name)
++{
++	int err;
++
++	lockdep_off();
++	err = vfs_remove_acl(idmap, dentry, name);
++	lockdep_on();
++
++	return err;
++}
++#else
++AuStubInt0(vfsub_set_acl, struct mnt_idmap *idmap, struct dentry *dentry,
++	   const char *name, struct posix_acl *acl);
++AuStubInt0(vfsub_remove_acl, struct mnt_idmap *idmap,
++	   struct dentry *dentry, const char *name);
++#endif
 +
 +#endif /* __KERNEL__ */
 +#endif /* __AUFS_VFSUB_H__ */
@@ -34523,7 +34561,7 @@ index 000000000000..c726f96b7bd5
 +};
 diff --git a/fs/aufs/whout.c b/fs/aufs/whout.c
 new file mode 100644
-index 000000000000..bd64c6e3dfcf
+index 000000000000..7bd0392eeb87
 --- /dev/null
 +++ b/fs/aufs/whout.c
 @@ -0,0 +1,1072 @@
@@ -34593,7 +34631,7 @@ index 000000000000..bd64c6e3dfcf
 + * test if the @wh_name exists under @h_ppath.
 + * @try_sio specifies the necessary of super-io.
 + */
-+int au_wh_test(struct user_namespace *h_userns, struct path *h_ppath,
++int au_wh_test(struct mnt_idmap *h_idmap, struct path *h_ppath,
 +	       struct qstr *wh_name, int try_sio)
 +{
 +	int err;
@@ -34602,7 +34640,7 @@ index 000000000000..bd64c6e3dfcf
 +	if (!try_sio)
 +		wh_dentry = vfsub_lkup_one(wh_name, h_ppath);
 +	else
-+		wh_dentry = au_sio_lkup_one(h_userns, wh_name, h_ppath);
++		wh_dentry = au_sio_lkup_one(h_idmap, wh_name, h_ppath);
 +	err = PTR_ERR(wh_dentry);
 +	if (IS_ERR(wh_dentry)) {
 +		if (err == -ENAMETOOLONG)
@@ -34631,14 +34669,14 @@ index 000000000000..bd64c6e3dfcf
 +/*
 + * test if the @h_path->dentry sets opaque or not.
 + */
-+int au_diropq_test(struct user_namespace *h_userns, struct path *h_path)
++int au_diropq_test(struct mnt_idmap *h_idmap, struct path *h_path)
 +{
 +	int err;
 +	struct inode *h_dir;
 +
 +	h_dir = d_inode(h_path->dentry);
-+	err = au_wh_test(h_userns, h_path, &diropq_name,
-+			 au_test_h_perm_sio(h_userns, h_dir, MAY_EXEC));
++	err = au_wh_test(h_idmap, h_path, &diropq_name,
++			 au_test_h_perm_sio(h_idmap, h_dir, MAY_EXEC));
 +	return err;
 +}
 +
@@ -34656,7 +34694,7 @@ index 000000000000..bd64c6e3dfcf
 +	static unsigned short cnt;
 +	struct qstr qs;
 +	struct path h_ppath;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
 +	BUILD_BUG_ON(sizeof(cnt) * 2 > AUFS_WH_TMP_LEN);
 +
@@ -34682,11 +34720,11 @@ index 000000000000..bd64c6e3dfcf
 +
 +	h_ppath.dentry = h_parent;
 +	h_ppath.mnt = au_br_mnt(br);
-+	h_userns = au_br_userns(br);
++	h_idmap = au_br_idmap(br);
 +	qs.name = name;
 +	for (i = 0; i < 3; i++) {
 +		sprintf(p, "%.*x", AUFS_WH_TMP_LEN, cnt++);
-+		dentry = au_sio_lkup_one(h_userns, &qs, &h_ppath);
++		dentry = au_sio_lkup_one(h_idmap, &qs, &h_ppath);
 +		if (IS_ERR(dentry) || d_is_negative(dentry))
 +			goto out_name;
 +		dput(dentry);
@@ -35283,11 +35321,11 @@ index 000000000000..bd64c6e3dfcf
 +			     unsigned int flags)
 +{
 +	struct dentry *diropq, *h_dentry;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
-+	h_userns = au_sbr_userns(dentry->d_sb, bindex);
++	h_idmap = au_sbr_idmap(dentry->d_sb, bindex);
 +	h_dentry = au_h_dptr(dentry, bindex);
-+	if (!au_test_h_perm_sio(h_userns, d_inode(h_dentry),
++	if (!au_test_h_perm_sio(h_idmap, d_inode(h_dentry),
 +				MAY_EXEC | MAY_WRITE))
 +		diropq = do_diropq(dentry, bindex, flags);
 +	else {
@@ -35476,7 +35514,7 @@ index 000000000000..bd64c6e3dfcf
 +	struct path wh_path;
 +	struct inode *wh_inode, *h_dir;
 +	struct au_branch *br;
-+	struct user_namespace *h_userns;
++	struct mnt_idmap *h_idmap;
 +
 +	h_dir = d_inode(wh_dentry->d_parent); /* dir inode is locked */
 +	IMustLock(h_dir);
@@ -35484,7 +35522,7 @@ index 000000000000..bd64c6e3dfcf
 +	br = au_sbr(dir->i_sb, bindex);
 +	wh_path.dentry = wh_dentry;
 +	wh_path.mnt = au_br_mnt(br);
-+	h_userns = au_br_userns(br);
++	h_idmap = au_br_idmap(br);
 +	wh_inode = d_inode(wh_dentry);
 +	inode_lock_nested(wh_inode, AuLsc_I_CHILD);
 +
@@ -35492,7 +35530,7 @@ index 000000000000..bd64c6e3dfcf
 +	 * someone else might change some whiteouts while we were sleeping.
 +	 * it means this whlist may have an obsoleted entry.
 +	 */
-+	if (!au_test_h_perm_sio(h_userns, wh_inode, MAY_EXEC | MAY_WRITE))
++	if (!au_test_h_perm_sio(h_idmap, wh_inode, MAY_EXEC | MAY_WRITE))
 +		err = del_wh_children(&wh_path, whlist, bindex);
 +	else {
 +		int wkq_err;
@@ -35601,7 +35639,7 @@ index 000000000000..bd64c6e3dfcf
 +}
 diff --git a/fs/aufs/whout.h b/fs/aufs/whout.h
 new file mode 100644
-index 000000000000..cc6efc868d4d
+index 000000000000..a7ae8702e7a5
 --- /dev/null
 +++ b/fs/aufs/whout.h
 @@ -0,0 +1,87 @@
@@ -35636,9 +35674,9 @@ index 000000000000..cc6efc868d4d
 +
 +/* whout.c */
 +int au_wh_name_alloc(struct qstr *wh, const struct qstr *name);
-+int au_wh_test(struct user_namespace *h_userns, struct path *h_ppath,
++int au_wh_test(struct mnt_idmap *h_idmap, struct path *h_ppath,
 +	       struct qstr *wh_name, int try_sio);
-+int au_diropq_test(struct user_namespace *h_userns, struct path *h_path);
++int au_diropq_test(struct mnt_idmap *h_idmap, struct path *h_path);
 +struct au_branch;
 +struct dentry *au_whtmp_lkup(struct dentry *h_parent, struct au_branch *br,
 +			     struct qstr *prefix);
@@ -36167,10 +36205,10 @@ index 000000000000..f8bb8e12395e
 +#endif /* __AUFS_WKQ_H__ */
 diff --git a/fs/aufs/xattr.c b/fs/aufs/xattr.c
 new file mode 100644
-index 000000000000..a4bc6fef7290
+index 000000000000..e0551f798bb3
 --- /dev/null
 +++ b/fs/aufs/xattr.c
-@@ -0,0 +1,368 @@
+@@ -0,0 +1,365 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2014-2022 Junjiro R. Okajima
@@ -36241,39 +36279,57 @@ index 000000000000..a4bc6fef7290
 +			    char *name, char **buf, unsigned int ignore_flags,
 +			    unsigned int verbose)
 +{
-+	int err;
++	int err, is_acl;
 +	ssize_t ssz;
 +	struct inode *h_idst;
 +	struct dentry *h_dst_dentry, *h_src_dentry;
-+	struct user_namespace *h_dst_userns, *h_src_userns;
++	struct mnt_idmap *h_dst_idmap, *h_src_idmap;
++	struct posix_acl *acl;
 +
-+	h_src_userns = mnt_user_ns(h_src->mnt);
++	is_acl = !!is_posix_acl_xattr(name);
++	h_src_idmap = mnt_idmap(h_src->mnt);
 +	h_src_dentry = h_src->dentry;
-+	ssz = vfs_getxattr_alloc(h_src_userns, h_src_dentry, name, buf, 0,
-+				 GFP_NOFS);
-+	err = ssz;
-+	if (unlikely(err <= 0)) {
-+		if (err == -ENODATA
-+		    || (err == -EOPNOTSUPP
-+			&& ((ignore_flags & au_xattr_out_of_list)
-+			    || (au_test_nfs_noacl(d_inode(h_src_dentry))
-+				&& (!strcmp(name, XATTR_NAME_POSIX_ACL_ACCESS)
-+				    || !strcmp(name,
-+					       XATTR_NAME_POSIX_ACL_DEFAULT))))
-+			    ))
-+			err = 0;
-+		if (err && (verbose || au_debug_test()))
-+			pr_err("%s, err %d\n", name, err);
-+		goto out;
++	if (is_acl) {
++		acl = vfs_get_acl(h_src_idmap, h_src_dentry, name);
++		AuDebugOn(!acl);
++		if (unlikely(IS_ERR(acl))) {
++			err = PTR_ERR(acl);
++			if (err == -ENODATA)
++				err = 0;
++			else if (err == -EOPNOTSUPP
++				 && au_test_nfs_noacl(d_inode(h_src_dentry)))
++				err = 0;
++			else if (verbose || au_debug_test())
++				pr_err("%s, err %d\n", name, err);
++			goto out;
++		}
++	} else {
++		ssz = vfs_getxattr_alloc(h_src_idmap, h_src_dentry, name, buf,
++					 0, GFP_NOFS);
++		if (unlikely(ssz <= 0)) {
++			err = ssz;
++			if (err == -ENODATA)
++				err = 0;
++			else if (err == -EOPNOTSUPP
++				 && (ignore_flags & au_xattr_out_of_list))
++				 err = 0;
++			else if (err && (verbose || au_debug_test()))
++				pr_err("%s, err %d\n", name, err);
++			goto out;
++		}
 +	}
 +
 +	/* unlock it temporary */
-+	h_dst_userns = mnt_user_ns(h_dst->mnt);
++	h_dst_idmap = mnt_idmap(h_dst->mnt);
 +	h_dst_dentry = h_dst->dentry;
 +	h_idst = d_inode(h_dst_dentry);
 +	inode_unlock(h_idst);
-+	err = vfsub_setxattr(h_dst_userns, h_dst_dentry, name, *buf, ssz,
-+			     /*flags*/0);
++	if (is_acl) {
++		err = vfsub_set_acl(h_dst_idmap, h_dst_dentry, name, acl);
++		posix_acl_release(acl);
++	} else
++		err = vfsub_setxattr(h_dst_idmap, h_dst_dentry, name, *buf,
++				     ssz, /*flags*/0);
 +	inode_lock_nested(h_idst, AuLsc_I_CHILD2);
 +	if (unlikely(err)) {
 +		if (verbose || au_debug_test())
@@ -36288,7 +36344,7 @@ index 000000000000..a4bc6fef7290
 +int au_cpup_xattr(struct path *h_dst, struct path *h_src, int ignore_flags,
 +		  unsigned int verbose)
 +{
-+	int err, unlocked, acl_access, acl_default;
++	int err, unlocked;
 +	ssize_t ssz;
 +	struct dentry *h_dst_dentry, *h_src_dentry;
 +	struct inode *h_isrc, *h_idst;
@@ -36336,33 +36392,12 @@ index 000000000000..a4bc6fef7290
 +	err = 0;
 +	e = p + ssz;
 +	value = NULL;
-+	acl_access = 0;
-+	acl_default = 0;
++	ignore_flags |= au_xattr_out_of_list;
 +	while (!err && p < e) {
-+		acl_access |= !strncmp(p, XATTR_NAME_POSIX_ACL_ACCESS,
-+				       sizeof(XATTR_NAME_POSIX_ACL_ACCESS) - 1);
-+		acl_default |= !strncmp(p, XATTR_NAME_POSIX_ACL_DEFAULT,
-+					sizeof(XATTR_NAME_POSIX_ACL_DEFAULT)
-+					- 1);
 +		err = au_do_cpup_xattr(h_dst, h_src, p, &value, ignore_flags,
 +				       verbose);
 +		p += strlen(p) + 1;
 +	}
-+	AuTraceErr(err);
-+	ignore_flags |= au_xattr_out_of_list;
-+	if (!err && !acl_access) {
-+		err = au_do_cpup_xattr(h_dst, h_src,
-+				       XATTR_NAME_POSIX_ACL_ACCESS, &value,
-+				       ignore_flags, verbose);
-+		AuTraceErr(err);
-+	}
-+	if (!err && !acl_default) {
-+		err = au_do_cpup_xattr(h_dst, h_src,
-+				       XATTR_NAME_POSIX_ACL_DEFAULT, &value,
-+				       ignore_flags, verbose);
-+		AuTraceErr(err);
-+	}
-+
 +	au_kfree_try_rcu(value);
 +
 +out_free:
@@ -36439,7 +36474,7 @@ index 000000000000..a4bc6fef7290
 +		break;
 +	case AU_XATTR_GET:
 +		AuDebugOn(d_is_negative(h_path.dentry));
-+		err = vfs_getxattr(mnt_user_ns(h_path.mnt), h_path.dentry,
++		err = vfs_getxattr(mnt_idmap(h_path.mnt), h_path.dentry,
 +				   arg->u.get.name, arg->u.get.value,
 +				   arg->u.get.size);
 +		break;
@@ -36511,7 +36546,7 @@ index 000000000000..a4bc6fef7290
 +}
 +
 +static int au_xattr_set(const struct xattr_handler *handler,
-+			struct user_namespace *userns,
++			struct mnt_idmap *idmap,
 +			struct dentry *dentry, struct inode *inode,
 +			const char *name, const void *value, size_t size,
 +			int flags)
@@ -36541,7 +36576,7 @@ index 000000000000..a4bc6fef7290
 +}
 diff --git a/fs/aufs/xino.c b/fs/aufs/xino.c
 new file mode 100644
-index 000000000000..35f9291c8026
+index 000000000000..e1db09b3541d
 --- /dev/null
 +++ b/fs/aufs/xino.c
 @@ -0,0 +1,1926 @@
@@ -36806,7 +36841,7 @@ index 000000000000..35f9291c8026
 +	}
 +
 +	/* no need to mnt_want_write() since we call dentry_open() later */
-+	err = vfs_create(mnt_user_ns(base->mnt), dir, path.dentry, 0666, NULL);
++	err = vfs_create(mnt_idmap(base->mnt), dir, path.dentry, 0666, NULL);
 +	if (unlikely(err)) {
 +		file = ERR_PTR(err);
 +		pr_err("%pd create err %d\n", dentry, err);
@@ -38473,7 +38508,7 @@ index 000000000000..35f9291c8026
 +}
 diff --git a/include/uapi/linux/aufs_type.h b/include/uapi/linux/aufs_type.h
 new file mode 100644
-index 000000000000..6525bab63d12
+index 000000000000..cbd05a277088
 --- /dev/null
 +++ b/include/uapi/linux/aufs_type.h
 @@ -0,0 +1,452 @@
@@ -38519,7 +38554,7 @@ index 000000000000..6525bab63d12
 +#include <limits.h>
 +#endif /* __KERNEL__ */
 +
-+#define AUFS_VERSION	"6.1-20230109"
++#define AUFS_VERSION	"6.3-20230501"
 +
 +/* todo? move this to linux-2.6.19/include/magic.h */
 +#define AUFS_SUPER_MAGIC	('a' << 24 | 'u' << 16 | 'f' << 8 | 's')
@@ -38930,5 +38965,5 @@ index 000000000000..6525bab63d12
 +
 +#endif /* __AUFS_TYPE_H__ */
 -- 
-2.39.0
+2.39.2
 
