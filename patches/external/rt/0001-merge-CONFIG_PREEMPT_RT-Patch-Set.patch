@@ -1,9 +1,9 @@
-From ccae33cd726dc32dec701e50fe7fe8168fcb14db Mon Sep 17 00:00:00 2001
+From 2e8ee7b6e17d05c00ea81ff3956b781e13ff1ccc Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 18 Apr 2023 09:54:45 -0500
+Date: Tue, 2 May 2023 09:24:52 -0500
 Subject: [PATCH] merge: CONFIG_PREEMPT_RT Patch Set
 
-patch-6.3-rc7-rt9.patch.xz
+patch-6.3-rt11.patch.xz
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
@@ -32,7 +32,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/x86/include/asm/thread_info.h            |    5 +
  drivers/block/zram/zram_drv.c                 |   36 +
  drivers/block/zram/zram_drv.h                 |    3 +
- drivers/char/tpm/tpm_tis.c                    |   29 +-
+ drivers/char/tpm/tpm_tis.c                    |   43 +-
  drivers/gpu/drm/i915/Kconfig                  |    1 -
  drivers/gpu/drm/i915/display/intel_crtc.c     |   15 +-
  drivers/gpu/drm/i915/display/intel_vblank.c   |    6 +-
@@ -63,19 +63,22 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  include/linux/netdevice.h                     |    4 +
  include/linux/preempt.h                       |   64 +-
  include/linux/printk.h                        |   19 +-
- include/linux/sched.h                         |   37 +
+ include/linux/sched.h                         |   42 +
  include/linux/sched/signal.h                  |    2 +
  include/linux/serial_8250.h                   |   11 +-
  include/linux/thread_info.h                   |   64 +-
  include/linux/trace_events.h                  |   10 +-
+ include/trace/events/timer.h                  |    6 +-
  kernel/Kconfig.preempt                        |    6 +
  kernel/debug/kdb/kdb_io.c                     |    2 +
  kernel/entry/common.c                         |    4 +-
  kernel/fork.c                                 |   11 +
  kernel/ksysfs.c                               |   12 +
- kernel/locking/rtmutex.c                      |   16 +
- kernel/locking/rwbase_rt.c                    |   17 +-
- kernel/locking/ww_rt_mutex.c                  |    5 +
+ kernel/locking/rtmutex.c                      |   38 +-
+ kernel/locking/rwbase_rt.c                    |   29 +-
+ kernel/locking/rwsem.c                        |    6 +
+ kernel/locking/spinlock_rt.c                  |    5 +
+ kernel/locking/ww_rt_mutex.c                  |    2 +-
  kernel/panic.c                                |   17 +
  kernel/printk/Makefile                        |    2 +-
  kernel/printk/internal.h                      |  125 +-
@@ -84,13 +87,14 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  kernel/printk/printk_safe.c                   |   42 +-
  kernel/rcu/rcutorture.c                       |    6 +
  kernel/rcu/tree_stall.h                       |    6 +
- kernel/sched/core.c                           |  160 +-
+ kernel/sched/core.c                           |  200 +-
  kernel/sched/fair.c                           |   16 +-
  kernel/sched/features.h                       |    3 +
  kernel/sched/sched.h                          |    9 +
  kernel/signal.c                               |   74 +-
  kernel/softirq.c                              |   82 +-
  kernel/time/hrtimer.c                         |    4 +-
+ kernel/time/tick-common.c                     |   12 +-
  kernel/time/tick-sched.c                      |    2 +-
  kernel/time/timer.c                           |    2 +-
  kernel/trace/trace.c                          |   50 +-
@@ -98,7 +102,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  kernel/trace/trace_output.c                   |   18 +-
  net/core/dev.c                                |   37 +-
  net/core/skbuff.c                             |    7 +-
- 91 files changed, 4243 insertions(+), 410 deletions(-)
+ 95 files changed, 4336 insertions(+), 436 deletions(-)
  create mode 100644 kernel/printk/printk_nobkl.c
 
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
@@ -861,17 +865,17 @@ index c5254626f051..a6b24dfec95f 100644
  	ktime_t ac_time;
  #endif
 diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-index ed5dabd3c72d..513e0d1c349a 100644
+index ed5dabd3c72d..450d7985ff34 100644
 --- a/drivers/char/tpm/tpm_tis.c
 +++ b/drivers/char/tpm/tpm_tis.c
-@@ -50,6 +50,31 @@ static inline struct tpm_tis_tcg_phy *to_tpm_tis_tcg_phy(struct tpm_tis_data *da
+@@ -50,6 +50,45 @@ static inline struct tpm_tis_tcg_phy *to_tpm_tis_tcg_phy(struct tpm_tis_data *da
  	return container_of(data, struct tpm_tis_tcg_phy, priv);
  }
  
 +#ifdef CONFIG_PREEMPT_RT
 +/*
-+ * Flushes previous write operations to chip so that a subsequent
-+ * ioread*()s won't stall a CPU.
++ * Flush previous write operations with a dummy read operation to the
++ * TPM MMIO base address.
 + */
 +static inline void tpm_tis_flush(void __iomem *iobase)
 +{
@@ -881,12 +885,26 @@ index ed5dabd3c72d..513e0d1c349a 100644
 +#define tpm_tis_flush(iobase) do { } while (0)
 +#endif
 +
++/*
++ * Write a byte word to the TPM MMIO address, and flush the write queue.
++ * The flush ensures that the data is sent immediately over the bus and not
++ * aggregated with further requests and transferred later in a batch. The large
++ * write requests can lead to unwanted latency spikes by blocking the CPU until
++ * the complete batch has been transferred.
++ */
 +static inline void tpm_tis_iowrite8(u8 b, void __iomem *iobase, u32 addr)
 +{
 +	iowrite8(b, iobase + addr);
 +	tpm_tis_flush(iobase);
 +}
 +
++/*
++ * Write a 32-bit word to the TPM MMIO address, and flush the write queue.
++ * The flush ensures that the data is sent immediately over the bus and not
++ * aggregated with further requests and transferred later in a batch. The large
++ * write requests can lead to unwanted latency spikes by blocking the CPU until
++ * the complete batch has been transferred.
++ */
 +static inline void tpm_tis_iowrite32(u32 b, void __iomem *iobase, u32 addr)
 +{
 +	iowrite32(b, iobase + addr);
@@ -896,7 +914,7 @@ index ed5dabd3c72d..513e0d1c349a 100644
  static int interrupts = -1;
  module_param(interrupts, int, 0444);
  MODULE_PARM_DESC(interrupts, "Enable interrupts");
-@@ -186,12 +211,12 @@ static int tpm_tcg_write_bytes(struct tpm_tis_data *data, u32 addr, u16 len,
+@@ -186,12 +225,12 @@ static int tpm_tcg_write_bytes(struct tpm_tis_data *data, u32 addr, u16 len,
  	switch (io_mode) {
  	case TPM_TIS_PHYS_8:
  		while (len--)
@@ -3203,10 +3221,22 @@ index 8ef499ab3c1e..b55662624ff8 100644
  
  #ifdef CONFIG_SMP
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 63d242164b1a..ab43d2b59aed 100644
+index 63d242164b1a..593d7e7c2e4c 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -2059,6 +2059,43 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
+@@ -303,6 +303,11 @@ extern long schedule_timeout_idle(long timeout);
+ asmlinkage void schedule(void);
+ extern void schedule_preempt_disabled(void);
+ asmlinkage void preempt_schedule_irq(void);
++
++extern void sched_submit_work(void);
++extern void sched_resume_work(void);
++extern void schedule_rtmutex(void);
++
+ #ifdef CONFIG_PREEMPT_RT
+  extern void schedule_rtlock(void);
+ #endif
+@@ -2059,6 +2064,43 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
  	return unlikely(test_tsk_thread_flag(tsk,TIF_NEED_RESCHED));
  }
  
@@ -3433,6 +3463,23 @@ index 0e373222a6df..47017fcf5481 100644
  	TRACE_FLAG_NMI			= 0x40,
  	TRACE_FLAG_BH_OFF		= 0x80,
  };
+diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
+index 2e713a7d9aa3..5d43751a766c 100644
+--- a/include/trace/events/timer.h
++++ b/include/trace/events/timer.h
+@@ -158,7 +158,11 @@ DEFINE_EVENT(timer_class, timer_cancel,
+ 		{ HRTIMER_MODE_ABS_SOFT,	"ABS|SOFT"	},	\
+ 		{ HRTIMER_MODE_REL_SOFT,	"REL|SOFT"	},	\
+ 		{ HRTIMER_MODE_ABS_PINNED_SOFT,	"ABS|PINNED|SOFT" },	\
+-		{ HRTIMER_MODE_REL_PINNED_SOFT,	"REL|PINNED|SOFT" })
++		{ HRTIMER_MODE_REL_PINNED_SOFT,	"REL|PINNED|SOFT" },	\
++		{ HRTIMER_MODE_ABS_HARD,	"ABS|HARD" },		\
++		{ HRTIMER_MODE_REL_HARD,	"REL|HARD" },		\
++		{ HRTIMER_MODE_ABS_PINNED_HARD, "ABS|PINNED|HARD" },	\
++		{ HRTIMER_MODE_REL_PINNED_HARD,	"REL|PINNED|HARD" })
+ 
+ /**
+  * hrtimer_init - called when the hrtimer is initialized
 diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
 index c2f1fd95a821..260c08efeb48 100644
 --- a/kernel/Kconfig.preempt
@@ -3485,10 +3532,10 @@ index be61332c66b5..c6301e520d47 100644
  	}
  }
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 0c92f224c68c..b0aaa6ee1f04 100644
+index 0c7651fc0c33..7d749242c0b1 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
-@@ -1664,6 +1664,7 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
+@@ -1665,6 +1665,7 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
  	RCU_INIT_POINTER(tsk->sighand, sig);
  	if (!sig)
  		return -ENOMEM;
@@ -3496,7 +3543,7 @@ index 0c92f224c68c..b0aaa6ee1f04 100644
  
  	refcount_set(&sig->count, 1);
  	spin_lock_irq(&current->sighand->siglock);
-@@ -1680,7 +1681,17 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
+@@ -1681,7 +1682,17 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
  void __cleanup_sighand(struct sighand_struct *sighand)
  {
  	if (refcount_dec_and_test(&sighand->count)) {
@@ -3545,43 +3592,97 @@ index 0408aab80941..ee063d28f94f 100644
  	NULL
  };
 diff --git a/kernel/locking/rtmutex.c b/kernel/locking/rtmutex.c
-index 728f434de2bb..08c599a5089a 100644
+index 728f434de2bb..479a9487edcc 100644
 --- a/kernel/locking/rtmutex.c
 +++ b/kernel/locking/rtmutex.c
-@@ -23,6 +23,7 @@
- #include <linux/sched/rt.h>
- #include <linux/sched/wake_q.h>
- #include <linux/ww_mutex.h>
-+#include <linux/blkdev.h>
+@@ -218,6 +218,11 @@ static __always_inline bool rt_mutex_cmpxchg_acquire(struct rt_mutex_base *lock,
+ 	return try_cmpxchg_acquire(&lock->owner, &old, new);
+ }
  
- #include <trace/events/lock.h>
++static __always_inline bool rt_mutex_try_acquire(struct rt_mutex_base *lock)
++{
++	return rt_mutex_cmpxchg_acquire(lock, NULL, current);
++}
++
+ static __always_inline bool rt_mutex_cmpxchg_release(struct rt_mutex_base *lock,
+ 						     struct task_struct *old,
+ 						     struct task_struct *new)
+@@ -297,6 +302,24 @@ static __always_inline bool rt_mutex_cmpxchg_acquire(struct rt_mutex_base *lock,
  
-@@ -1697,8 +1698,23 @@ static int __sched rt_mutex_slowlock(struct rt_mutex_base *lock,
+ }
+ 
++static int __sched rt_mutex_slowtrylock(struct rt_mutex_base *lock);
++
++static __always_inline bool rt_mutex_try_acquire(struct rt_mutex_base *lock)
++{
++	/*
++	 * With debug enabled rt_mutex_cmpxchg trylock() will always fail,
++	 * which will unconditionally invoke sched_submit/resume_work() in
++	 * the slow path of __rt_mutex_lock() and __ww_rt_mutex_lock() even
++	 * in the non-contended case.
++	 *
++	 * Avoid that by using rt_mutex_slow_trylock() which is covered by
++	 * the debug code and can acquire a non-contended rtmutex. On
++	 * success the callsite avoids the sched_submit/resume_work()
++	 * dance.
++	 */
++	return rt_mutex_slowtrylock(lock);
++}
++
+ static __always_inline bool rt_mutex_cmpxchg_release(struct rt_mutex_base *lock,
+ 						     struct task_struct *old,
+ 						     struct task_struct *new)
+@@ -1555,7 +1578,7 @@ static int __sched rt_mutex_slowlock_block(struct rt_mutex_base *lock,
+ 		raw_spin_unlock_irq(&lock->wait_lock);
+ 
+ 		if (!owner || !rtmutex_spin_on_owner(lock, waiter, owner))
+-			schedule();
++			schedule_rtmutex();
+ 
+ 		raw_spin_lock_irq(&lock->wait_lock);
+ 		set_current_state(state);
+@@ -1584,7 +1607,7 @@ static void __sched rt_mutex_handle_deadlock(int res, int detect_deadlock,
+ 	WARN(1, "rtmutex deadlock detected\n");
+ 	while (1) {
+ 		set_current_state(TASK_INTERRUPTIBLE);
+-		schedule();
++		schedule_rtmutex();
+ 	}
+ }
+ 
+@@ -1679,6 +1702,12 @@ static int __sched rt_mutex_slowlock(struct rt_mutex_base *lock,
+ 	unsigned long flags;
+ 	int ret;
+ 
++	/*
++	 * The task is about to sleep. Invoke sched_submit_work() before
++	 * blocking as that might take locks and corrupt tsk::pi_blocked_on.
++	 */
++	sched_submit_work();
++
+ 	/*
+ 	 * Technically we could use raw_spin_[un]lock_irq() here, but this can
+ 	 * be called in early boot if the cmpxchg() fast path is disabled
+@@ -1691,13 +1720,16 @@ static int __sched rt_mutex_slowlock(struct rt_mutex_base *lock,
+ 	ret = __rt_mutex_slowlock_locked(lock, ww_ctx, state);
+ 	raw_spin_unlock_irqrestore(&lock->wait_lock, flags);
+ 
++	sched_resume_work();
+ 	return ret;
+ }
+ 
  static __always_inline int __rt_mutex_lock(struct rt_mutex_base *lock,
  					   unsigned int state)
  {
-+	/*
-+	 * With DEBUG enabled cmpxchg trylock will always fail. Instead of
-+	 * invoking blk_flush_plug() try the trylock-slowpath first which will
-+	 * succeed if the lock is not contended.
-+	 */
-+#ifdef CONFIG_DEBUG_RT_MUTEXES
-+	if (likely(rt_mutex_slowtrylock(lock)))
-+		return 0;
-+#else
- 	if (likely(rt_mutex_cmpxchg_acquire(lock, NULL, current)))
+-	if (likely(rt_mutex_cmpxchg_acquire(lock, NULL, current)))
++	lockdep_assert(!current->pi_blocked_on);
++
++	if (likely(rt_mutex_try_acquire(lock)))
  		return 0;
-+#endif
-+	/*
-+	 * If we are going to sleep and we have plugged IO queued, make sure to
-+	 * submit it to avoid deadlocks.
-+	 */
-+	blk_flush_plug(current->plug, true);
  
  	return rt_mutex_slowlock(lock, NULL, state);
- }
 diff --git a/kernel/locking/rwbase_rt.c b/kernel/locking/rwbase_rt.c
-index c201aadb9301..96042dca2fd9 100644
+index c201aadb9301..5be92ca5afab 100644
 --- a/kernel/locking/rwbase_rt.c
 +++ b/kernel/locking/rwbase_rt.c
 @@ -72,15 +72,6 @@ static int __sched __rwbase_read_lock(struct rwbase_rt *rwb,
@@ -3600,37 +3701,96 @@ index c201aadb9301..96042dca2fd9 100644
  
  	/*
  	 * Call into the slow lock path with the rtmutex->wait_lock
-@@ -143,6 +134,14 @@ static __always_inline int rwbase_read_lock(struct rwbase_rt *rwb,
+@@ -140,10 +131,23 @@ static int __sched __rwbase_read_lock(struct rwbase_rt *rwb,
+ static __always_inline int rwbase_read_lock(struct rwbase_rt *rwb,
+ 					    unsigned int state)
+ {
++	int ret;
++
++	lockdep_assert(!current->pi_blocked_on);
++
  	if (rwbase_read_trylock(rwb))
  		return 0;
  
-+	if (state != TASK_RTLOCK_WAIT) {
-+		/*
-+		 * If we are going to sleep and we have plugged IO queued,
-+		 * make sure to submit it to avoid deadlocks.
-+		 */
-+		blk_flush_plug(current->plug, true);
-+	}
-+
- 	return __rwbase_read_lock(rwb, state);
+-	return __rwbase_read_lock(rwb, state);
++	/*
++	 * The task is about to sleep. For rwsems this submits work as that
++	 * might take locks and corrupt tsk::pi_blocked_on. Must be
++	 * explicit here because __rwbase_read_lock() cannot invoke
++	 * rt_mutex_slowlock(). NOP for rwlocks.
++	 */
++	rwbase_sched_submit_work();
++	ret = __rwbase_read_lock(rwb, state);
++	rwbase_sched_resume_work();
++	return ret;
  }
  
+ static void __sched __rwbase_read_unlock(struct rwbase_rt *rwb,
+@@ -239,7 +243,10 @@ static int __sched rwbase_write_lock(struct rwbase_rt *rwb,
+ 	struct rt_mutex_base *rtm = &rwb->rtmutex;
+ 	unsigned long flags;
+ 
+-	/* Take the rtmutex as a first step */
++	/*
++	 * Take the rtmutex as a first step. For rwsem this will also
++	 * invoke sched_submit_work() to flush IO and workers.
++	 */
+ 	if (rwbase_rtmutex_lock_state(rtm, state))
+ 		return -EINTR;
+ 
+diff --git a/kernel/locking/rwsem.c b/kernel/locking/rwsem.c
+index acb5a50309a1..aca266006ad4 100644
+--- a/kernel/locking/rwsem.c
++++ b/kernel/locking/rwsem.c
+@@ -1415,6 +1415,12 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
+ #define rwbase_rtmutex_lock_state(rtm, state)		\
+ 	__rt_mutex_lock(rtm, state)
+ 
++#define rwbase_sched_submit_work()			\
++	sched_submit_work()
++
++#define rwbase_sched_resume_work()			\
++	sched_resume_work()
++
+ #define rwbase_rtmutex_slowlock_locked(rtm, state)	\
+ 	__rt_mutex_slowlock_locked(rtm, NULL, state)
+ 
+diff --git a/kernel/locking/spinlock_rt.c b/kernel/locking/spinlock_rt.c
+index 48a19ed8486d..9fe282cd145d 100644
+--- a/kernel/locking/spinlock_rt.c
++++ b/kernel/locking/spinlock_rt.c
+@@ -37,6 +37,8 @@
+ 
+ static __always_inline void rtlock_lock(struct rt_mutex_base *rtm)
+ {
++	lockdep_assert(!current->pi_blocked_on);
++
+ 	if (unlikely(!rt_mutex_cmpxchg_acquire(rtm, NULL, current)))
+ 		rtlock_slowlock(rtm);
+ }
+@@ -159,6 +161,9 @@ rwbase_rtmutex_lock_state(struct rt_mutex_base *rtm, unsigned int state)
+ 	return 0;
+ }
+ 
++static __always_inline void rwbase_sched_submit_work(void) { }
++static __always_inline void rwbase_sched_resume_work(void) { }
++
+ static __always_inline int
+ rwbase_rtmutex_slowlock_locked(struct rt_mutex_base *rtm, unsigned int state)
+ {
 diff --git a/kernel/locking/ww_rt_mutex.c b/kernel/locking/ww_rt_mutex.c
-index d1473c624105..472e3622abf0 100644
+index d1473c624105..c7196de838ed 100644
 --- a/kernel/locking/ww_rt_mutex.c
 +++ b/kernel/locking/ww_rt_mutex.c
-@@ -67,6 +67,11 @@ __ww_rt_mutex_lock(struct ww_mutex *lock, struct ww_acquire_ctx *ww_ctx,
+@@ -62,7 +62,7 @@ __ww_rt_mutex_lock(struct ww_mutex *lock, struct ww_acquire_ctx *ww_ctx,
+ 	}
+ 	mutex_acquire_nest(&rtm->dep_map, 0, 0, nest_lock, ip);
+ 
+-	if (likely(rt_mutex_cmpxchg_acquire(&rtm->rtmutex, NULL, current))) {
++	if (likely(rt_mutex_try_acquire(&rtm->rtmutex))) {
+ 		if (ww_ctx)
  			ww_mutex_set_context_fastpath(lock, ww_ctx);
  		return 0;
- 	}
-+	/*
-+	 * If we are going to sleep and we have plugged IO queued, make sure to
-+	 * submit it to avoid deadlocks.
-+	 */
-+	blk_flush_plug(current->plug, true);
- 
- 	ret = rt_mutex_slowlock(&rtm->rtmutex, ww_ctx, state);
- 
 diff --git a/kernel/panic.c b/kernel/panic.c
 index 5cfea8302d23..190f7f2bc6cf 100644
 --- a/kernel/panic.c
@@ -6666,7 +6826,7 @@ index b10b8349bb2a..804306204d0d 100644
  
  static void print_cpu_stall(unsigned long gps)
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 0d18c3969f90..6c98bb4ae562 100644
+index 0d18c3969f90..a57a1a3beeba 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
 @@ -1042,6 +1042,46 @@ void resched_curr(struct rq *rq)
@@ -6867,7 +7027,86 @@ index 0d18c3969f90..6c98bb4ae562 100644
  	clear_preempt_need_resched();
  #ifdef CONFIG_SCHED_DEBUG
  	rq->last_seen_need_resched_ns = 0;
-@@ -6802,6 +6919,30 @@ static void __sched notrace preempt_schedule_common(void)
+@@ -6648,14 +6765,11 @@ void __noreturn do_task_dead(void)
+ 		cpu_relax();
+ }
+ 
+-static inline void sched_submit_work(struct task_struct *tsk)
++void sched_submit_work(void)
+ {
+-	unsigned int task_flags;
+-
+-	if (task_is_running(tsk))
+-		return;
++	struct task_struct *tsk = current;
++	unsigned int task_flags = tsk->flags;
+ 
+-	task_flags = tsk->flags;
+ 	/*
+ 	 * If a worker goes to sleep, notify and ask workqueue whether it
+ 	 * wants to wake up a task to maintain concurrency.
+@@ -6681,8 +6795,10 @@ static inline void sched_submit_work(struct task_struct *tsk)
+ 	blk_flush_plug(tsk->plug, true);
+ }
+ 
+-static void sched_update_worker(struct task_struct *tsk)
++void sched_resume_work(void)
+ {
++	struct task_struct *tsk = current;
++
+ 	if (tsk->flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
+ 		if (tsk->flags & PF_WQ_WORKER)
+ 			wq_worker_running(tsk);
+@@ -6691,20 +6807,29 @@ static void sched_update_worker(struct task_struct *tsk)
+ 	}
+ }
+ 
+-asmlinkage __visible void __sched schedule(void)
++static void schedule_loop(unsigned int sched_mode)
+ {
+-	struct task_struct *tsk = current;
+-
+-	sched_submit_work(tsk);
+ 	do {
+ 		preempt_disable();
+-		__schedule(SM_NONE);
++		__schedule(sched_mode);
+ 		sched_preempt_enable_no_resched();
+ 	} while (need_resched());
+-	sched_update_worker(tsk);
++}
++
++asmlinkage __visible void __sched schedule(void)
++{
++	if (!task_is_running(current))
++		sched_submit_work();
++	schedule_loop(SM_NONE);
++	sched_resume_work();
+ }
+ EXPORT_SYMBOL(schedule);
+ 
++void schedule_rtmutex(void)
++{
++	schedule_loop(SM_NONE);
++}
++
+ /*
+  * synchronize_rcu_tasks() makes sure that no task is stuck in preempted
+  * state (have scheduled out non-voluntarily) by making sure that all
+@@ -6764,11 +6889,7 @@ void __sched schedule_preempt_disabled(void)
+ #ifdef CONFIG_PREEMPT_RT
+ void __sched notrace schedule_rtlock(void)
+ {
+-	do {
+-		preempt_disable();
+-		__schedule(SM_RTLOCK_WAIT);
+-		sched_preempt_enable_no_resched();
+-	} while (need_resched());
++	schedule_loop(SM_RTLOCK_WAIT);
+ }
+ NOKPROBE_SYMBOL(schedule_rtlock);
+ #endif
+@@ -6802,6 +6923,30 @@ static void __sched notrace preempt_schedule_common(void)
  	} while (need_resched());
  }
  
@@ -6898,7 +7137,7 @@ index 0d18c3969f90..6c98bb4ae562 100644
  #ifdef CONFIG_PREEMPTION
  /*
   * This is the entry point to schedule() from in-kernel preemption
-@@ -6815,6 +6956,8 @@ asmlinkage __visible void __sched notrace preempt_schedule(void)
+@@ -6815,6 +6960,8 @@ asmlinkage __visible void __sched notrace preempt_schedule(void)
  	 */
  	if (likely(!preemptible()))
  		return;
@@ -6907,7 +7146,7 @@ index 0d18c3969f90..6c98bb4ae562 100644
  	preempt_schedule_common();
  }
  NOKPROBE_SYMBOL(preempt_schedule);
-@@ -6862,6 +7005,9 @@ asmlinkage __visible void __sched notrace preempt_schedule_notrace(void)
+@@ -6862,6 +7009,9 @@ asmlinkage __visible void __sched notrace preempt_schedule_notrace(void)
  	if (likely(!preemptible()))
  		return;
  
@@ -6917,7 +7156,7 @@ index 0d18c3969f90..6c98bb4ae562 100644
  	do {
  		/*
  		 * Because the function tracer can trace preempt_count_sub()
-@@ -9167,7 +9313,9 @@ void __init init_idle(struct task_struct *idle, int cpu)
+@@ -9167,7 +9317,9 @@ void __init init_idle(struct task_struct *idle, int cpu)
  
  	/* Set the preempt count _outside_ the spinlocks! */
  	init_idle_preempt_count(idle, cpu);
@@ -7288,6 +7527,31 @@ index e8c08292defc..10c1246cdba7 100644
  	}
  
  	__hrtimer_run_queues(cpu_base, now, flags, HRTIMER_ACTIVE_HARD);
+diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
+index 46789356f856..65b8658da829 100644
+--- a/kernel/time/tick-common.c
++++ b/kernel/time/tick-common.c
+@@ -218,9 +218,19 @@ static void tick_setup_device(struct tick_device *td,
+ 		 * this cpu:
+ 		 */
+ 		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
++			ktime_t next_p;
++			u32 rem;
++
+ 			tick_do_timer_cpu = cpu;
+ 
+-			tick_next_period = ktime_get();
++			next_p = ktime_get();
++			div_u64_rem(next_p, TICK_NSEC, &rem);
++			if (rem) {
++				next_p -= rem;
++				next_p += TICK_NSEC;
++			}
++
++			tick_next_period = next_p;
+ #ifdef CONFIG_NO_HZ_FULL
+ 			/*
+ 			 * The boot CPU may be nohz_full, in which case set
 diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
 index b0e3c9205946..133e4160ed54 100644
 --- a/kernel/time/tick-sched.c

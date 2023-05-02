@@ -137,7 +137,7 @@ aufs () {
 		${git_bin} add .
 		${git_bin} commit -a -m 'merge: aufs-standalone' -s
 
-		${git_bin} format-patch -4 -o ../patches/aufs/
+		${git_bin} format-patch -4 -o ../patches/external/aufs/
 
 		cd ../
 		if [ -d ./aufs-standalone ] ; then
@@ -162,8 +162,8 @@ aufs () {
 		${git_bin} add .
 		${git_bin} commit -a -m 'merge: aufs' -m "https://github.com/sfjro/aufs-standalone/commit/${aufs_hash}" -s
 
-		${git_bin} format-patch -5 -o ../patches/aufs/
-		echo "AUFS: https://github.com/sfjro/aufs-standalone/commit/${aufs_hash}" > ../patches/git/AUFS
+		${git_bin} format-patch -5 -o ../patches/external/aufs/
+		echo "AUFS: https://github.com/sfjro/aufs-standalone/commit/${aufs_hash}" > ../patches/external/git/AUFS
 
 		rm -rf ../aufs-standalone/ || true
 
@@ -171,18 +171,18 @@ aufs () {
 
 		start_cleanup
 
-		${git} "${DIR}/patches/aufs/0001-merge-aufs-kbuild.patch"
-		${git} "${DIR}/patches/aufs/0002-merge-aufs-base.patch"
-		${git} "${DIR}/patches/aufs/0003-merge-aufs-mmap.patch"
-		${git} "${DIR}/patches/aufs/0004-merge-aufs-standalone.patch"
-		${git} "${DIR}/patches/aufs/0005-merge-aufs.patch"
+		${git} "${DIR}/patches/external/aufs/0001-merge-aufs-kbuild.patch"
+		${git} "${DIR}/patches/external/aufs/0002-merge-aufs-base.patch"
+		${git} "${DIR}/patches/external/aufs/0003-merge-aufs-mmap.patch"
+		${git} "${DIR}/patches/external/aufs/0004-merge-aufs-standalone.patch"
+		${git} "${DIR}/patches/external/aufs/0005-merge-aufs.patch"
 
-		wdir="aufs"
+		wdir="external/aufs"
 		number=5
 		cleanup
 	fi
 
-	dir 'aufs'
+	dir 'external/aufs'
 }
 
 wpanusb () {
@@ -393,7 +393,7 @@ local_patch () {
 }
 
 #external_git
-#aufs
+aufs
 #wpanusb
 #bcfserial
 rt
@@ -470,7 +470,7 @@ drivers
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.2.1"
+		backport_tag="v6.3.1"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
