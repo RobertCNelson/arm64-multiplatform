@@ -393,7 +393,7 @@ local_patch () {
 }
 
 #external_git
-aufs
+#aufs
 #wpanusb
 #bcfserial
 rt
