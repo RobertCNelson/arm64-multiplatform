@@ -393,13 +393,13 @@ local_patch () {
 }
 
 #external_git
-aufs
+#aufs
 #wpanusb
 #bcfserial
 #rt
 wireless_regdb
-beagleboard_dtbs
-dir 'next'
+#beagleboard_dtbs
+#dir 'next'
 #local_patch
 
 pre_backports () {
@@ -464,7 +464,7 @@ drivers () {
 }
 
 ###
-backports
+#backports
 drivers
 
 packaging () {
