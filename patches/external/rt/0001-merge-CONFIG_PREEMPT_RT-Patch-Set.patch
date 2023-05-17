@@ -1,6 +1,6 @@
-From 421adea8e1603aa7730596ff2929521f725f0fad Mon Sep 17 00:00:00 2001
+From 06bb7331ef3821ddfc15c75507b31b1ad805a0ef Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Thu, 11 May 2023 14:25:44 -0500
+Date: Wed, 17 May 2023 10:04:47 -0500
 Subject: [PATCH] merge: CONFIG_PREEMPT_RT Patch Set
 
 patch-6.3.1-rt13.patch.xz
