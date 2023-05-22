@@ -4,9 +4,9 @@ ARCH=$(uname -m)
 
 config="defconfig"
 
-build_prefix="-arm64-k3-r"
+build_prefix="-rt-arm64-k3-r"
 branch_prefix="v"
-branch_postfix=".x-arm64-k3"
+branch_postfix=".x-rt-arm64-k3"
 
 #https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/changes.rst?h=v6.4-rc1
 #arm
@@ -45,9 +45,9 @@ toolchain="gcc_13_aarch64"
 #Kernel
 KERNEL_REL=6.4
 KERNEL_TAG=${KERNEL_REL}-rc3
-kernel_rt="-rt11"
+kernel_rt="-rc3-rt2"
 #Kernel Build
-BUILD=${build_prefix}3.1
+BUILD=${build_prefix}3.2
 
 #v6.X-rcX + upto SHA
 #prev_KERNEL_SHA=""
