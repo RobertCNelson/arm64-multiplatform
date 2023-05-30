@@ -1,6 +1,6 @@
-From d373ce3dd4f523bb6d5ad2f9081f21b62db0ddcd Mon Sep 17 00:00:00 2001
+From 29e6ead48f69938da9a0323b57ed47ff74bda63b Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 22 May 2023 10:58:23 -0500
+Date: Tue, 30 May 2023 09:23:15 -0500
 Subject: [PATCH] merge: CONFIG_PREEMPT_RT Patch Set
 
 patch-6.4-rc3-rt2.patch.xz
@@ -589,7 +589,7 @@ index 2cfc810d0a5b..8fbb364b05a6 100644
  			local_daif_restore(DAIF_PROCCTX_NOIRQ);
  
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 539d1f03ff42..ce44218449c7 100644
+index bff5820b7cda..8576636b624f 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
 @@ -166,6 +166,7 @@ config PPC
@@ -8022,10 +8022,10 @@ index b3c13e041935..318ae441df1f 100644
  
  		init_gro_hash(&sd->backlog);
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 515ec5cdc79c..6395ca4c3b73 100644
+index cea28d30abb5..e4e802b3fbf0 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -6907,6 +6907,11 @@ nodefer:	__kfree_skb(skb);
+@@ -6909,6 +6909,11 @@ nodefer:	__kfree_skb(skb);
  	/* Make sure to trigger NET_RX_SOFTIRQ on the remote CPU
  	 * if we are unlucky enough (this seems very unlikely).
  	 */
