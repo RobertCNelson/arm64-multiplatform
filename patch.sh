@@ -181,7 +181,6 @@ aufs () {
 		number=5
 		cleanup
 	fi
-
 	dir 'external/aufs'
 }
 
@@ -287,7 +286,6 @@ rt () {
 
 		exit 2
 	fi
-
 	dir 'external/rt'
 }
 
@@ -328,7 +326,6 @@ wireless_regdb () {
 		number=1
 		cleanup
 	fi
-
 	dir 'external/wireless_regdb'
 }
 
@@ -383,7 +380,6 @@ beagleboard_dtbs () {
 		number=1
 		cleanup
 	fi
-
 	dir 'soc/ti/beagleboard_dtbs'
 }
 
@@ -437,7 +433,7 @@ patch_backports (){
 }
 
 backports () {
-	backport_tag="v5.10.181"
+	backport_tag="v5.10.182"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -470,7 +466,7 @@ drivers
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.3.5"
+		backport_tag="v6.3.6"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
