@@ -1,9 +1,9 @@
-From 29e6ead48f69938da9a0323b57ed47ff74bda63b Mon Sep 17 00:00:00 2001
+From 5692e84930f6a1bbeed64f81ed2f48092ee614cb Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 30 May 2023 09:23:15 -0500
+Date: Tue, 6 Jun 2023 09:42:29 -0500
 Subject: [PATCH] merge: CONFIG_PREEMPT_RT Patch Set
 
-patch-6.4-rc3-rt2.patch.xz
+patch-6.4-rc5-rt4.patch.xz
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
@@ -63,8 +63,8 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  include/linux/netdevice.h                     |    4 +
  include/linux/preempt.h                       |   64 +-
  include/linux/printk.h                        |   19 +-
- include/linux/sched.h                         |   42 +
- include/linux/sched/signal.h                  |    4 +-
+ include/linux/sched.h                         |   49 +-
+ include/linux/sched/signal.h                  |    2 +-
  include/linux/serial_8250.h                   |   11 +-
  include/linux/thread_info.h                   |   64 +-
  include/linux/trace_events.h                  |   10 +-
@@ -72,7 +72,6 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  kernel/Kconfig.preempt                        |    6 +
  kernel/debug/kdb/kdb_io.c                     |    2 +
  kernel/entry/common.c                         |    4 +-
- kernel/fork.c                                 |   11 +
  kernel/ksysfs.c                               |   12 +
  kernel/locking/rtmutex.c                      |   38 +-
  kernel/locking/rwbase_rt.c                    |   20 +-
@@ -87,11 +86,11 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  kernel/printk/printk_safe.c                   |   42 +-
  kernel/rcu/rcutorture.c                       |    6 +
  kernel/rcu/tree_stall.h                       |    6 +
- kernel/sched/core.c                           |  200 +-
+ kernel/sched/core.c                           |  388 ++--
  kernel/sched/fair.c                           |   16 +-
  kernel/sched/features.h                       |    3 +
  kernel/sched/sched.h                          |    9 +
- kernel/signal.c                               |   74 +-
+ kernel/signal.c                               |   26 +-
  kernel/softirq.c                              |  104 +-
  kernel/time/hrtimer.c                         |    4 +-
  kernel/time/posix-timers.c                    |   78 +-
@@ -102,7 +101,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  kernel/trace/trace_output.c                   |   18 +-
  net/core/dev.c                                |   39 +-
  net/core/skbuff.c                             |    7 +-
- 95 files changed, 4387 insertions(+), 484 deletions(-)
+ 94 files changed, 4409 insertions(+), 596 deletions(-)
  create mode 100644 kernel/printk/printk_nobkl.c
 
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
@@ -779,7 +778,7 @@ index 4ebf2ef2845d..381c3be3bec1 100644
  	select MPIC
  	select OF_DYNAMIC
 diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 918f511837db..9d973f5e87a8 100644
+index d59e8a98a200..3975f45b1e95 100644
 --- a/arch/powerpc/platforms/pseries/iommu.c
 +++ b/arch/powerpc/platforms/pseries/iommu.c
 @@ -25,6 +25,7 @@
@@ -842,7 +841,7 @@ index 918f511837db..9d973f5e87a8 100644
  
  	if (unlikely(rc == H_NOT_ENOUGH_RESOURCES)) {
  		ret = (int)rc;
-@@ -451,16 +459,17 @@ static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
+@@ -460,16 +468,17 @@ static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
  				DMA_BIDIRECTIONAL, 0);
  	}
  
@@ -864,7 +863,7 @@ index 918f511837db..9d973f5e87a8 100644
  	}
  
  	proto_tce = TCE_PCI_READ | TCE_PCI_WRITE;
-@@ -503,7 +512,7 @@ static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
+@@ -512,7 +521,7 @@ static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
  
  	/* error cleanup: caller will clear whole range */
  
@@ -3301,7 +3300,7 @@ index 8ef499ab3c1e..b55662624ff8 100644
  
  #ifdef CONFIG_SMP
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index eed5d65b8d1f..f2e752377ead 100644
+index eed5d65b8d1f..3ce3e07fbf6f 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -305,6 +305,11 @@ extern long schedule_timeout_idle(long timeout);
@@ -3316,7 +3315,25 @@ index eed5d65b8d1f..f2e752377ead 100644
  #ifdef CONFIG_PREEMPT_RT
   extern void schedule_rtlock(void);
  #endif
-@@ -2065,6 +2070,43 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
+@@ -2006,15 +2011,12 @@ static __always_inline void scheduler_ipi(void)
+ 	 */
+ 	preempt_fold_need_resched();
+ }
+-extern unsigned long wait_task_inactive(struct task_struct *, unsigned int match_state);
+ #else
+ static inline void scheduler_ipi(void) { }
+-static inline unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state)
+-{
+-	return 1;
+-}
+ #endif
+ 
++extern unsigned long wait_task_inactive(struct task_struct *, unsigned int match_state);
++
+ /*
+  * Set thread flags in other task's structures.
+  * See asm/thread_info.h for TIF_xxxx flags available:
+@@ -2065,6 +2067,43 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
  	return unlikely(test_tsk_thread_flag(tsk,TIF_NEED_RESCHED));
  }
  
@@ -3361,18 +3378,10 @@ index eed5d65b8d1f..f2e752377ead 100644
   * cond_resched() and cond_resched_lock(): latency reduction via
   * explicit rescheduling in places that are safe. The return
 diff --git a/include/linux/sched/signal.h b/include/linux/sched/signal.h
-index 20099268fa25..b38ce5357600 100644
+index 20099268fa25..669e8cff40c7 100644
 --- a/include/linux/sched/signal.h
 +++ b/include/linux/sched/signal.h
-@@ -22,6 +22,7 @@ struct sighand_struct {
- 	refcount_t		count;
- 	wait_queue_head_t	signalfd_wqh;
- 	struct k_sigaction	action[_NSIG];
-+	struct sigqueue		*sigqueue_cache;
- };
- 
- /*
-@@ -135,7 +136,7 @@ struct signal_struct {
+@@ -135,7 +135,7 @@ struct signal_struct {
  #ifdef CONFIG_POSIX_TIMERS
  
  	/* POSIX.1b Interval Timers */
@@ -3381,14 +3390,6 @@ index 20099268fa25..b38ce5357600 100644
  	struct list_head	posix_timers;
  
  	/* ITIMER_REAL timer for the process */
-@@ -349,6 +350,7 @@ extern int send_sig(int, struct task_struct *, int);
- extern int zap_other_threads(struct task_struct *p);
- extern struct sigqueue *sigqueue_alloc(void);
- extern void sigqueue_free(struct sigqueue *);
-+extern void sigqueue_free_cached_entry(struct sigqueue *q);
- extern int send_sigqueue(struct sigqueue *, struct pid *, enum pid_type);
- extern int do_sigaction(int, struct k_sigaction *, struct k_sigaction *);
- 
 diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
 index 6f78f302d272..0acd7b6e934c 100644
 --- a/include/linux/serial_8250.h
@@ -3515,7 +3516,7 @@ index c02646884fa8..c1acb81b8194 100644
  
  #ifndef CONFIG_HAVE_ARCH_WITHIN_STACK_FRAMES
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index 0e373222a6df..47017fcf5481 100644
+index 7c4a0b72334e..a8d989676567 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
 @@ -70,6 +70,7 @@ struct trace_entry {
@@ -3620,36 +3621,6 @@ index be61332c66b5..c6301e520d47 100644
  			preempt_schedule_irq();
  	}
  }
-diff --git a/kernel/fork.c b/kernel/fork.c
-index ed4e01daccaa..69e3426f00ad 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1814,6 +1814,7 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
- 	RCU_INIT_POINTER(tsk->sighand, sig);
- 	if (!sig)
- 		return -ENOMEM;
-+	sig->sigqueue_cache = NULL;
- 
- 	refcount_set(&sig->count, 1);
- 	spin_lock_irq(&current->sighand->siglock);
-@@ -1830,7 +1831,17 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
- void __cleanup_sighand(struct sighand_struct *sighand)
- {
- 	if (refcount_dec_and_test(&sighand->count)) {
-+		struct sigqueue *sigqueue = NULL;
-+
- 		signalfd_cleanup(sighand);
-+		spin_lock_irq(&sighand->siglock);
-+		if (sighand->sigqueue_cache) {
-+			sigqueue = sighand->sigqueue_cache;
-+			sighand->sigqueue_cache = NULL;
-+		}
-+		spin_unlock_irq(&sighand->siglock);
-+
-+		sigqueue_free_cached_entry(sigqueue);
- 		/*
- 		 * sighand_cachep is SLAB_TYPESAFE_BY_RCU so we can free it
- 		 * without an RCU grace period, see __lock_task_sighand().
 diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
 index aad7a3bfd846..fe654a9791a7 100644
 --- a/kernel/ksysfs.c
@@ -6899,7 +6870,7 @@ index b10b8349bb2a..804306204d0d 100644
  
  static void print_cpu_stall(unsigned long gps)
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index a68d1276bab0..77cde41aecca 100644
+index a68d1276bab0..c7c09f1db457 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
 @@ -1062,6 +1062,46 @@ void resched_curr(struct rq *rq)
@@ -6949,7 +6920,162 @@ index a68d1276bab0..77cde41aecca 100644
  void resched_cpu(int cpu)
  {
  	struct rq *rq = cpu_rq(cpu);
-@@ -2252,6 +2292,7 @@ void migrate_disable(void)
+@@ -2213,6 +2253,154 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
+ 		rq_clock_skip_update(rq);
+ }
+ 
++static __always_inline
++int __task_state_match(struct task_struct *p, unsigned int state)
++{
++	if (READ_ONCE(p->__state) & state)
++		return 1;
++
++#ifdef CONFIG_PREEMPT_RT
++	if (READ_ONCE(p->saved_state) & state)
++		return -1;
++#endif
++	return 0;
++}
++
++static __always_inline
++int task_state_match(struct task_struct *p, unsigned int state)
++{
++#ifdef CONFIG_PREEMPT_RT
++	int match;
++
++	/*
++	 * Serialize against current_save_and_set_rtlock_wait_state() and
++	 * current_restore_rtlock_saved_state().
++	 */
++	raw_spin_lock_irq(&p->pi_lock);
++	match = __task_state_match(p, state);
++	raw_spin_unlock_irq(&p->pi_lock);
++
++	return match;
++#else
++	return __task_state_match(p, state);
++#endif
++}
++
++/*
++ * wait_task_inactive - wait for a thread to unschedule.
++ *
++ * Wait for the thread to block in any of the states set in @match_state.
++ * If it changes, i.e. @p might have woken up, then return zero.  When we
++ * succeed in waiting for @p to be off its CPU, we return a positive number
++ * (its total switch count).  If a second call a short while later returns the
++ * same number, the caller can be sure that @p has remained unscheduled the
++ * whole time.
++ *
++ * The caller must ensure that the task *will* unschedule sometime soon,
++ * else this function might spin for a *long* time. This function can't
++ * be called with interrupts off, or it may introduce deadlock with
++ * smp_call_function() if an IPI is sent by the same process we are
++ * waiting to become inactive.
++ */
++unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state)
++{
++	int running, queued, match;
++	struct rq_flags rf;
++	unsigned long ncsw;
++	struct rq *rq;
++
++	for (;;) {
++		/*
++		 * We do the initial early heuristics without holding
++		 * any task-queue locks at all. We'll only try to get
++		 * the runqueue lock when things look like they will
++		 * work out!
++		 */
++		rq = task_rq(p);
++
++		/*
++		 * If the task is actively running on another CPU
++		 * still, just relax and busy-wait without holding
++		 * any locks.
++		 *
++		 * NOTE! Since we don't hold any locks, it's not
++		 * even sure that "rq" stays as the right runqueue!
++		 * But we don't care, since "task_on_cpu()" will
++		 * return false if the runqueue has changed and p
++		 * is actually now running somewhere else!
++		 */
++		while (task_on_cpu(rq, p)) {
++			if (!task_state_match(p, match_state))
++				return 0;
++			cpu_relax();
++		}
++
++		/*
++		 * Ok, time to look more closely! We need the rq
++		 * lock now, to be *sure*. If we're wrong, we'll
++		 * just go back and repeat.
++		 */
++		rq = task_rq_lock(p, &rf);
++		trace_sched_wait_task(p);
++		running = task_on_cpu(rq, p);
++		queued = task_on_rq_queued(p);
++		ncsw = 0;
++		if ((match = __task_state_match(p, match_state))) {
++			/*
++			 * When matching on p->saved_state, consider this task
++			 * still queued so it will wait.
++			 */
++			if (match < 0)
++				queued = 1;
++			ncsw = p->nvcsw | LONG_MIN; /* sets MSB */
++		}
++		task_rq_unlock(rq, p, &rf);
++
++		/*
++		 * If it changed from the expected state, bail out now.
++		 */
++		if (unlikely(!ncsw))
++			break;
++
++		/*
++		 * Was it really running after all now that we
++		 * checked with the proper locks actually held?
++		 *
++		 * Oops. Go back and try again..
++		 */
++		if (unlikely(running)) {
++			cpu_relax();
++			continue;
++		}
++
++		/*
++		 * It's not enough that it's not actively running,
++		 * it must be off the runqueue _entirely_, and not
++		 * preempted!
++		 *
++		 * So if it was still runnable (but just not actively
++		 * running right now), it's preempted, and we should
++		 * yield - it could be a while.
++		 */
++		if (unlikely(queued)) {
++			ktime_t to = NSEC_PER_SEC / HZ;
++
++			set_current_state(TASK_UNINTERRUPTIBLE);
++			schedule_hrtimeout(&to, HRTIMER_MODE_REL_HARD);
++			continue;
++		}
++
++		/*
++		 * Ahh, all good. It wasn't running, and it wasn't
++		 * runnable, which means that it will never become
++		 * running in the future either. We're all done!
++		 */
++		break;
++	}
++
++	return ncsw;
++}
++
+ #ifdef CONFIG_SMP
+ 
+ static void
+@@ -2252,6 +2440,7 @@ void migrate_disable(void)
  	preempt_disable();
  	this_rq()->nr_pinned++;
  	p->migration_disabled = 1;
@@ -6957,7 +7083,7 @@ index a68d1276bab0..77cde41aecca 100644
  	preempt_enable();
  }
  EXPORT_SYMBOL_GPL(migrate_disable);
-@@ -2287,6 +2328,7 @@ void migrate_enable(void)
+@@ -2287,6 +2476,7 @@ void migrate_enable(void)
  	barrier();
  	p->migration_disabled = 0;
  	this_rq()->nr_pinned--;
@@ -6965,124 +7091,156 @@ index a68d1276bab0..77cde41aecca 100644
  	preempt_enable();
  }
  EXPORT_SYMBOL_GPL(migrate_enable);
-@@ -3341,6 +3383,76 @@ int migrate_swap(struct task_struct *cur, struct task_struct *p,
+@@ -3341,114 +3531,6 @@ int migrate_swap(struct task_struct *cur, struct task_struct *p,
  }
  #endif /* CONFIG_NUMA_BALANCING */
  
-+#ifdef CONFIG_PREEMPT_RT
-+
-+/*
-+ * Consider:
-+ *
-+ *  set_special_state(X);
-+ *
-+ *  do_things()
-+ *    // Somewhere in there is an rtlock that can be contended:
-+ *    current_save_and_set_rtlock_wait_state();
-+ *    [...]
-+ *    schedule_rtlock(); (A)
-+ *    [...]
-+ *    current_restore_rtlock_saved_state();
-+ *
-+ *  schedule(); (B)
-+ *
-+ * If p->saved_state is anything else than TASK_RUNNING, then p blocked on an
-+ * rtlock (A) *before* voluntarily calling into schedule() (B) after setting its
-+ * state to X. For things like ptrace (X=TASK_TRACED), the task could have more
-+ * work to do upon acquiring the lock in do_things() before whoever called
-+ * wait_task_inactive() should return. IOW, we have to wait for:
-+ *
-+ *   p.saved_state = TASK_RUNNING
-+ *   p.__state     = X
-+ *
-+ * which implies the task isn't blocked on an RT lock and got to schedule() (B).
-+ *
-+ * Also see comments in ttwu_state_match().
-+ */
-+
-+static __always_inline bool state_mismatch(struct task_struct *p, unsigned int match_state)
-+{
-+	unsigned long flags;
-+	bool mismatch;
-+
-+	raw_spin_lock_irqsave(&p->pi_lock, flags);
-+	if (READ_ONCE(p->__state) & match_state)
-+		mismatch = false;
-+	else if (READ_ONCE(p->saved_state) & match_state)
-+		mismatch = false;
-+	else
-+		mismatch = true;
-+
-+	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-+	return mismatch;
-+}
-+static __always_inline bool state_match(struct task_struct *p, unsigned int match_state,
-+					bool *wait)
-+{
-+	if (READ_ONCE(p->__state) & match_state)
-+		return true;
-+	if (READ_ONCE(p->saved_state) & match_state) {
-+		*wait = true;
-+		return true;
-+	}
-+	return false;
-+}
-+#else
-+static __always_inline bool state_mismatch(struct task_struct *p, unsigned int match_state)
-+{
-+	return !(READ_ONCE(p->__state) & match_state);
-+}
-+static __always_inline bool state_match(struct task_struct *p, unsigned int match_state,
-+					bool *wait)
-+{
-+	return (READ_ONCE(p->__state) & match_state);
-+}
-+#endif
-+
- /*
-  * wait_task_inactive - wait for a thread to unschedule.
-  *
-@@ -3359,7 +3471,7 @@ int migrate_swap(struct task_struct *cur, struct task_struct *p,
-  */
- unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state)
- {
+-/*
+- * wait_task_inactive - wait for a thread to unschedule.
+- *
+- * Wait for the thread to block in any of the states set in @match_state.
+- * If it changes, i.e. @p might have woken up, then return zero.  When we
+- * succeed in waiting for @p to be off its CPU, we return a positive number
+- * (its total switch count).  If a second call a short while later returns the
+- * same number, the caller can be sure that @p has remained unscheduled the
+- * whole time.
+- *
+- * The caller must ensure that the task *will* unschedule sometime soon,
+- * else this function might spin for a *long* time. This function can't
+- * be called with interrupts off, or it may introduce deadlock with
+- * smp_call_function() if an IPI is sent by the same process we are
+- * waiting to become inactive.
+- */
+-unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state)
+-{
 -	int running, queued;
-+	bool running, wait;
- 	struct rq_flags rf;
- 	unsigned long ncsw;
- 	struct rq *rq;
-@@ -3385,7 +3497,7 @@ unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state
- 		 * is actually now running somewhere else!
- 		 */
- 		while (task_on_cpu(rq, p)) {
+-	struct rq_flags rf;
+-	unsigned long ncsw;
+-	struct rq *rq;
+-
+-	for (;;) {
+-		/*
+-		 * We do the initial early heuristics without holding
+-		 * any task-queue locks at all. We'll only try to get
+-		 * the runqueue lock when things look like they will
+-		 * work out!
+-		 */
+-		rq = task_rq(p);
+-
+-		/*
+-		 * If the task is actively running on another CPU
+-		 * still, just relax and busy-wait without holding
+-		 * any locks.
+-		 *
+-		 * NOTE! Since we don't hold any locks, it's not
+-		 * even sure that "rq" stays as the right runqueue!
+-		 * But we don't care, since "task_on_cpu()" will
+-		 * return false if the runqueue has changed and p
+-		 * is actually now running somewhere else!
+-		 */
+-		while (task_on_cpu(rq, p)) {
 -			if (!(READ_ONCE(p->__state) & match_state))
-+			if (state_mismatch(p, match_state))
- 				return 0;
- 			cpu_relax();
- 		}
-@@ -3398,9 +3510,10 @@ unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state
- 		rq = task_rq_lock(p, &rf);
- 		trace_sched_wait_task(p);
- 		running = task_on_cpu(rq, p);
+-				return 0;
+-			cpu_relax();
+-		}
+-
+-		/*
+-		 * Ok, time to look more closely! We need the rq
+-		 * lock now, to be *sure*. If we're wrong, we'll
+-		 * just go back and repeat.
+-		 */
+-		rq = task_rq_lock(p, &rf);
+-		trace_sched_wait_task(p);
+-		running = task_on_cpu(rq, p);
 -		queued = task_on_rq_queued(p);
-+		wait = task_on_rq_queued(p);
- 		ncsw = 0;
+-		ncsw = 0;
 -		if (READ_ONCE(p->__state) & match_state)
-+
-+		if (state_match(p, match_state, &wait))
- 			ncsw = p->nvcsw | LONG_MIN; /* sets MSB */
- 		task_rq_unlock(rq, p, &rf);
- 
-@@ -3430,7 +3543,7 @@ unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state
- 		 * running right now), it's preempted, and we should
- 		 * yield - it could be a while.
- 		 */
+-			ncsw = p->nvcsw | LONG_MIN; /* sets MSB */
+-		task_rq_unlock(rq, p, &rf);
+-
+-		/*
+-		 * If it changed from the expected state, bail out now.
+-		 */
+-		if (unlikely(!ncsw))
+-			break;
+-
+-		/*
+-		 * Was it really running after all now that we
+-		 * checked with the proper locks actually held?
+-		 *
+-		 * Oops. Go back and try again..
+-		 */
+-		if (unlikely(running)) {
+-			cpu_relax();
+-			continue;
+-		}
+-
+-		/*
+-		 * It's not enough that it's not actively running,
+-		 * it must be off the runqueue _entirely_, and not
+-		 * preempted!
+-		 *
+-		 * So if it was still runnable (but just not actively
+-		 * running right now), it's preempted, and we should
+-		 * yield - it could be a while.
+-		 */
 -		if (unlikely(queued)) {
-+		if (unlikely(wait)) {
- 			ktime_t to = NSEC_PER_SEC / HZ;
+-			ktime_t to = NSEC_PER_SEC / HZ;
+-
+-			set_current_state(TASK_UNINTERRUPTIBLE);
+-			schedule_hrtimeout(&to, HRTIMER_MODE_REL_HARD);
+-			continue;
+-		}
+-
+-		/*
+-		 * Ahh, all good. It wasn't running, and it wasn't
+-		 * runnable, which means that it will never become
+-		 * running in the future either. We're all done!
+-		 */
+-		break;
+-	}
+-
+-	return ncsw;
+-}
+-
+ /***
+  * kick_process - kick a running thread to enter/exit the kernel
+  * @p: the to-be-kicked thread
+@@ -4003,15 +4085,14 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
+ static __always_inline
+ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
+ {
++	int match;
++
+ 	if (IS_ENABLED(CONFIG_DEBUG_PREEMPT)) {
+ 		WARN_ON_ONCE((state & TASK_RTLOCK_WAIT) &&
+ 			     state != TASK_RTLOCK_WAIT);
+ 	}
  
- 			set_current_state(TASK_UNINTERRUPTIBLE);
-@@ -4742,6 +4855,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
+-	if (READ_ONCE(p->__state) & state) {
+-		*success = 1;
+-		return true;
+-	}
++	*success = !!(match = __task_state_match(p, state));
+ 
+ #ifdef CONFIG_PREEMPT_RT
+ 	/*
+@@ -4027,12 +4108,10 @@ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
+ 	 * p::saved_state to TASK_RUNNING so any further tests will
+ 	 * not result in false positives vs. @success
+ 	 */
+-	if (p->saved_state & state) {
++	if (match < 0)
+ 		p->saved_state = TASK_RUNNING;
+-		*success = 1;
+-	}
+ #endif
+-	return false;
++	return match > 0;
+ }
+ 
+ /*
+@@ -4742,6 +4821,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
  	p->on_cpu = 0;
  #endif
  	init_task_preempt_count(p);
@@ -7092,7 +7250,7 @@ index a68d1276bab0..77cde41aecca 100644
  #ifdef CONFIG_SMP
  	plist_node_init(&p->pushable_tasks, MAX_PRIO);
  	RB_CLEAR_NODE(&p->pushable_dl_tasks);
-@@ -6632,6 +6748,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
+@@ -6632,6 +6714,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
  
  	next = pick_next_task(rq, prev, &rf);
  	clear_tsk_need_resched(prev);
@@ -7100,7 +7258,7 @@ index a68d1276bab0..77cde41aecca 100644
  	clear_preempt_need_resched();
  #ifdef CONFIG_SCHED_DEBUG
  	rq->last_seen_need_resched_ns = 0;
-@@ -6692,14 +6809,11 @@ void __noreturn do_task_dead(void)
+@@ -6692,14 +6775,11 @@ void __noreturn do_task_dead(void)
  		cpu_relax();
  }
  
@@ -7118,7 +7276,7 @@ index a68d1276bab0..77cde41aecca 100644
  	/*
  	 * If a worker goes to sleep, notify and ask workqueue whether it
  	 * wants to wake up a task to maintain concurrency.
-@@ -6725,8 +6839,10 @@ static inline void sched_submit_work(struct task_struct *tsk)
+@@ -6725,8 +6805,10 @@ static inline void sched_submit_work(struct task_struct *tsk)
  	blk_flush_plug(tsk->plug, true);
  }
  
@@ -7130,7 +7288,7 @@ index a68d1276bab0..77cde41aecca 100644
  	if (tsk->flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
  		if (tsk->flags & PF_WQ_WORKER)
  			wq_worker_running(tsk);
-@@ -6735,20 +6851,29 @@ static void sched_update_worker(struct task_struct *tsk)
+@@ -6735,20 +6817,29 @@ static void sched_update_worker(struct task_struct *tsk)
  	}
  }
  
@@ -7166,7 +7324,7 @@ index a68d1276bab0..77cde41aecca 100644
  /*
   * synchronize_rcu_tasks() makes sure that no task is stuck in preempted
   * state (have scheduled out non-voluntarily) by making sure that all
-@@ -6808,11 +6933,7 @@ void __sched schedule_preempt_disabled(void)
+@@ -6808,11 +6899,7 @@ void __sched schedule_preempt_disabled(void)
  #ifdef CONFIG_PREEMPT_RT
  void __sched notrace schedule_rtlock(void)
  {
@@ -7179,7 +7337,7 @@ index a68d1276bab0..77cde41aecca 100644
  }
  NOKPROBE_SYMBOL(schedule_rtlock);
  #endif
-@@ -6846,6 +6967,30 @@ static void __sched notrace preempt_schedule_common(void)
+@@ -6846,6 +6933,30 @@ static void __sched notrace preempt_schedule_common(void)
  	} while (need_resched());
  }
  
@@ -7210,7 +7368,7 @@ index a68d1276bab0..77cde41aecca 100644
  #ifdef CONFIG_PREEMPTION
  /*
   * This is the entry point to schedule() from in-kernel preemption
-@@ -6859,6 +7004,8 @@ asmlinkage __visible void __sched notrace preempt_schedule(void)
+@@ -6859,6 +6970,8 @@ asmlinkage __visible void __sched notrace preempt_schedule(void)
  	 */
  	if (likely(!preemptible()))
  		return;
@@ -7219,7 +7377,7 @@ index a68d1276bab0..77cde41aecca 100644
  	preempt_schedule_common();
  }
  NOKPROBE_SYMBOL(preempt_schedule);
-@@ -6906,6 +7053,9 @@ asmlinkage __visible void __sched notrace preempt_schedule_notrace(void)
+@@ -6906,6 +7019,9 @@ asmlinkage __visible void __sched notrace preempt_schedule_notrace(void)
  	if (likely(!preemptible()))
  		return;
  
@@ -7229,7 +7387,7 @@ index a68d1276bab0..77cde41aecca 100644
  	do {
  		/*
  		 * Because the function tracer can trace preempt_count_sub()
-@@ -9259,7 +9409,9 @@ void __init init_idle(struct task_struct *idle, int cpu)
+@@ -9259,7 +9375,9 @@ void __init init_idle(struct task_struct *idle, int cpu)
  
  	/* Set the preempt count _outside_ the spinlocks! */
  	init_idle_preempt_count(idle, cpu);
@@ -7351,85 +7509,10 @@ index ec7b3e0a2b20..5463ff8d6fd0 100644
  extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
  extern bool sched_rt_bandwidth_account(struct rt_rq *rt_rq);
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 8f6330f0e9ca..2022c6a2a26d 100644
+index 2547fa73bde5..9e07b3075c72 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -432,7 +432,18 @@ __sigqueue_alloc(int sig, struct task_struct *t, gfp_t gfp_flags,
- 		return NULL;
- 
- 	if (override_rlimit || likely(sigpending <= task_rlimit(t, RLIMIT_SIGPENDING))) {
--		q = kmem_cache_alloc(sigqueue_cachep, gfp_flags);
-+
-+		if (!sigqueue_flags) {
-+			struct sighand_struct *sighand = t->sighand;
-+
-+			lockdep_assert_held(&sighand->siglock);
-+			if (sighand->sigqueue_cache) {
-+				q = sighand->sigqueue_cache;
-+				sighand->sigqueue_cache = NULL;
-+			}
-+		}
-+		if (!q)
-+			q = kmem_cache_alloc(sigqueue_cachep, gfp_flags);
- 	} else {
- 		print_dropped_signal(sig);
- 	}
-@@ -447,14 +458,43 @@ __sigqueue_alloc(int sig, struct task_struct *t, gfp_t gfp_flags,
- 	return q;
- }
- 
--static void __sigqueue_free(struct sigqueue *q)
-+static bool sigqueue_cleanup_accounting(struct sigqueue *q)
- {
- 	if (q->flags & SIGQUEUE_PREALLOC)
--		return;
-+		return false;
- 	if (q->ucounts) {
- 		dec_rlimit_put_ucounts(q->ucounts, UCOUNT_RLIMIT_SIGPENDING);
- 		q->ucounts = NULL;
- 	}
-+	return true;
-+}
-+
-+static void __sigqueue_free(struct sigqueue *q)
-+{
-+	if (!sigqueue_cleanup_accounting(q))
-+		return;
-+	kmem_cache_free(sigqueue_cachep, q);
-+}
-+
-+void sigqueue_free_cached_entry(struct sigqueue *q)
-+{
-+	if (!q)
-+		return;
-+	kmem_cache_free(sigqueue_cachep, q);
-+}
-+
-+static void sigqueue_cache_or_free(struct sigqueue *q)
-+{
-+	struct sighand_struct *sighand = current->sighand;
-+
-+	if (!sigqueue_cleanup_accounting(q))
-+		return;
-+
-+	lockdep_assert_held(&sighand->siglock);
-+	if (!sighand->sigqueue_cache) {
-+		sighand->sigqueue_cache = q;
-+		return;
-+	}
- 	kmem_cache_free(sigqueue_cachep, q);
- }
- 
-@@ -594,7 +634,7 @@ static void collect_signal(int sig, struct sigpending *list, kernel_siginfo_t *i
- 			(info->si_code == SI_TIMER) &&
- 			(info->si_sys_private);
- 
--		__sigqueue_free(first);
-+		sigqueue_cache_or_free(first);
- 	} else {
- 		/*
- 		 * Ok, it wasn't in the queue.  This must be
-@@ -2311,15 +2351,31 @@ static int ptrace_stop(int exit_code, int why, unsigned long message,
+@@ -2313,15 +2313,31 @@ static int ptrace_stop(int exit_code, int why, unsigned long message,
  		do_notify_parent_cldstop(current, false, why);
  
  	/*
@@ -7444,14 +7527,14 @@ index 8f6330f0e9ca..2022c6a2a26d 100644
 +	 * remains enqueued on the runqueue. The ptracer will observe this and
 +	 * then sleep for a delay of one HZ tick. In the meantime this task
 +	 * gets scheduled, enters schedule() and will wait for the ptracer.
-+	 *
+ 	 *
+-	 * XXX: implement read_unlock_no_resched().
 +	 * This preemption point is not bad from correctness point of view but
 +	 * extends the runtime by one HZ tick time due to the ptracer's sleep.
 +	 * The preempt-disable section ensures that there will be no preemption
 +	 * between unlock and schedule() and so improving the performance since
 +	 * the ptracer has no reason to sleep.
- 	 *
--	 * XXX: implement read_unlock_no_resched().
++	 *
 +	 * This optimisation is not doable on PREEMPT_RT due to the spinlock_t
 +	 * within the preempt-disable section.
  	 */
@@ -7804,10 +7887,10 @@ index 63a8ce7177dd..7cad6fe3c035 100644
  
  /*
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index ebc59781456a..d8ffe43a5f62 100644
+index 64a4dde073ef..9782e7233e17 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -2694,11 +2694,19 @@ unsigned int tracing_gen_ctx_irq_test(unsigned int irqs_status)
+@@ -2719,11 +2719,19 @@ unsigned int tracing_gen_ctx_irq_test(unsigned int irqs_status)
  	if (softirq_count() >> (SOFTIRQ_SHIFT + 1))
  		trace_flags |= TRACE_FLAG_BH_OFF;
  
@@ -7829,7 +7912,7 @@ index ebc59781456a..d8ffe43a5f62 100644
  		(min_t(unsigned int, migration_disable_value(), 0xf)) << 4;
  }
  
-@@ -4287,15 +4295,17 @@ unsigned long trace_total_entries(struct trace_array *tr)
+@@ -4315,15 +4323,17 @@ unsigned long trace_total_entries(struct trace_array *tr)
  
  static void print_lat_help_header(struct seq_file *m)
  {
@@ -7856,7 +7939,7 @@ index ebc59781456a..d8ffe43a5f62 100644
  }
  
  static void print_event_info(struct array_buffer *buf, struct seq_file *m)
-@@ -4329,14 +4339,16 @@ static void print_func_help_header_irq(struct array_buffer *buf, struct seq_file
+@@ -4357,14 +4367,16 @@ static void print_func_help_header_irq(struct array_buffer *buf, struct seq_file
  
  	print_event_info(buf, m);
  
@@ -7882,10 +7965,10 @@ index ebc59781456a..d8ffe43a5f62 100644
  
  void
 diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 654ffa40457a..b2d52f8355b7 100644
+index 57e539d47989..cbff030cb4ba 100644
 --- a/kernel/trace/trace_events.c
 +++ b/kernel/trace/trace_events.c
-@@ -208,6 +208,7 @@ static int trace_define_common_fields(void)
+@@ -210,6 +210,7 @@ static int trace_define_common_fields(void)
  	/* Holds both preempt_count and migrate_disable */
  	__common_field(unsigned char, preempt_count);
  	__common_field(int, pid);
