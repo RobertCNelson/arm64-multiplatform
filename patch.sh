@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Copyright (c) 2009-2022 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2023 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -433,7 +433,7 @@ patch_backports (){
 }
 
 backports () {
-	backport_tag="v5.10.182"
+	backport_tag="v5.10.183"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -466,7 +466,7 @@ drivers
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.3.6"
+		backport_tag="v6.3.7"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
