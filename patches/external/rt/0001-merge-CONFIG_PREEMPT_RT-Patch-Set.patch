@@ -1,6 +1,6 @@
-From 5692e84930f6a1bbeed64f81ed2f48092ee614cb Mon Sep 17 00:00:00 2001
+From 0184f5b1d541bb77ac667e558f0a9bb5d87f8a39 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 6 Jun 2023 09:42:29 -0500
+Date: Tue, 20 Jun 2023 16:25:09 -0500
 Subject: [PATCH] merge: CONFIG_PREEMPT_RT Patch Set
 
 patch-6.4-rc5-rt4.patch.xz
@@ -460,7 +460,7 @@ index 349dcb944a93..a2745d17e9c7 100644
  EXPORT_SYMBOL(kernel_neon_end);
  
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index b1201d25a8a4..3ae1291d1c35 100644
+index 343e1e1cae10..9a656136c81e 100644
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
 @@ -96,6 +96,7 @@ config ARM64
@@ -3097,10 +3097,10 @@ index a92bce40b04b..bf82980f569d 100644
  
  static inline struct task_struct *this_cpu_ksoftirqd(void)
 diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 08fbd4622ccf..a937b9329af5 100644
+index c2f0c6002a84..1b8ab47ec778 100644
 --- a/include/linux/netdevice.h
 +++ b/include/linux/netdevice.h
-@@ -3237,7 +3237,11 @@ struct softnet_data {
+@@ -3240,7 +3240,11 @@ struct softnet_data {
  	int			defer_count;
  	int			defer_ipi_scheduled;
  	struct sk_buff		*defer_list;
@@ -8040,10 +8040,10 @@ index 15f05faaae44..5949c3b0a9c9 100644
  		trace_seq_printf(s, "%x", entry->preempt_count >> 4);
  	else
 diff --git a/net/core/dev.c b/net/core/dev.c
-index b3c13e041935..318ae441df1f 100644
+index c29f3e1db3ca..1d76c6f16b32 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
-@@ -4575,15 +4575,6 @@ static void rps_trigger_softirq(void *data)
+@@ -4577,15 +4577,6 @@ static void rps_trigger_softirq(void *data)
  
  #endif /* CONFIG_RPS */
  
@@ -8059,7 +8059,7 @@ index b3c13e041935..318ae441df1f 100644
  /*
   * After we queued a packet into sd->input_pkt_queue,
   * we need to make sure this queue is serviced soon.
-@@ -6619,6 +6610,32 @@ static void skb_defer_free_flush(struct softnet_data *sd)
+@@ -6621,6 +6612,32 @@ static void skb_defer_free_flush(struct softnet_data *sd)
  	}
  }
  
@@ -8092,7 +8092,7 @@ index b3c13e041935..318ae441df1f 100644
  static int napi_threaded_poll(void *data)
  {
  	struct napi_struct *napi = data;
-@@ -11447,7 +11464,11 @@ static int __init net_dev_init(void)
+@@ -11449,7 +11466,11 @@ static int __init net_dev_init(void)
  		INIT_CSD(&sd->csd, rps_trigger_softirq, sd);
  		sd->cpu = i;
  #endif
