@@ -456,7 +456,7 @@ drivers () {
 	#dir 'RPi'
 	dir 'soc/ti/pcie'
 	dir 'boris'
-	dir 'powervr'
+	#dir 'powervr'
 }
 
 ###
