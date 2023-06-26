@@ -433,7 +433,7 @@ patch_backports (){
 }
 
 backports () {
-	backport_tag="v5.10.184"
+	backport_tag="v5.10.185"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -466,7 +466,7 @@ drivers
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.3.8"
+		backport_tag="v6.4"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
