@@ -433,7 +433,7 @@ patch_backports (){
 }
 
 backports () {
-	backport_tag="v5.10.182"
+	backport_tag="v5.10.186"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -456,7 +456,7 @@ drivers () {
 	#dir 'RPi'
 	dir 'soc/ti/pcie'
 	dir 'boris'
-	dir 'powervr'
+	#dir 'powervr'
 }
 
 ###
@@ -466,7 +466,7 @@ drivers
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.3.6"
+		backport_tag="v6.4.1"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
