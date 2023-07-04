@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.3.9 Kernel Configuration
+# Linux/arm64 6.3.11 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 12.3.0"
 CONFIG_CC_IS_GCC=y
@@ -1068,6 +1068,7 @@ CONFIG_HAVE_ARCH_USERFAULTFD_MINOR=y
 CONFIG_LRU_GEN=y
 # CONFIG_LRU_GEN_ENABLED is not set
 # CONFIG_LRU_GEN_STATS is not set
+CONFIG_LOCK_MM_AND_FIND_VMA=y
 
 #
 # Data Access Monitoring
@@ -6082,7 +6083,6 @@ CONFIG_TINYDRM_ST7735R=m
 CONFIG_DRM_TIDSS=m
 # CONFIG_DRM_GUD is not set
 # CONFIG_DRM_SSD130X is not set
-CONFIG_DRM_POWERVR=m
 # CONFIG_DRM_HYPERV is not set
 # CONFIG_DRM_LEGACY is not set
 CONFIG_DRM_PANEL_ORIENTATION_QUIRKS=y
