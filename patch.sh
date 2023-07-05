@@ -466,7 +466,7 @@ drivers
 packaging () {
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.4.1"
+		backport_tag="v6.4.2"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
@@ -481,7 +481,6 @@ packaging () {
 			patch_backports
 		fi
 	fi
-
 	${git} "${DIR}/patches/backports/bindeb-pkg/0002-builddeb-Install-our-dtbs-under-boot-dtbs-version.patch"
 }
 
