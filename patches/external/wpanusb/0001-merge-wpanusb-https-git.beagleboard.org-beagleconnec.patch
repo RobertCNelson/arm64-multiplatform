@@ -1,6 +1,6 @@
-From 78ce947146a737bed1df09d06a366bc80d03e156 Mon Sep 17 00:00:00 2001
+From 093d430ee8f6b47076e36b346c2bd69afe988aa9 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 17 Jan 2023 09:57:20 -0600
+Date: Mon, 17 Jul 2023 14:52:29 -0500
 Subject: [PATCH] merge: wpanusb:
  https://git.beagleboard.org/beagleconnect/linux/wpanusb
 
@@ -857,5 +857,5 @@ index 000000000000..52e54fdca737
 +	__le64 ieee_addr;
 +} __packed;
 -- 
-2.39.0
+2.39.2
 
