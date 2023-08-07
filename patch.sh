@@ -432,7 +432,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.186"
+	backport_tag="v5.10.188"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -463,6 +463,7 @@ backports
 drivers
 
 packaging () {
+	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
 		backport_tag="v6.5-rc2"
