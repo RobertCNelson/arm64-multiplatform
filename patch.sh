@@ -338,7 +338,7 @@ cleanup_dts_builds () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.3.x"
+	branch="v6.4.x"
 	https_repo="https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -432,7 +432,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.186"
+	backport_tag="v5.10.188"
 
 	subsystem="uio"
 	#regenerate="enable"
