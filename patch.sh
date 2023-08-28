@@ -310,7 +310,7 @@ local_patch () {
 #external_git
 #wpanusb
 #bcfserial
-#rt
+rt
 wireless_regdb
 beagleboard_dtbs
 #local_patch
