@@ -257,7 +257,7 @@ cleanup_dts_builds () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.3.x"
+	branch="v6.5.x"
 	https_repo="https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -308,11 +308,11 @@ local_patch () {
 }
 
 #external_git
-wpanusb
-bcfserial
+#wpanusb
+#bcfserial
 #rt
 wireless_regdb
-#beagleboard_dtbs
+beagleboard_dtbs
 #local_patch
 
 pre_backports () {
@@ -350,7 +350,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.191"
+	backport_tag="v5.10.192"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -374,6 +374,8 @@ drivers () {
 	dir 'soc/ti/pcie'
 	dir 'boris'
 	#dir 'powervr'
+	#https://github.com/Ayush1325/linux/commits/gb-beagleplay
+	dir 'gb-beagleplay'
 }
 
 ###
@@ -384,7 +386,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.5-rc2"
+		backport_tag="v6.5"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
