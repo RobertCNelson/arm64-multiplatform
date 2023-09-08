@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.3.11 Kernel Configuration
+# Linux/arm64 6.3.13 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 12.3.0"
 CONFIG_CC_IS_GCC=y
@@ -7605,6 +7605,7 @@ CONFIG_HYPERV_BALLOON=m
 
 CONFIG_GREYBUS=m
 CONFIG_GREYBUS_ES2=m
+CONFIG_GREYBUS_BEAGLEPLAY=m
 # CONFIG_COMEDI is not set
 CONFIG_STAGING=y
 # CONFIG_PRISM2_USB is not set
