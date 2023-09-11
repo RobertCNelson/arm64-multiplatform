@@ -295,7 +295,7 @@ drivers () {
 	dir 'sched'
 	dir 'powervr'
 	#https://github.com/Ayush1325/linux/commits/gb-beagleplay
-	dir 'gb-beagleplay'
+	#dir 'gb-beagleplay'
 	dir 'fixes'
 }
 
