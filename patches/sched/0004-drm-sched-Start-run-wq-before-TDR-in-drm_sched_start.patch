@@ -1,0 +1,38 @@
+From 608ce2bc9783a861934ad1bc4ad68eb419945429 Mon Sep 17 00:00:00 2001
+From: Matthew Brost <matthew.brost@intel.com>
+Date: Mon, 3 Apr 2023 17:22:06 -0700
+Subject: [PATCH 4/6] drm/sched: Start run wq before TDR in drm_sched_start
+
+If the TDR is set to a very small value it can fire before the run wq is
+started in the function drm_sched_start. The run wq is expected to
+running when the TDR fires, fix this ordering so this expectation is
+always met.
+
+Signed-off-by: Matthew Brost <matthew.brost@intel.com>
+---
+ drivers/gpu/drm/scheduler/sched_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/scheduler/sched_main.c b/drivers/gpu/drm/scheduler/sched_main.c
+index 21510885f6f9..03e95b5df3ba 100644
+--- a/drivers/gpu/drm/scheduler/sched_main.c
++++ b/drivers/gpu/drm/scheduler/sched_main.c
+@@ -616,13 +616,13 @@ void drm_sched_start(struct drm_gpu_scheduler *sched, bool full_recovery)
+ 			drm_sched_job_done(s_job, -ECANCELED);
+ 	}
+ 
++	drm_sched_run_wq_start(sched);
++
+ 	if (full_recovery) {
+ 		spin_lock(&sched->job_list_lock);
+ 		drm_sched_start_timeout(sched);
+ 		spin_unlock(&sched->job_list_lock);
+ 	}
+-
+-	drm_sched_run_wq_start(sched);
+ }
+ EXPORT_SYMBOL(drm_sched_start);
+ 
+-- 
+2.39.2
+
