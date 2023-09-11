@@ -293,6 +293,8 @@ drivers () {
 	dir 'soc/ti/pcie'
 	dir 'boris'
 	dir 'sched'
+	#https://gitlab.freedesktop.org/frankbinns/powervr/-/tree/powervr-next
+	#git clone -b powervr-next https://gitlab.freedesktop.org/frankbinns/powervr.git --reference ~/linux-src/ --depth=100
 	dir 'powervr'
 	#https://github.com/Ayush1325/linux/commits/gb-beagleplay
 	#dir 'gb-beagleplay'
