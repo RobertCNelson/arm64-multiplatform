@@ -1,9 +1,10 @@
-From 40a1132f952d5148ba840466f5c1e6c0aa368ef1 Mon Sep 17 00:00:00 2001
+From b818e511eb349625a6d742b1202eaf4def3433c2 Mon Sep 17 00:00:00 2001
 From: Matt Coster <matt.coster@imgtec.com>
-Date: Tue, 13 Jun 2023 15:47:44 +0100
-Subject: [PATCH 01/17] sizes.h: Add entries between 32G and 64T
+Date: Wed, 6 Sep 2023 10:55:23 +0100
+Subject: [PATCH 01/20] sizes.h: Add entries between 32G and 64T
 
 Signed-off-by: Matt Coster <matt.coster@imgtec.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 ---
  include/linux/sizes.h | 9 +++++++++
  1 file changed, 9 insertions(+)

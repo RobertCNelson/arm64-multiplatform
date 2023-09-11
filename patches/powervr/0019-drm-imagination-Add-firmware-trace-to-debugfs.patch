@@ -1,12 +1,17 @@
-From 104698d8956f21adddfe926ede21ce0fea5b054c Mon Sep 17 00:00:00 2001
+From bfc941077808db202deddd8a15f608f53cd14b74 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Tue, 13 Jun 2023 15:47:58 +0100
-Subject: [PATCH 15/17] drm/imagination: Add firmware trace to debugfs
+Date: Wed, 7 Jun 2023 13:08:42 +0100
+Subject: [PATCH 19/20] drm/imagination: Add firmware trace to debugfs
 
 Firmware trace is exposed at /sys/debug/dri/<dev_nr>/pvr_fw/trace_0.
 Trace is enabled via the group mask at
 /sys/debug/dri/<dev_nr>/pvr_params/fw_trace_mask.
 
+Changes since v3:
+- Use drm_dev_{enter,exit}
+
+Co-developed-by: Matt Coster <matt.coster@imgtec.com>
+Signed-off-by: Matt Coster <matt.coster@imgtec.com>
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
 ---
  drivers/gpu/drm/imagination/Makefile       |   4 +
@@ -15,28 +20,28 @@ Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
  drivers/gpu/drm/imagination/pvr_device.c   |   9 +
  drivers/gpu/drm/imagination/pvr_device.h   |  10 +
  drivers/gpu/drm/imagination/pvr_drv.c      |   4 +
- drivers/gpu/drm/imagination/pvr_fw_trace.c | 393 ++++++++++++++++++++-
+ drivers/gpu/drm/imagination/pvr_fw_trace.c | 395 +++++++++++++++++++++
  drivers/gpu/drm/imagination/pvr_params.c   | 147 ++++++++
  drivers/gpu/drm/imagination/pvr_params.h   |  72 ++++
- 9 files changed, 720 insertions(+), 1 deletion(-)
+ 9 files changed, 723 insertions(+)
  create mode 100644 drivers/gpu/drm/imagination/pvr_debugfs.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_debugfs.h
  create mode 100644 drivers/gpu/drm/imagination/pvr_params.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_params.h
 
 diff --git a/drivers/gpu/drm/imagination/Makefile b/drivers/gpu/drm/imagination/Makefile
-index 85cd0c0c70cd..89c47adf6b0d 100644
+index 313af5312d7b..1db003cf39ee 100644
 --- a/drivers/gpu/drm/imagination/Makefile
 +++ b/drivers/gpu/drm/imagination/Makefile
-@@ -19,6 +19,7 @@ powervr-y := \
- 	pvr_gem.o \
+@@ -20,6 +20,7 @@ powervr-y := \
  	pvr_hwrt.o \
  	pvr_job.o \
+ 	pvr_mmu.o \
 +	pvr_params.o \
  	pvr_power.o \
  	pvr_queue.o \
  	pvr_stream.o \
-@@ -26,4 +27,7 @@ powervr-y := \
+@@ -28,4 +29,7 @@ powervr-y := \
  	pvr_vm.o \
  	pvr_vm_mips.o
  
@@ -46,12 +51,12 @@ index 85cd0c0c70cd..89c47adf6b0d 100644
  obj-$(CONFIG_DRM_POWERVR) += powervr.o
 diff --git a/drivers/gpu/drm/imagination/pvr_debugfs.c b/drivers/gpu/drm/imagination/pvr_debugfs.c
 new file mode 100644
-index 000000000000..02e44c070861
+index 000000000000..fa0d7c89773c
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_debugfs.c
 @@ -0,0 +1,53 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#include "pvr_debugfs.h"
 +
@@ -105,12 +110,12 @@ index 000000000000..02e44c070861
 + */
 diff --git a/drivers/gpu/drm/imagination/pvr_debugfs.h b/drivers/gpu/drm/imagination/pvr_debugfs.h
 new file mode 100644
-index 000000000000..b260a2b26ebd
+index 000000000000..7b7ff384053e
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_debugfs.h
 @@ -0,0 +1,29 @@
 +/* SPDX-License-Identifier: GPL-2.0 OR MIT */
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#ifndef PVR_DEBUGFS_H
 +#define PVR_DEBUGFS_H
@@ -139,7 +144,7 @@ index 000000000000..b260a2b26ebd
 +
 +#endif /* PVR_DEBUGFS_H */
 diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/imagination/pvr_device.c
-index 209bc35450a9..d62f038c8840 100644
+index 9ae758a88644..a01544f64d8e 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.c
 +++ b/drivers/gpu/drm/imagination/pvr_device.c
 @@ -5,6 +5,7 @@
@@ -148,9 +153,9 @@ index 209bc35450a9..d62f038c8840 100644
  #include "pvr_fw.h"
 +#include "pvr_params.h"
  #include "pvr_power.h"
+ #include "pvr_queue.h"
  #include "pvr_rogue_cr_defs.h"
- #include "pvr_stream.h"
-@@ -580,6 +581,14 @@ pvr_device_init(struct pvr_device *pvr_dev)
+@@ -488,6 +489,14 @@ pvr_device_init(struct pvr_device *pvr_dev)
  	struct device *dev = drm_dev->dev;
  	int err;
  
@@ -166,7 +171,7 @@ index 209bc35450a9..d62f038c8840 100644
  	err = pvr_device_clk_init(pvr_dev);
  	if (err)
 diff --git a/drivers/gpu/drm/imagination/pvr_device.h b/drivers/gpu/drm/imagination/pvr_device.h
-index 9ab40d25a0fd..66de06c041de 100644
+index c1bae018f2b6..b0681a47d2fb 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.h
 +++ b/drivers/gpu/drm/imagination/pvr_device.h
 @@ -7,6 +7,7 @@
@@ -177,7 +182,7 @@ index 9ab40d25a0fd..66de06c041de 100644
  #include "pvr_rogue_fwif_stream.h"
  #include "pvr_stream.h"
  
-@@ -146,6 +147,15 @@ struct pvr_device {
+@@ -148,6 +149,15 @@ struct pvr_device {
  	/** @fw_dev: Firmware related data. */
  	struct pvr_fw_device fw_dev;
  
@@ -194,18 +199,18 @@ index 9ab40d25a0fd..66de06c041de 100644
  	u32 stream_musthave_quirks[PVR_STREAM_TYPE_MAX][PVR_STREAM_EXTHDR_TYPE_MAX];
  
 diff --git a/drivers/gpu/drm/imagination/pvr_drv.c b/drivers/gpu/drm/imagination/pvr_drv.c
-index 2ee6c4b0d60e..15c1675e5a66 100644
+index 4c1eedbe8f1d..00913315aa9a 100644
 --- a/drivers/gpu/drm/imagination/pvr_drv.c
 +++ b/drivers/gpu/drm/imagination/pvr_drv.c
 @@ -2,6 +2,7 @@
- /* Copyright (c) 2022 Imagination Technologies Ltd. */
+ /* Copyright (c) 2023 Imagination Technologies Ltd. */
  
  #include "pvr_context.h"
 +#include "pvr_debugfs.h"
  #include "pvr_device.h"
  #include "pvr_drv.h"
  #include "pvr_free_list.h"
-@@ -1385,6 +1386,9 @@ static struct drm_driver pvr_drm_driver = {
+@@ -1389,6 +1390,9 @@ static struct drm_driver pvr_drm_driver = {
  	.ioctls = pvr_drm_driver_ioctls,
  	.num_ioctls = ARRAY_SIZE(pvr_drm_driver_ioctls),
  	.fops = &pvr_drm_driver_fops,
@@ -216,24 +221,21 @@ index 2ee6c4b0d60e..15c1675e5a66 100644
  	.name = PVR_DRIVER_NAME,
  	.desc = PVR_DRIVER_DESC,
 diff --git a/drivers/gpu/drm/imagination/pvr_fw_trace.c b/drivers/gpu/drm/imagination/pvr_fw_trace.c
-index 42435149d56a..e0dd397f53e8 100644
+index 075f67dd0f94..3f184d0f6e05 100644
 --- a/drivers/gpu/drm/imagination/pvr_fw_trace.c
 +++ b/drivers/gpu/drm/imagination/pvr_fw_trace.c
-@@ -67,7 +67,12 @@ int pvr_fw_trace_init(struct pvr_device *pvr_dev)
- 		ROGUE_FW_TRACE_BUF_DEFAULT_SIZE_IN_DWORDS;
- 	fw_trace->tracebuf_ctrl->tracebuf_flags = 0;
+@@ -4,8 +4,10 @@
+ #include "pvr_device.h"
+ #include "pvr_gem.h"
+ #include "pvr_rogue_fwif.h"
++#include "pvr_rogue_fwif_sf.h"
+ #include "pvr_fw_trace.h"
  
--	fw_trace->tracebuf_ctrl->log_type = ROGUE_FWIF_LOG_TYPE_NONE;
-+	fw_trace->group_mask = pvr_dev->params.fw_trace_mask;
-+	if (fw_trace->group_mask)
-+		fw_trace->tracebuf_ctrl->log_type = fw_trace->group_mask |
-+						    ROGUE_FWIF_LOG_TYPE_TRACE;
-+	else
-+		fw_trace->tracebuf_ctrl->log_type = ROGUE_FWIF_LOG_TYPE_NONE;
++#include <drm/drm_drv.h>
+ #include <drm/drm_file.h>
  
- 	return 0;
- 
-@@ -97,3 +102,389 @@ void pvr_fw_trace_fini(struct pvr_device *pvr_dev)
+ #include <linux/build_bug.h>
+@@ -118,3 +120,396 @@ void pvr_fw_trace_fini(struct pvr_device *pvr_dev)
  	}
  	pvr_fw_object_unmap_and_destroy(fw_trace->tracebuf_ctrl_obj);
  }
@@ -244,24 +246,42 @@ index 42435149d56a..e0dd397f53e8 100644
 + * @group_mask: New log group mask.
 + *
 + * Returns:
-+ *  * 0 on success, or
-+ *  * Any error returned by pvr_kccb_send_cmd().
++ *  * 0 on success,
++ *  * Any error returned by pvr_kccb_send_cmd(), or
++ *  * -%EIO if the device is lost.
 + */
 +static int
 +update_logtype(struct pvr_device *pvr_dev, u32 group_mask)
 +{
 +	struct pvr_fw_trace *fw_trace = &pvr_dev->fw_dev.fw_trace;
 +	struct rogue_fwif_kccb_cmd cmd;
++	int idx;
++	int err;
 +
 +	if (group_mask)
 +		fw_trace->tracebuf_ctrl->log_type = ROGUE_FWIF_LOG_TYPE_TRACE | group_mask;
 +	else
 +		fw_trace->tracebuf_ctrl->log_type = ROGUE_FWIF_LOG_TYPE_NONE;
 +
++	fw_trace->group_mask = group_mask;
++
++	down_read(&pvr_dev->reset_sem);
++	if (!drm_dev_enter(from_pvr_device(pvr_dev), &idx)) {
++		err = -EIO;
++		goto err_up_read;
++	}
++
 +	cmd.cmd_type = ROGUE_FWIF_KCCB_CMD_LOGTYPE_UPDATE;
 +	cmd.kccb_flags = 0;
 +
-+	return pvr_kccb_send_cmd(pvr_dev, &cmd, NULL);
++	err = pvr_kccb_send_cmd(pvr_dev, &cmd, NULL);
++
++	drm_dev_exit(idx);
++
++err_up_read:
++	up_read(&pvr_dev->reset_sem);
++
++	return err;
 +}
 +
 +#if defined(CONFIG_DEBUG_FS)
@@ -290,16 +310,15 @@ index 42435149d56a..e0dd397f53e8 100644
 +
 +	err = kstrtouint_from_user(ubuf, len, 0, &new_group_mask);
 +	if (err)
-+		goto err_out;
++		return err;
 +
 +	err = update_logtype(pvr_dev, new_group_mask);
 +	if (err)
-+		goto err_out;
++		return err;
 +
 +	pvr_dev->fw_dev.fw_trace.group_mask = new_group_mask;
 +
-+err_out:
-+	return err ? err : (ssize_t)len;
++	return (ssize_t)len;
 +}
 +
 +static const struct file_operations pvr_fw_trace_group_mask_fops = {
@@ -462,26 +481,19 @@ index 42435149d56a..e0dd397f53e8 100644
 +	u64 timestamp;
 +	u32 id;
 +	u32 sf_id;
-+	int err;
 +
-+	if (trace_seq_data->idx >= ROGUE_FW_TRACE_BUF_DEFAULT_SIZE_IN_DWORDS) {
-+		err = -EINVAL;
-+		goto err_out;
-+	}
++	if (trace_seq_data->idx >= ROGUE_FW_TRACE_BUF_DEFAULT_SIZE_IN_DWORDS)
++		return -EINVAL;
 +
 +	id = read_fw_trace(trace_seq_data, 0);
-+	if (!ROGUE_FW_LOG_VALIDID(id)) {
-+		/* Index is not pointing at a valid entry. */
-+		err = -EINVAL;
-+		goto err_out;
-+	}
++	/* Index is not pointing at a valid entry. */
++	if (!ROGUE_FW_LOG_VALIDID(id))
++		return -EINVAL;
 +
 +	sf_id = find_sfid(id);
-+	if (sf_id == ROGUE_FW_SF_LAST) {
-+		/* Index is not pointing at a valid entry. */
-+		err = -EINVAL;
-+		goto err_out;
-+	}
++	/* Index is not pointing at a valid entry. */
++	if (sf_id == ROGUE_FW_SF_LAST)
++		return -EINVAL;
 +
 +	timestamp = read_fw_trace(trace_seq_data, 1) |
 +		((u64)read_fw_trace(trace_seq_data, 2) << 32);
@@ -519,9 +531,6 @@ index 42435149d56a..e0dd397f53e8 100644
 +	}
 +	seq_puts(s, "\n");
 +	return 0;
-+
-+err_out:
-+	return err;
 +}
 +
 +static const struct seq_operations pvr_fw_trace_seq_ops = {
@@ -625,12 +634,12 @@ index 42435149d56a..e0dd397f53e8 100644
 +#endif
 diff --git a/drivers/gpu/drm/imagination/pvr_params.c b/drivers/gpu/drm/imagination/pvr_params.c
 new file mode 100644
-index 000000000000..20f2ba8915f4
+index 000000000000..6e2a3750e70e
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_params.c
 @@ -0,0 +1,147 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#include "pvr_params.h"
 +
@@ -778,12 +787,12 @@ index 000000000000..20f2ba8915f4
 +#endif
 diff --git a/drivers/gpu/drm/imagination/pvr_params.h b/drivers/gpu/drm/imagination/pvr_params.h
 new file mode 100644
-index 000000000000..1d8335246d27
+index 000000000000..9988c941f83f
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_params.h
 @@ -0,0 +1,72 @@
 +/* SPDX-License-Identifier: GPL-2.0 OR MIT */
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#ifndef PVR_PARAMS_H
 +#define PVR_PARAMS_H

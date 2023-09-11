@@ -1,22 +1,33 @@
-From 59cd10b86af631bc6386588eea6baea71dcc02ab Mon Sep 17 00:00:00 2001
+From 35b6a989bd589c983307a97417ebd8d577dcfc27 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Tue, 13 Jun 2023 15:47:46 +0100
-Subject: [PATCH 03/17] drm/imagination/uapi: Add PowerVR driver UAPI
+Date: Wed, 6 Sep 2023 10:55:26 +0100
+Subject: [PATCH 04/20] drm/imagination/uapi: Add PowerVR driver UAPI
 
 Add the UAPI implementation for the PowerVR driver.
 
+Changes from v4:
+- Remove CREATE_ZEROED flag for BO creation (all buffers are now zeroed)
+
+Co-developed-by: Frank Binns <frank.binns@imgtec.com>
+Signed-off-by: Frank Binns <frank.binns@imgtec.com>
+Co-developed-by: Boris Brezillon <boris.brezillon@collabora.com>
+Signed-off-by: Boris Brezillon <boris.brezillon@collabora.com>
+Co-developed-by: Matt Coster <matt.coster@imgtec.com>
+Signed-off-by: Matt Coster <matt.coster@imgtec.com>
+Co-developed-by: Donald Robson <donald.robson@imgtec.com>
+Signed-off-by: Donald Robson <donald.robson@imgtec.com>
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
 ---
  MAINTAINERS                |    1 +
- include/uapi/drm/pvr_drm.h | 1333 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 1334 insertions(+)
+ include/uapi/drm/pvr_drm.h | 1306 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 1307 insertions(+)
  create mode 100644 include/uapi/drm/pvr_drm.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 6d104361f536..6771074f5000 100644
+index 1bfafad5dbd8..953b0556551d 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -10097,6 +10097,7 @@ M:	Sarah Walker <sarah.walker@imgtec.com>
+@@ -10237,6 +10237,7 @@ M:	Sarah Walker <sarah.walker@imgtec.com>
  M:	Donald Robson <donald.robson@imgtec.com>
  S:	Supported
  F:	Documentation/devicetree/bindings/gpu/img,powervr.yaml
@@ -26,12 +37,12 @@ index 6d104361f536..6771074f5000 100644
  M:	Sean Young <sean@mess.org>
 diff --git a/include/uapi/drm/pvr_drm.h b/include/uapi/drm/pvr_drm.h
 new file mode 100644
-index 000000000000..2f7bc96aaf52
+index 000000000000..04a9b56f5262
 --- /dev/null
 +++ b/include/uapi/drm/pvr_drm.h
-@@ -0,0 +1,1333 @@
+@@ -0,0 +1,1306 @@
 +/* SPDX-License-Identifier: (GPL-2.0 WITH Linux-syscall-note) OR MIT */
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#ifndef PVR_DRM_UAPI_H
 +#define PVR_DRM_UAPI_H
@@ -220,39 +231,6 @@ index 000000000000..2f7bc96aaf52
 +};
 +
 +/**
-+ * struct drm_pvr_dev_query_hwrt_info - Container used to fetch information
-+ * necessary for creating render targets.
-+ *
-+ * When fetching this type &struct drm_pvr_ioctl_dev_query_args.type must be set
-+ * to %DRM_PVR_DEV_QUERY_HWRT_INFO_GET.
-+ */
-+struct drm_pvr_dev_query_hwrt_info {
-+	/**
-+	 * @num_geomdatas: Number of geom data arguments
-+	 * required when creating a HWRT dataset.
-+	 */
-+	__u8 num_geomdatas;
-+
-+	/**
-+	 * @num_rtdatas: Number of RT data arguments
-+	 * required when creating a HWRT dataset.
-+	 */
-+	__u8 num_rtdatas;
-+
-+	/**
-+	 * @num_freelists: Number of free list data
-+	 * arguments required when creating a HWRT dataset.
-+	 */
-+	__u8 num_freelists;
-+
-+	/** @_padding_3: Reserved - will be zeroed */
-+	__u8 _padding_3;
-+
-+	/** @_padding_4: Reserved - will be zeroed */
-+	__u32 _padding_4;
-+};
-+
-+/**
 + * struct drm_pvr_dev_query_quirks - Container used to fetch information about
 + * hardware fixes for which the device may require support in the user mode
 + * driver.
@@ -302,7 +280,7 @@ index 000000000000..2f7bc96aaf52
 +	 *
 +	 * These enhancements affect userspace and the kernel or firmware. They
 +	 * are disabled by default and require userspace to opt-in. The opt-in
-+	 * mechanism depends on the quirk.
++	 * mechanism depends on the enhancement.
 +	 */
 +	__u64 enhancements;
 +
@@ -534,12 +512,6 @@ index 000000000000..2f7bc96aaf52
 +	DRM_PVR_DEV_QUERY_RUNTIME_INFO_GET,
 +
 +	/**
-+	 * @DRM_PVR_DEV_QUERY_HWRT_INFO_GET: The dev query args contain a
-+	 * pointer to &struct drm_pvr_dev_query_hwrt_info.
-+	 */
-+	DRM_PVR_DEV_QUERY_HWRT_INFO_GET,
-+
-+	/**
 +	 * @DRM_PVR_DEV_QUERY_QUIRKS_GET: The dev query args contain a pointer
 +	 * to &struct drm_pvr_dev_query_quirks.
 +	 */
@@ -610,10 +582,6 @@ index 000000000000..2f7bc96aaf52
 + * Creation options
 + *    These use the prefix ``DRM_PVR_BO_CREATE_``.
 + *
-+ *    :ZEROED: Require the allocated buffer to be zeroed before returning. Note
-+ *      that this is an active operation, and is never zero cost. Unless it is
-+ *      explicitly required, this option should not be set.
-+ *
 + * Device mapping options
 + *    These use the prefix ``DRM_PVR_BO_DEVICE_``.
 + *
@@ -634,8 +602,10 @@ index 000000000000..2f7bc96aaf52
 +#define DRM_PVR_BO_DEVICE_BYPASS_CACHE _BITULL(0)
 +#define DRM_PVR_BO_DEVICE_PM_FW_PROTECT _BITULL(1)
 +#define DRM_PVR_BO_CPU_ALLOW_USERSPACE_ACCESS _BITULL(2)
-+#define DRM_PVR_BO_CREATE_ZEROED _BITULL(3)
-+/* Bits 4..63 are reserved. */
++/* Bits 3..63 are reserved. */
++
++#define DRM_PVR_BO_FLAGS_MASK (DRM_PVR_BO_DEVICE_BYPASS_CACHE | DRM_PVR_BO_DEVICE_PM_FW_PROTECT | \
++			       DRM_PVR_BO_CPU_ALLOW_USERSPACE_ACCESS)
 +
 +/**
 + * struct drm_pvr_ioctl_create_bo_args - Arguments for %DRM_IOCTL_PVR_CREATE_BO
@@ -1216,6 +1186,12 @@ index 000000000000..2f7bc96aaf52
 + *
 + *    Indicates whether this render produces visibility results.
 + *
++ * .. c:macro:: DRM_PVR_SUBMIT_JOB_FRAG_CMD_SCRATCHBUFFER
++ *
++ *    Indicates whether partial renders write to a scratch buffer instead of
++ *    the final surface. It also forces the full screen copy expected to be
++ *    present on the last render after all partial renders have completed.
++ *
 + * .. c:macro:: DRM_PVR_SUBMIT_JOB_FRAG_CMD_FLAGS_MASK
 + *
 + *    Logical OR of all the fragment cmd flags.
@@ -1224,13 +1200,17 @@ index 000000000000..2f7bc96aaf52
 +#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_DEPTHBUFFER _BITULL(1)
 +#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_STENCILBUFFER _BITULL(2)
 +#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_PREVENT_CDM_OVERLAP _BITULL(3)
++#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_SCRATCHBUFFER _BITULL(4)
 +#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_GET_VIS_RESULTS _BITULL(5)
++#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_PARTIAL_RENDER _BITULL(6)
 +#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_FLAGS_MASK                                 \
 +	(DRM_PVR_SUBMIT_JOB_FRAG_CMD_SINGLE_CORE |                             \
 +	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_DEPTHBUFFER |                             \
 +	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_STENCILBUFFER |                           \
 +	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_PREVENT_CDM_OVERLAP |                     \
-+	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_GET_VIS_RESULTS)
++	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_SCRATCHBUFFER |                           \
++	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_GET_VIS_RESULTS |                         \
++	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_PARTIAL_RENDER)
 +
 +/**
 + * DOC: Flags for SUBMIT_JOB ioctl compute command.
@@ -1352,6 +1332,10 @@ index 000000000000..2f7bc96aaf52
 +
 +/**
 + * struct drm_pvr_ioctl_submit_jobs_args - Arguments for %DRM_IOCTL_PVR_SUBMIT_JOB
++ *
++ * If the syscall returns an error it is important to check the value of
++ * @jobs.count. This indicates the index into @jobs.array where the
++ * error occurred.
 + */
 +struct drm_pvr_ioctl_submit_jobs_args {
 +	/** @jobs: [IN] Array of jobs to submit. */

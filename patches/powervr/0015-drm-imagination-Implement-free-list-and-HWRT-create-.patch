@@ -1,31 +1,42 @@
-From 81656ab701c8dc9464a14dfd2e0cd1b62e320785 Mon Sep 17 00:00:00 2001
+From 0b1a616aac5d6dbc30f558aa532871a4c34e8957 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Tue, 13 Jun 2023 15:47:55 +0100
-Subject: [PATCH 12/17] drm/imagination: Implement free list and HWRT create
+Date: Wed, 6 Sep 2023 10:55:37 +0100
+Subject: [PATCH 15/20] drm/imagination: Implement free list and HWRT create
  and destroy ioctls
 
 Implement ioctls to create and destroy free lists and HWRT datasets. Free
 lists are used for GPU-side memory allocation during geometry processing.
 HWRT datasets are the FW-side structures representing render targets.
 
+Changes since v4:
+- Remove use of drm_gem_shmem_get_pages()
+
+Changes since v3:
+- Support free list grow requests from FW
+- Use drm_dev_{enter,exit}
+
+Co-developed-by: Boris Brezillon <boris.brezillon@collabora.com>
+Signed-off-by: Boris Brezillon <boris.brezillon@collabora.com>
+Co-developed-by: Donald Robson <donald.robson@imgtec.com>
+Signed-off-by: Donald Robson <donald.robson@imgtec.com>
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
 ---
  drivers/gpu/drm/imagination/Makefile        |   2 +
- drivers/gpu/drm/imagination/pvr_ccb.c       |  23 +
+ drivers/gpu/drm/imagination/pvr_ccb.c       |  10 +
  drivers/gpu/drm/imagination/pvr_device.h    |  24 +
- drivers/gpu/drm/imagination/pvr_drv.c       | 104 +++-
- drivers/gpu/drm/imagination/pvr_free_list.c | 577 ++++++++++++++++++++
- drivers/gpu/drm/imagination/pvr_free_list.h | 185 +++++++
- drivers/gpu/drm/imagination/pvr_hwrt.c      | 559 +++++++++++++++++++
- drivers/gpu/drm/imagination/pvr_hwrt.h      | 163 ++++++
- 8 files changed, 1633 insertions(+), 4 deletions(-)
+ drivers/gpu/drm/imagination/pvr_drv.c       | 112 +++-
+ drivers/gpu/drm/imagination/pvr_free_list.c | 625 ++++++++++++++++++++
+ drivers/gpu/drm/imagination/pvr_free_list.h | 195 ++++++
+ drivers/gpu/drm/imagination/pvr_hwrt.c      | 549 +++++++++++++++++
+ drivers/gpu/drm/imagination/pvr_hwrt.h      | 165 ++++++
+ 8 files changed, 1678 insertions(+), 4 deletions(-)
  create mode 100644 drivers/gpu/drm/imagination/pvr_free_list.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_free_list.h
  create mode 100644 drivers/gpu/drm/imagination/pvr_hwrt.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_hwrt.h
 
 diff --git a/drivers/gpu/drm/imagination/Makefile b/drivers/gpu/drm/imagination/Makefile
-index 89a101dfb7f3..6edf64bed724 100644
+index 0a6532d30c00..fca2ee2efbac 100644
 --- a/drivers/gpu/drm/imagination/Makefile
 +++ b/drivers/gpu/drm/imagination/Makefile
 @@ -8,12 +8,14 @@ powervr-y := \
@@ -40,11 +51,11 @@ index 89a101dfb7f3..6edf64bed724 100644
  	pvr_fw_trace.o \
  	pvr_gem.o \
 +	pvr_hwrt.o \
+ 	pvr_mmu.o \
  	pvr_power.o \
  	pvr_vm.o \
- 	pvr_vm_mips.o
 diff --git a/drivers/gpu/drm/imagination/pvr_ccb.c b/drivers/gpu/drm/imagination/pvr_ccb.c
-index 621470d04ea8..6cf8ed705845 100644
+index 1dfcce963e67..faa32a548a80 100644
 --- a/drivers/gpu/drm/imagination/pvr_ccb.c
 +++ b/drivers/gpu/drm/imagination/pvr_ccb.c
 @@ -4,6 +4,7 @@
@@ -55,40 +66,27 @@ index 621470d04ea8..6cf8ed705845 100644
  #include "pvr_fw.h"
  #include "pvr_gem.h"
  #include "pvr_power.h"
-@@ -127,6 +128,28 @@ process_fwccb_command(struct pvr_device *pvr_dev, struct rogue_fwif_fwccb_cmd *c
- 		WARN_ON(pvr_power_reset(pvr_dev));
+@@ -138,6 +139,15 @@ process_fwccb_command(struct pvr_device *pvr_dev, struct rogue_fwif_fwccb_cmd *c
+ 		pvr_power_reset(pvr_dev, false);
  		break;
  
-+	case ROGUE_FWIF_FWCCB_CMD_FREELISTS_RECONSTRUCTION: {
-+		struct rogue_fwif_fwccb_cmd_freelists_reconstruction_data *data =
-+			&cmd->cmd_data.cmd_freelists_reconstruction;
-+		struct rogue_fwif_kccb_cmd resp_cmd;
-+		struct rogue_fwif_freelists_reconstruction_data *resp_data =
-+			&resp_cmd.cmd_data.free_lists_reconstruction_data;
-+		u32 i;
-+
-+		for (i = 0; i < data->freelist_count; i++)
-+			pvr_free_list_reconstruct(pvr_dev, data->freelist_ids[i]);
-+
-+		resp_cmd.cmd_type = ROGUE_FWIF_KCCB_CMD_FREELISTS_RECONSTRUCTION_UPDATE;
-+		resp_cmd.kccb_flags = 0;
-+		resp_data->freelist_count = data->freelist_count;
-+
-+		memcpy(resp_data->freelist_ids, data->freelist_ids,
-+		       data->freelist_count * sizeof(resp_data->freelist_ids[0]));
-+
-+		WARN_ON(pvr_kccb_send_cmd(pvr_dev, &resp_cmd, NULL));
++	case ROGUE_FWIF_FWCCB_CMD_FREELISTS_RECONSTRUCTION:
++		pvr_free_list_process_reconstruct_req(pvr_dev,
++						      &cmd->cmd_data.cmd_freelists_reconstruction);
 +		break;
-+	}
++
++	case ROGUE_FWIF_FWCCB_CMD_FREELIST_GROW:
++		pvr_free_list_process_grow_req(pvr_dev, &cmd->cmd_data.cmd_free_list_gs);
++		break;
 +
  	default:
  		drm_info(from_pvr_device(pvr_dev), "Received unknown FWCCB command %x\n",
  			 cmd->cmd_type);
 diff --git a/drivers/gpu/drm/imagination/pvr_device.h b/drivers/gpu/drm/imagination/pvr_device.h
-index ecd044564653..9431ebe64656 100644
+index cbcfc5d4b845..84166266ace8 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.h
 +++ b/drivers/gpu/drm/imagination/pvr_device.h
-@@ -144,6 +144,14 @@ struct pvr_device {
+@@ -146,6 +146,14 @@ struct pvr_device {
  	/** @fw_dev: Firmware related data. */
  	struct pvr_fw_device fw_dev;
  
@@ -103,7 +101,7 @@ index ecd044564653..9431ebe64656 100644
  	struct {
  		/** @work: Work item for watchdog callback. */
  		struct delayed_work work;
-@@ -224,6 +232,22 @@ struct pvr_file {
+@@ -241,6 +249,22 @@ struct pvr_file {
  	 */
  	struct pvr_device *pvr_dev;
  
@@ -127,7 +125,7 @@ index ecd044564653..9431ebe64656 100644
  	 * @vm_ctx_handles: Array of VM contexts belonging to this file. Array
  	 * members are of type "struct pvr_vm_context *".
 diff --git a/drivers/gpu/drm/imagination/pvr_drv.c b/drivers/gpu/drm/imagination/pvr_drv.c
-index 9d26cfcc7a16..3172ac4796b8 100644
+index fb37d8e41d84..9a3f34fdced1 100644
 --- a/drivers/gpu/drm/imagination/pvr_drv.c
 +++ b/drivers/gpu/drm/imagination/pvr_drv.c
 @@ -3,7 +3,9 @@
@@ -140,24 +138,24 @@ index 9d26cfcc7a16..3172ac4796b8 100644
  #include "pvr_power.h"
  #include "pvr_rogue_defs.h"
  #include "pvr_rogue_fwif_client.h"
-@@ -743,7 +745,37 @@ static int
+@@ -723,7 +725,41 @@ static int
  pvr_ioctl_create_free_list(struct drm_device *drm_dev, void *raw_args,
  			   struct drm_file *file)
  {
 -	return -ENOTTY;
 +	struct drm_pvr_ioctl_create_free_list_args *args = raw_args;
-+	struct pvr_device *pvr_dev = to_pvr_device(drm_dev);
 +	struct pvr_file *pvr_file = to_pvr_file(file);
 +	struct pvr_free_list *free_list;
++	int idx;
 +	int err;
 +
-+	if (pvr_dev->lost)
++	if (!drm_dev_enter(drm_dev, &idx))
 +		return -EIO;
 +
 +	free_list = pvr_free_list_create(pvr_file, args);
 +	if (IS_ERR(free_list)) {
 +		err = PTR_ERR(free_list);
-+		goto err_out;
++		goto err_drm_dev_exit;
 +	}
 +
 +	/* Allocate object handle for userspace. */
@@ -169,17 +167,21 @@ index 9d26cfcc7a16..3172ac4796b8 100644
 +	if (err < 0)
 +		goto err_cleanup;
 +
++	drm_dev_exit(idx);
++
 +	return 0;
 +
 +err_cleanup:
 +	pvr_free_list_put(free_list);
 +
-+err_out:
++err_drm_dev_exit:
++	drm_dev_exit(idx);
++
 +	return err;
  }
  
  /**
-@@ -763,7 +795,19 @@ static int
+@@ -743,7 +779,19 @@ static int
  pvr_ioctl_destroy_free_list(struct drm_device *drm_dev, void *raw_args,
  			    struct drm_file *file)
  {
@@ -200,24 +202,24 @@ index 9d26cfcc7a16..3172ac4796b8 100644
  }
  
  /**
-@@ -783,7 +827,37 @@ static int
+@@ -763,7 +811,41 @@ static int
  pvr_ioctl_create_hwrt_dataset(struct drm_device *drm_dev, void *raw_args,
  			      struct drm_file *file)
  {
 -	return -ENOTTY;
 +	struct drm_pvr_ioctl_create_hwrt_dataset_args *args = raw_args;
-+	struct pvr_device *pvr_dev = to_pvr_device(drm_dev);
 +	struct pvr_file *pvr_file = to_pvr_file(file);
 +	struct pvr_hwrt_dataset *hwrt;
++	int idx;
 +	int err;
 +
-+	if (pvr_dev->lost)
++	if (!drm_dev_enter(drm_dev, &idx))
 +		return -EIO;
 +
 +	hwrt = pvr_hwrt_dataset_create(pvr_file, args);
 +	if (IS_ERR(hwrt)) {
 +		err = PTR_ERR(hwrt);
-+		goto err_out;
++		goto err_drm_dev_exit;
 +	}
 +
 +	/* Allocate object handle for userspace. */
@@ -229,17 +231,21 @@ index 9d26cfcc7a16..3172ac4796b8 100644
 +	if (err < 0)
 +		goto err_cleanup;
 +
++	drm_dev_exit(idx);
++
 +	return 0;
 +
 +err_cleanup:
 +	pvr_hwrt_dataset_put(hwrt);
 +
-+err_out:
++err_drm_dev_exit:
++	drm_dev_exit(idx);
++
 +	return err;
  }
  
  /**
-@@ -803,7 +877,19 @@ static int
+@@ -783,7 +865,19 @@ static int
  pvr_ioctl_destroy_hwrt_dataset(struct drm_device *drm_dev, void *raw_args,
  			       struct drm_file *file)
  {
@@ -260,7 +266,7 @@ index 9d26cfcc7a16..3172ac4796b8 100644
  }
  
  /**
-@@ -1215,6 +1301,8 @@ pvr_drm_driver_open(struct drm_device *drm_dev, struct drm_file *file)
+@@ -1207,6 +1301,8 @@ pvr_drm_driver_open(struct drm_device *drm_dev, struct drm_file *file)
  	 */
  	pvr_file->pvr_dev = pvr_dev;
  
@@ -269,7 +275,7 @@ index 9d26cfcc7a16..3172ac4796b8 100644
  	xa_init_flags(&pvr_file->vm_ctx_handles, XA_FLAGS_ALLOC1);
  
  	/*
-@@ -1246,6 +1334,8 @@ pvr_drm_driver_postclose(__always_unused struct drm_device *drm_dev,
+@@ -1235,6 +1331,8 @@ pvr_drm_driver_postclose(__always_unused struct drm_device *drm_dev,
  	struct pvr_file *pvr_file = to_pvr_file(file);
  
  	/* Drop references on any remaining objects. */
@@ -278,7 +284,7 @@ index 9d26cfcc7a16..3172ac4796b8 100644
  	pvr_destroy_vm_contexts_for_file(pvr_file);
  
  	kfree(pvr_file);
-@@ -1317,6 +1407,8 @@ pvr_probe(struct platform_device *plat_dev)
+@@ -1293,6 +1391,8 @@ pvr_probe(struct platform_device *plat_dev)
  	if (err)
  		goto err_device_fini;
  
@@ -287,7 +293,7 @@ index 9d26cfcc7a16..3172ac4796b8 100644
  	return 0;
  
  err_device_fini:
-@@ -1335,6 +1427,10 @@ pvr_remove(struct platform_device *plat_dev)
+@@ -1310,6 +1410,10 @@ pvr_remove(struct platform_device *plat_dev)
  	struct drm_device *drm_dev = platform_get_drvdata(plat_dev);
  	struct pvr_device *pvr_dev = to_pvr_device(drm_dev);
  
@@ -295,17 +301,17 @@ index 9d26cfcc7a16..3172ac4796b8 100644
 +
 +	xa_destroy(&pvr_dev->free_list_ids);
 +
- 	drm_dev_unregister(drm_dev);
+ 	pm_runtime_suspend(drm_dev->dev);
+ 	drm_dev_unplug(drm_dev);
  	pvr_device_fini(pvr_dev);
- 	pvr_power_fini(pvr_dev);
 diff --git a/drivers/gpu/drm/imagination/pvr_free_list.c b/drivers/gpu/drm/imagination/pvr_free_list.c
 new file mode 100644
-index 000000000000..d8aa1d7700a1
+index 000000000000..683882fdfbc6
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_free_list.c
-@@ -0,0 +1,577 @@
+@@ -0,0 +1,625 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#include "pvr_free_list.h"
 +#include "pvr_gem.h"
@@ -366,22 +372,17 @@ index 000000000000..d8aa1d7700a1
 +	    args->grow_num_pages > args->max_num_pages ||
 +	    args->max_num_pages == 0 ||
 +	    (args->initial_num_pages < args->max_num_pages && !args->grow_num_pages) ||
-+	    (args->initial_num_pages == args->max_num_pages && args->grow_num_pages)) {
-+		err = -EINVAL;
-+		goto err_out;
-+	}
++	    (args->initial_num_pages == args->max_num_pages && args->grow_num_pages))
++		return -EINVAL;
++
 +	if ((args->initial_num_pages & FREE_LIST_ALIGNMENT) ||
 +	    (args->max_num_pages & FREE_LIST_ALIGNMENT) ||
-+	    (args->grow_num_pages & FREE_LIST_ALIGNMENT)) {
-+		err = -EINVAL;
-+		goto err_out;
-+	}
++	    (args->grow_num_pages & FREE_LIST_ALIGNMENT))
++		return -EINVAL;
 +
 +	vm_ctx = pvr_vm_context_lookup(pvr_file, args->vm_context_handle);
-+	if (!vm_ctx) {
-+		err = -EINVAL;
-+		goto err_out;
-+	}
++	if (!vm_ctx)
++		return -EINVAL;
 +
 +	free_list_obj = pvr_vm_find_gem_object(vm_ctx, args->free_list_gpu_addr,
 +					       NULL, &free_list_size);
@@ -403,10 +404,8 @@ index 000000000000..d8aa1d7700a1
 +	free_list->grow_pages = args->grow_num_pages;
 +	free_list->grow_threshold = args->grow_threshold;
 +	free_list->obj = free_list_obj;
-+
-+	err = pvr_gem_object_get_pages(free_list->obj);
-+	if (err < 0)
-+		goto err_put_free_list_obj;
++	free_list->free_list_gpu_addr = args->free_list_gpu_addr;
++	free_list->initial_num_pages = args->initial_num_pages;
 +
 +	pvr_vm_context_put(vm_ctx);
 +
@@ -418,7 +417,6 @@ index 000000000000..d8aa1d7700a1
 +err_put_vm_context:
 +	pvr_vm_context_put(vm_ctx);
 +
-+err_out:
 +	return err;
 +}
 +
@@ -427,7 +425,6 @@ index 000000000000..d8aa1d7700a1
 +{
 +	WARN_ON(!list_empty(&free_list->hwrt_list));
 +
-+	pvr_gem_object_put_pages(free_list->obj);
 +	pvr_gem_object_put(free_list->obj);
 +}
 +
@@ -480,15 +477,37 @@ index 000000000000..d8aa1d7700a1
 +	return ret;
 +}
 +
++static void
++free_list_fw_init(void *cpu_ptr, void *priv)
++{
++	struct rogue_fwif_freelist *fw_data = cpu_ptr;
++	struct pvr_free_list *free_list = priv;
++	u32 ready_pages;
++
++	/* Fill out FW structure */
++	ready_pages = calculate_free_list_ready_pages(free_list,
++						      free_list->initial_num_pages);
++
++	fw_data->max_pages = free_list->max_pages;
++	fw_data->current_pages = free_list->initial_num_pages - ready_pages;
++	fw_data->grow_pages = free_list->grow_pages;
++	fw_data->ready_pages = ready_pages;
++	fw_data->freelist_id = free_list->fw_id;
++	fw_data->grow_pending = false;
++	fw_data->current_stack_top = fw_data->current_pages - 1;
++	fw_data->freelist_dev_addr = free_list->free_list_gpu_addr;
++	fw_data->current_dev_addr = (fw_data->freelist_dev_addr +
++				     ((fw_data->max_pages - fw_data->current_pages) *
++				      FREE_LIST_ENTRY_SIZE)) &
++				    ~((u64)ROGUE_BIF_PM_FREELIST_BASE_ADDR_ALIGNSIZE - 1);
++}
++
 +static int
 +free_list_create_fw_structure(struct pvr_file *pvr_file,
 +			      struct drm_pvr_ioctl_create_free_list_args *args,
 +			      struct pvr_free_list *free_list)
 +{
 +	struct pvr_device *pvr_dev = pvr_file->pvr_dev;
-+	struct rogue_fwif_freelist *fw_data;
-+	u32 ready_pages;
-+	int err;
 +
 +	/*
 +	 * Create and map the FW structure so we can initialise it. This is not
@@ -496,37 +515,13 @@ index 000000000000..d8aa1d7700a1
 +	 * is only for this function.
 +	 */
 +	free_list->fw_data = pvr_fw_object_create_and_map(pvr_dev, sizeof(*free_list->fw_data),
-+							  PVR_BO_FW_FLAGS_DEVICE_UNCACHED |
-+							  DRM_PVR_BO_CREATE_ZEROED,
++							  PVR_BO_FW_FLAGS_DEVICE_UNCACHED,
++							  free_list_fw_init, free_list,
 +							  &free_list->fw_obj);
-+	if (IS_ERR(free_list->fw_data)) {
-+		err = PTR_ERR(free_list->fw_data);
-+		goto err_out;
-+	}
-+
-+	/* Fill out FW structure */
-+	ready_pages = calculate_free_list_ready_pages(free_list,
-+						      args->initial_num_pages);
-+
-+	fw_data = free_list->fw_data;
-+
-+	fw_data->max_pages = free_list->max_pages;
-+	fw_data->current_pages = args->initial_num_pages - ready_pages;
-+	fw_data->grow_pages = free_list->grow_pages;
-+	fw_data->ready_pages = ready_pages;
-+	fw_data->freelist_id = free_list->fw_id;
-+	fw_data->grow_pending = false;
-+	fw_data->current_stack_top = fw_data->current_pages - 1;
-+	fw_data->freelist_dev_addr = args->free_list_gpu_addr;
-+	fw_data->current_dev_addr = (fw_data->freelist_dev_addr +
-+				     ((fw_data->max_pages - fw_data->current_pages) *
-+				      FREE_LIST_ENTRY_SIZE)) &
-+				    ~((u64)ROGUE_BIF_PM_FREELIST_BASE_ADDR_ALIGNSIZE - 1);
++	if (IS_ERR(free_list->fw_data))
++		return PTR_ERR(free_list->fw_data);
 +
 +	return 0;
-+
-+err_out:
-+	return err;
 +}
 +
 +static void
@@ -541,15 +536,12 @@ index 000000000000..d8aa1d7700a1
 +{
 +	struct sg_dma_page_iter dma_iter;
 +	u32 *page_list;
-+	int err;
 +
 +	lockdep_assert_held(&free_list->lock);
 +
 +	page_list = pvr_gem_object_vmap(free_list->obj);
-+	if (IS_ERR(page_list)) {
-+		err = PTR_ERR(page_list);
-+		goto err_out;
-+	}
++	if (IS_ERR(page_list))
++		return PTR_ERR(page_list);
 +
 +	offset /= FREE_LIST_ENTRY_SIZE;
 +	/* clang-format off */
@@ -584,9 +576,6 @@ index 000000000000..d8aa1d7700a1
 +	pvr_gem_object_vunmap(free_list->obj);
 +
 +	return 0;
-+
-+err_out:
-+	return err;
 +}
 +
 +static int
@@ -649,13 +638,9 @@ index 000000000000..d8aa1d7700a1
 +		goto err_free;
 +	}
 +
-+	err = pvr_gem_object_get_pages(free_list_node->mem_obj);
-+	if (err < 0)
-+		goto err_destroy_gem_object;
-+
 +	err = pvr_free_list_insert_node_locked(free_list_node);
 +	if (err)
-+		goto err_put_pages;
++		goto err_destroy_gem_object;
 +
 +	list_add_tail(&free_list_node->node, &free_list->mem_block_list);
 +
@@ -672,9 +657,6 @@ index 000000000000..d8aa1d7700a1
 +
 +	return 0;
 +
-+err_put_pages:
-+	pvr_gem_object_put_pages(free_list_node->mem_obj);
-+
 +err_destroy_gem_object:
 +	pvr_gem_object_put(free_list_node->mem_obj);
 +
@@ -687,10 +669,43 @@ index 000000000000..d8aa1d7700a1
 +	return err;
 +}
 +
++void pvr_free_list_process_grow_req(struct pvr_device *pvr_dev,
++				    struct rogue_fwif_fwccb_cmd_freelist_gs_data *req)
++{
++	struct pvr_free_list *free_list = pvr_free_list_lookup_id(pvr_dev, req->freelist_id);
++	struct rogue_fwif_kccb_cmd resp_cmd = {
++		.cmd_type = ROGUE_FWIF_KCCB_CMD_FREELIST_GROW_UPDATE,
++	};
++	struct rogue_fwif_freelist_gs_data *resp = &resp_cmd.cmd_data.free_list_gs_data;
++	u32 grow_pages = 0;
++
++	/* If we don't have a freelist registered for this ID, we can't do much. */
++	if (WARN_ON(!free_list))
++		return;
++
++	/* Since the FW made the request, it has already consumed the ready pages,
++	 * update the host struct.
++	 */
++	free_list->current_pages += free_list->ready_pages;
++	free_list->ready_pages = 0;
++
++	/* If the grow succeeds, update the grow_pages argument. */
++	if (!pvr_free_list_grow(free_list, free_list->grow_pages))
++		grow_pages = free_list->grow_pages;
++
++	/* Now prepare the response and send it back to the FW. */
++	pvr_fw_object_get_fw_addr(free_list->fw_obj, &resp->freelist_fw_addr);
++	resp->delta_pages = grow_pages;
++	resp->new_pages = free_list->current_pages + free_list->ready_pages;
++	resp->ready_pages = free_list->ready_pages;
++	pvr_free_list_put(free_list);
++
++	WARN_ON(pvr_kccb_send_cmd(pvr_dev, &resp_cmd, NULL));
++}
++
 +static void
 +pvr_free_list_free_node(struct pvr_free_list_node *free_list_node)
 +{
-+	pvr_gem_object_put_pages(free_list_node->mem_obj);
 +	pvr_gem_object_put(free_list_node->mem_obj);
 +
 +	kfree(free_list_node);
@@ -770,11 +785,24 @@ index 000000000000..d8aa1d7700a1
 +	struct pvr_free_list *free_list =
 +		container_of(ref_count, struct pvr_free_list, ref_count);
 +	struct list_head *pos, *n;
++	int err;
 +
 +	xa_erase(&free_list->pvr_dev->free_list_ids, free_list->fw_id);
 +
-+	WARN_ON(pvr_fw_structure_cleanup(free_list->pvr_dev, ROGUE_FWIF_CLEANUP_FREELIST,
-+					 free_list->fw_obj, 0));
++	err = pvr_fw_structure_cleanup(free_list->pvr_dev,
++				       ROGUE_FWIF_CLEANUP_FREELIST,
++				       free_list->fw_obj, 0);
++	if (err == -EBUSY) {
++		/* Flush the FWCCB to process any HWR or freelist reconstruction
++		 * request that might keep the freelist busy, and try again.
++		 */
++		pvr_fwccb_process(free_list->pvr_dev);
++		err = pvr_fw_structure_cleanup(free_list->pvr_dev,
++					       ROGUE_FWIF_CLEANUP_FREELIST,
++					       free_list->fw_obj, 0);
++	}
++
++	WARN_ON(err);
 +
 +	/* clang-format off */
 +	list_for_each_safe(pos, n, &free_list->mem_block_list) {
@@ -841,7 +869,7 @@ index 000000000000..d8aa1d7700a1
 +	mutex_unlock(&free_list->lock);
 +}
 +
-+void
++static void
 +pvr_free_list_reconstruct(struct pvr_device *pvr_dev, u32 freelist_id)
 +{
 +	struct pvr_free_list *free_list = pvr_free_list_lookup_id(pvr_dev, freelist_id);
@@ -873,22 +901,48 @@ index 000000000000..d8aa1d7700a1
 +
 +	/* Reset the state of any associated HWRTs. */
 +	list_for_each_entry(hwrt_data, &free_list->hwrt_list, freelist_node) {
-+		hwrt_data->fw_data->state = ROGUE_FWIF_RTDATA_STATE_HWR;
-+		hwrt_data->fw_data->hwrt_data_flags &= ~HWRTDATA_HAS_LAST_GEOM;
++		struct rogue_fwif_hwrtdata *hwrt_fw_data = pvr_fw_object_vmap(hwrt_data->fw_obj);
++
++		if (!WARN_ON(IS_ERR(hwrt_fw_data))) {
++			hwrt_fw_data->state = ROGUE_FWIF_RTDATA_STATE_HWR;
++			hwrt_fw_data->hwrt_data_flags &= ~HWRTDATA_HAS_LAST_GEOM;
++		}
++
++		pvr_fw_object_vunmap(hwrt_data->fw_obj);
 +	}
 +
 +	mutex_unlock(&free_list->lock);
 +
 +	pvr_free_list_put(free_list);
 +}
++
++void
++pvr_free_list_process_reconstruct_req(struct pvr_device *pvr_dev,
++				struct rogue_fwif_fwccb_cmd_freelists_reconstruction_data *req)
++{
++	struct rogue_fwif_kccb_cmd resp_cmd = {
++		.cmd_type = ROGUE_FWIF_KCCB_CMD_FREELISTS_RECONSTRUCTION_UPDATE,
++	};
++	struct rogue_fwif_freelists_reconstruction_data *resp =
++		&resp_cmd.cmd_data.free_lists_reconstruction_data;
++
++	for (u32 i = 0; i < req->freelist_count; i++)
++		pvr_free_list_reconstruct(pvr_dev, req->freelist_ids[i]);
++
++	resp->freelist_count = req->freelist_count;
++	memcpy(resp->freelist_ids, req->freelist_ids,
++	       req->freelist_count * sizeof(resp->freelist_ids[0]));
++
++	WARN_ON(pvr_kccb_send_cmd(pvr_dev, &resp_cmd, NULL));
++}
 diff --git a/drivers/gpu/drm/imagination/pvr_free_list.h b/drivers/gpu/drm/imagination/pvr_free_list.h
 new file mode 100644
-index 000000000000..b3c6d4435272
+index 000000000000..9f3ed6d7c4c5
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_free_list.h
-@@ -0,0 +1,185 @@
+@@ -0,0 +1,195 @@
 +/* SPDX-License-Identifier: GPL-2.0 OR MIT */
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#ifndef PVR_FREE_LIST_H
 +#define PVR_FREE_LIST_H
@@ -984,6 +1038,12 @@ index 000000000000..b3c6d4435272
 +
 +	/** @hwrt_list: List of HWRTs using this free list. */
 +	struct list_head hwrt_list;
++
++	/** @initial_num_pages: Initial number of pages in free list. */
++	u32 initial_num_pages;
++
++	/** @free_list_gpu_addr: Address of free list in GPU address space. */
++	u64 free_list_gpu_addr;
 +};
 +
 +struct pvr_free_list *
@@ -1068,18 +1128,22 @@ index 000000000000..b3c6d4435272
 +void
 +pvr_free_list_remove_hwrt(struct pvr_free_list *free_list, struct pvr_hwrt_data *hwrt_data);
 +
++void pvr_free_list_process_grow_req(struct pvr_device *pvr_dev,
++				    struct rogue_fwif_fwccb_cmd_freelist_gs_data *req);
++
 +void
-+pvr_free_list_reconstruct(struct pvr_device *pvr_dev, u32 freelist_id);
++pvr_free_list_process_reconstruct_req(struct pvr_device *pvr_dev,
++				struct rogue_fwif_fwccb_cmd_freelists_reconstruction_data *req);
 +
 +#endif /* PVR_FREE_LIST_H */
 diff --git a/drivers/gpu/drm/imagination/pvr_hwrt.c b/drivers/gpu/drm/imagination/pvr_hwrt.c
 new file mode 100644
-index 000000000000..96c3dd964482
+index 000000000000..684dccf30148
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_hwrt.c
-@@ -0,0 +1,559 @@
+@@ -0,0 +1,549 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#include "pvr_free_list.h"
 +#include "pvr_hwrt.h"
@@ -1127,6 +1191,7 @@ index 000000000000..96c3dd964482
 +	int i;
 +
 +	hwrt->pvr_dev = pvr_dev;
++	hwrt->max_rts = args->layers;
 +
 +	/* Get pointers to the free lists */
 +	for (i = 0; i < ARRAY_SIZE(hwrt->free_lists); i++) {
@@ -1182,7 +1247,7 @@ index 000000000000..96c3dd964482
 +
 +	err = PVR_FEATURE_VALUE(pvr_dev, isp_samples_per_pixel, &samples_per_pixel);
 +	if (err)
-+		goto err_out;
++		return err;
 +
 +	if (samples_per_pixel == 1) {
 +		if (samples >= 4)
@@ -1199,15 +1264,13 @@ index 000000000000..96c3dd964482
 +			y <<= 1;
 +	} else {
 +		WARN(true, "Unsupported ISP samples per pixel value");
-+		err = -EINVAL;
-+		goto err_out;
++		return -EINVAL;
 +	}
 +
 +	*value_out = ((x << ROGUE_CR_ISP_MTILE_SIZE_X_SHIFT) & ~ROGUE_CR_ISP_MTILE_SIZE_X_CLRMSK) |
 +		     ((y << ROGUE_CR_ISP_MTILE_SIZE_Y_SHIFT) & ~ROGUE_CR_ISP_MTILE_SIZE_Y_CLRMSK);
 +
-+err_out:
-+	return err;
++	return 0;
 +}
 +
 +static int
@@ -1266,7 +1329,7 @@ index 000000000000..96c3dd964482
 +
 +	err = PVR_FEATURE_VALUE(pvr_dev, isp_samples_per_pixel, &samples_per_pixel);
 +	if (err)
-+		goto err_out;
++		return err;
 +
 +	switch (samples_per_pixel) {
 +	case 1:
@@ -1293,14 +1356,20 @@ index 000000000000..96c3dd964482
 +		break;
 +	default:
 +		WARN(true, "Unsupported ISP samples per pixel value");
-+		err = -EINVAL;
-+		goto err_out;
++		return -EINVAL;
 +	}
 +
 +	*value_out = value;
 +
-+err_out:
-+	return err;
++	return 0;
++}
++
++static void
++hwrtdata_common_init(void *cpu_ptr, void *priv)
++{
++	struct pvr_hwrt_dataset *hwrt = priv;
++
++	memcpy(cpu_ptr, &hwrt->common, sizeof(hwrt->common));
 +}
 +
 +static int
@@ -1310,7 +1379,6 @@ index 000000000000..96c3dd964482
 +{
 +	struct drm_pvr_create_hwrt_geom_data_args *geom_data_args = &args->geom_data_args;
 +	struct pvr_device *pvr_dev = pvr_file->pvr_dev;
-+	struct rogue_fwif_hwrtdata_common *hwrt_data_common_fw;
 +	struct pvr_rt_mtile_info info;
 +	int err;
 +
@@ -1325,10 +1393,10 @@ index 000000000000..96c3dd964482
 +	info.num_tiles_x = DIV_ROUND_UP(args->width, info.tile_size_x);
 +	info.num_tiles_y = DIV_ROUND_UP(args->height, info.tile_size_y);
 +
-+	if (PVR_HAS_FEATURE(pvr_dev, simple_internal_parameter_format)) {
++	if (PVR_HAS_FEATURE(pvr_dev, simple_parameter_format_version)) {
 +		u32 parameter_format;
 +
-+		err = PVR_FEATURE_VALUE(pvr_dev, simple_internal_parameter_format,
++		err = PVR_FEATURE_VALUE(pvr_dev, simple_parameter_format_version,
 +					&parameter_format);
 +		if (WARN_ON(err))
 +			return err;
@@ -1359,84 +1427,74 @@ index 000000000000..96c3dd964482
 +		info.tile_max_y = info.num_tiles_y - 1;
 +	}
 +
-+	/*
-+	 * Create and map the FW structure so we can initialise it. This is not
-+	 * accessed on the CPU side post-initialisation so the mapping lifetime
-+	 * is only for this function.
-+	 */
-+	hwrt_data_common_fw =
-+		pvr_fw_object_create_and_map(pvr_dev,
-+					     sizeof(*hwrt_data_common_fw),
-+					     PVR_BO_FW_FLAGS_DEVICE_UNCACHED |
-+					     DRM_PVR_BO_CREATE_ZEROED, &hwrt->common_fw_obj);
-+	if (IS_ERR(hwrt_data_common_fw)) {
-+		err = PTR_ERR(hwrt_data_common_fw);
-+		return err;
-+	}
++	hwrt->common.geom_caches_need_zeroing = false;
 +
-+	hwrt_data_common_fw->geom_caches_need_zeroing = false;
-+
-+	hwrt_data_common_fw->isp_merge_lower_x = args->isp_merge_lower_x;
-+	hwrt_data_common_fw->isp_merge_lower_y = args->isp_merge_lower_y;
-+	hwrt_data_common_fw->isp_merge_upper_x = args->isp_merge_upper_x;
-+	hwrt_data_common_fw->isp_merge_upper_y = args->isp_merge_upper_y;
-+	hwrt_data_common_fw->isp_merge_scale_x = args->isp_merge_scale_x;
-+	hwrt_data_common_fw->isp_merge_scale_y = args->isp_merge_scale_y;
++	hwrt->common.isp_merge_lower_x = args->isp_merge_lower_x;
++	hwrt->common.isp_merge_lower_y = args->isp_merge_lower_y;
++	hwrt->common.isp_merge_upper_x = args->isp_merge_upper_x;
++	hwrt->common.isp_merge_upper_y = args->isp_merge_upper_y;
++	hwrt->common.isp_merge_scale_x = args->isp_merge_scale_x;
++	hwrt->common.isp_merge_scale_y = args->isp_merge_scale_y;
 +
 +	err = get_cr_multisamplectl_val(args->samples, false,
-+					&hwrt_data_common_fw->multi_sample_ctl);
++					&hwrt->common.multi_sample_ctl);
 +	if (err)
-+		goto err_put_fw_obj;
++		return err;
 +
 +	err = get_cr_multisamplectl_val(args->samples, true,
-+					&hwrt_data_common_fw->flipped_multi_sample_ctl);
++					&hwrt->common.flipped_multi_sample_ctl);
 +	if (err)
-+		goto err_put_fw_obj;
++		return err;
 +
-+	hwrt_data_common_fw->mtile_stride = info.mtile_x[0] * info.mtile_y[0];
++	hwrt->common.mtile_stride = info.mtile_x[0] * info.mtile_y[0];
 +
-+	err = get_cr_te_aa_val(pvr_dev, args->samples, &hwrt_data_common_fw->teaa);
++	err = get_cr_te_aa_val(pvr_dev, args->samples, &hwrt->common.teaa);
 +	if (err)
-+		goto err_put_fw_obj;
++		return err;
 +
-+	hwrt_data_common_fw->screen_pixel_max =
++	hwrt->common.screen_pixel_max =
 +		(((args->width - 1) << ROGUE_CR_PPP_SCREEN_PIXXMAX_SHIFT) &
 +		 ~ROGUE_CR_PPP_SCREEN_PIXXMAX_CLRMSK) |
 +		(((args->height - 1) << ROGUE_CR_PPP_SCREEN_PIXYMAX_SHIFT) &
 +		 ~ROGUE_CR_PPP_SCREEN_PIXYMAX_CLRMSK);
 +
-+	hwrt_data_common_fw->te_screen =
++	hwrt->common.te_screen =
 +		((info.tile_max_x << ROGUE_CR_TE_SCREEN_XMAX_SHIFT) &
 +		 ~ROGUE_CR_TE_SCREEN_XMAX_CLRMSK) |
 +		((info.tile_max_y << ROGUE_CR_TE_SCREEN_YMAX_SHIFT) &
 +		 ~ROGUE_CR_TE_SCREEN_YMAX_CLRMSK);
-+	hwrt_data_common_fw->te_mtile1 =
++	hwrt->common.te_mtile1 =
 +		((info.mtile_x[0] << ROGUE_CR_TE_MTILE1_X1_SHIFT) & ~ROGUE_CR_TE_MTILE1_X1_CLRMSK) |
 +		((info.mtile_x[1] << ROGUE_CR_TE_MTILE1_X2_SHIFT) & ~ROGUE_CR_TE_MTILE1_X2_CLRMSK) |
 +		((info.mtile_x[2] << ROGUE_CR_TE_MTILE1_X3_SHIFT) & ~ROGUE_CR_TE_MTILE1_X3_CLRMSK);
-+	hwrt_data_common_fw->te_mtile2 =
++	hwrt->common.te_mtile2 =
 +		((info.mtile_y[0] << ROGUE_CR_TE_MTILE2_Y1_SHIFT) & ~ROGUE_CR_TE_MTILE2_Y1_CLRMSK) |
 +		((info.mtile_y[1] << ROGUE_CR_TE_MTILE2_Y2_SHIFT) & ~ROGUE_CR_TE_MTILE2_Y2_CLRMSK) |
 +		((info.mtile_y[2] << ROGUE_CR_TE_MTILE2_Y3_SHIFT) & ~ROGUE_CR_TE_MTILE2_Y3_CLRMSK);
 +
 +	err = get_cr_isp_mtile_size_val(pvr_dev, args->samples, &info,
-+					&hwrt_data_common_fw->isp_mtile_size);
++					&hwrt->common.isp_mtile_size);
 +	if (err)
-+		goto err_put_fw_obj;
++		return err;
 +
-+	hwrt_data_common_fw->tpc_stride = geom_data_args->tpc_stride;
-+	hwrt_data_common_fw->tpc_size = geom_data_args->tpc_size;
++	hwrt->common.tpc_stride = geom_data_args->tpc_stride;
++	hwrt->common.tpc_size = geom_data_args->tpc_size;
 +
-+	hwrt_data_common_fw->rgn_header_size = args->region_header_size;
++	hwrt->common.rgn_header_size = args->region_header_size;
 +
-+	pvr_fw_object_vunmap(hwrt->common_fw_obj);
-+
-+	return 0;
-+
-+err_put_fw_obj:
-+	pvr_fw_object_vunmap(hwrt->common_fw_obj);
++	err = pvr_fw_object_create(pvr_dev, sizeof(struct rogue_fwif_hwrtdata_common),
++				   PVR_BO_FW_FLAGS_DEVICE_UNCACHED, hwrtdata_common_init, hwrt,
++				   &hwrt->common_fw_obj);
 +
 +	return err;
++}
++
++static void
++hwrt_fw_data_init(void *cpu_ptr, void *priv)
++{
++	struct pvr_hwrt_data *hwrt_data = priv;
++
++	memcpy(cpu_ptr, &hwrt_data->data, sizeof(hwrt_data->data));
 +}
 +
 +static int
@@ -1452,32 +1510,23 @@ index 000000000000..96c3dd964482
 +	int free_list_i;
 +	int err;
 +
-+	hwrt_data->fw_data = pvr_fw_object_create_and_map(pvr_dev, sizeof(*hwrt_data->fw_data),
-+							  PVR_BO_FW_FLAGS_DEVICE_UNCACHED |
-+							  DRM_PVR_BO_CREATE_ZEROED,
-+							  &hwrt_data->fw_obj);
-+	if (IS_ERR(hwrt_data->fw_data)) {
-+		err = PTR_ERR(hwrt_data->fw_data);
-+		goto err_out;
-+	}
-+
 +	pvr_fw_object_get_fw_addr(hwrt->common_fw_obj,
-+				  &hwrt_data->fw_data->hwrt_data_common_fw_addr);
++				  &hwrt_data->data.hwrt_data_common_fw_addr);
 +
 +	for (free_list_i = 0; free_list_i < ARRAY_SIZE(hwrt->free_lists); free_list_i++) {
 +		pvr_fw_object_get_fw_addr(hwrt->free_lists[free_list_i]->fw_obj,
-+					  &hwrt_data->fw_data->freelists_fw_addr[free_list_i]);
++					  &hwrt_data->data.freelists_fw_addr[free_list_i]);
 +	}
 +
-+	hwrt_data->fw_data->tail_ptrs_dev_addr = geom_data_args->tpc_dev_addr;
-+	hwrt_data->fw_data->vheap_table_dev_addr = geom_data_args->vheap_table_dev_addr;
-+	hwrt_data->fw_data->rtc_dev_addr = geom_data_args->rtc_dev_addr;
++	hwrt_data->data.tail_ptrs_dev_addr = geom_data_args->tpc_dev_addr;
++	hwrt_data->data.vheap_table_dev_addr = geom_data_args->vheap_table_dev_addr;
++	hwrt_data->data.rtc_dev_addr = geom_data_args->rtc_dev_addr;
 +
-+	hwrt_data->fw_data->pm_mlist_dev_addr = rt_data_args->pm_mlist_dev_addr;
-+	hwrt_data->fw_data->macrotile_array_dev_addr = rt_data_args->macrotile_array_dev_addr;
-+	hwrt_data->fw_data->rgn_header_dev_addr = rt_data_args->region_header_dev_addr;
++	hwrt_data->data.pm_mlist_dev_addr = rt_data_args->pm_mlist_dev_addr;
++	hwrt_data->data.macrotile_array_dev_addr = rt_data_args->macrotile_array_dev_addr;
++	hwrt_data->data.rgn_header_dev_addr = rt_data_args->region_header_dev_addr;
 +
-+	rta_ctl = &hwrt_data->fw_data->rta_ctl;
++	rta_ctl = &hwrt_data->data.rta_ctl;
 +
 +	rta_ctl->render_target_index = 0;
 +	rta_ctl->active_render_targets = 0;
@@ -1487,35 +1536,40 @@ index 000000000000..96c3dd964482
 +
 +	if (args->layers > 1) {
 +		err = pvr_fw_object_create(pvr_dev, args->layers * SRTC_ENTRY_SIZE,
-+					   PVR_BO_FW_FLAGS_DEVICE_UNCACHED |
-+					   DRM_PVR_BO_CREATE_ZEROED,
-+					   &hwrt_data->srtc_obj);
++					   PVR_BO_FW_FLAGS_DEVICE_UNCACHED,
++					   NULL, NULL, &hwrt_data->srtc_obj);
 +		if (err)
-+			goto err_put_fw_obj;
++			return err;
 +		pvr_fw_object_get_fw_addr(hwrt_data->srtc_obj,
 +					  &rta_ctl->valid_render_targets_fw_addr);
 +
 +		err = pvr_fw_object_create(pvr_dev, args->layers * RAA_ENTRY_SIZE,
-+					   PVR_BO_FW_FLAGS_DEVICE_UNCACHED |
-+					   DRM_PVR_BO_CREATE_ZEROED,
-+					   &hwrt_data->raa_obj);
++					   PVR_BO_FW_FLAGS_DEVICE_UNCACHED,
++					   NULL, NULL, &hwrt_data->raa_obj);
 +		if (err)
 +			goto err_put_shadow_rt_cache;
 +		pvr_fw_object_get_fw_addr(hwrt_data->raa_obj,
 +					  &rta_ctl->rta_num_partial_renders_fw_addr);
 +	}
 +
++	err = pvr_fw_object_create(pvr_dev, sizeof(struct rogue_fwif_hwrtdata),
++				   PVR_BO_FW_FLAGS_DEVICE_UNCACHED,
++				   hwrt_fw_data_init, hwrt_data, &hwrt_data->fw_obj);
++	if (err)
++		goto err_put_raa_obj;
++
 +	pvr_free_list_add_hwrt(hwrt->free_lists[0], hwrt_data);
 +
 +	return 0;
 +
++err_put_raa_obj:
++	if (args->layers > 1)
++		pvr_fw_object_destroy(hwrt_data->raa_obj);
++
 +err_put_shadow_rt_cache:
-+	pvr_fw_object_destroy(hwrt_data->srtc_obj);
++	if (args->layers > 1)
++		pvr_fw_object_destroy(hwrt_data->srtc_obj);
 +
-+err_put_fw_obj:
-+	pvr_fw_object_unmap_and_destroy(hwrt_data->fw_obj);
-+
-+err_out:
 +	return err;
 +}
 +
@@ -1531,7 +1585,7 @@ index 000000000000..96c3dd964482
 +		pvr_fw_object_destroy(hwrt_data->srtc_obj);
 +	}
 +
-+	pvr_fw_object_unmap_and_destroy(hwrt_data->fw_obj);
++	pvr_fw_object_destroy(hwrt_data->fw_obj);
 +}
 +
 +/**
@@ -1639,12 +1693,12 @@ index 000000000000..96c3dd964482
 +}
 diff --git a/drivers/gpu/drm/imagination/pvr_hwrt.h b/drivers/gpu/drm/imagination/pvr_hwrt.h
 new file mode 100644
-index 000000000000..d2ffaf8566bc
+index 000000000000..dd7797a85f27
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_hwrt.h
-@@ -0,0 +1,163 @@
+@@ -0,0 +1,165 @@
 +/* SPDX-License-Identifier: GPL-2.0 OR MIT */
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#ifndef PVR_HWRT_H
 +#define PVR_HWRT_H
@@ -1672,8 +1726,8 @@ index 000000000000..d2ffaf8566bc
 +	/** @fw_obj: FW object representing the FW-side structure. */
 +	struct pvr_fw_object *fw_obj;
 +
-+	/** @fw_data: Pointer to CPU mappings of the FW-side structure. */
-+	struct rogue_fwif_hwrtdata *fw_data;
++	/** @data: Local copy of FW-side structure. */
++	struct rogue_fwif_hwrtdata data;
 +
 +	/** @freelist_node: List node connecting this HWRT to the local freelist. */
 +	struct list_head freelist_node;
@@ -1708,6 +1762,8 @@ index 000000000000..d2ffaf8566bc
 +
 +	/** @common_fw_obj: FW object representing common FW-side structure. */
 +	struct pvr_fw_object *common_fw_obj;
++
++	struct rogue_fwif_hwrtdata_common common;
 +
 +	/** @data: HWRT data structures belonging to this set. */
 +	struct pvr_hwrt_data data[ROGUE_FWIF_NUM_RTDATAS];

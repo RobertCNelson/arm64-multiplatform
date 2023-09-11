@@ -1,7 +1,7 @@
-From 0b2e444815d8e4e808bb8e17c1ff42db51a9cc33 Mon Sep 17 00:00:00 2001
+From 1b13501b98958fb6167b9cff9692967d82b39bf8 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Tue, 13 Jun 2023 15:47:50 +0100
-Subject: [PATCH 07/17] drm/imagination: Add GPU ID parsing and firmware
+Date: Wed, 6 Sep 2023 10:55:32 +0100
+Subject: [PATCH 10/20] drm/imagination: Add GPU ID parsing and firmware
  loading
 
 Read the GPU ID register at probe time and select the correct
@@ -12,39 +12,61 @@ The features/quirks/enhancements arrays are currently hardcoded in
 the driver for the supported GPUs. We are looking at moving this
 information to the firmware image.
 
+Changes since v5:
+- Add BRN 71242 to device info
+
+Changes since v4:
+- Retrieve device information from firmware header
+- Pull forward firmware header parsing from FW infrastructure patch
+- Use devm_add_action_or_reset to release firmware
+
+Changes since v3:
+- Use drm_dev_{enter,exit}
+
+Co-developed-by: Frank Binns <frank.binns@imgtec.com>
+Signed-off-by: Frank Binns <frank.binns@imgtec.com>
+Co-developed-by: Matt Coster <matt.coster@imgtec.com>
+Signed-off-by: Matt Coster <matt.coster@imgtec.com>
+Co-developed-by: Donald Robson <donald.robson@imgtec.com>
+Signed-off-by: Donald Robson <donald.robson@imgtec.com>
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
 ---
- drivers/gpu/drm/imagination/Makefile          |   1 +
- drivers/gpu/drm/imagination/pvr_device.c      | 359 ++++++++++++
- drivers/gpu/drm/imagination/pvr_device.h      | 221 +++++++
- drivers/gpu/drm/imagination/pvr_device_info.c | 223 +++++++
- drivers/gpu/drm/imagination/pvr_device_info.h | 133 +++++
- drivers/gpu/drm/imagination/pvr_drv.c         | 553 +++++++++++++++++-
- drivers/gpu/drm/imagination/pvr_drv.h         | 108 ++++
- drivers/gpu/drm/imagination/pvr_fw.h          |  20 +
- 8 files changed, 1617 insertions(+), 1 deletion(-)
+ drivers/gpu/drm/imagination/Makefile          |   2 +
+ drivers/gpu/drm/imagination/pvr_device.c      | 323 ++++++++++-
+ drivers/gpu/drm/imagination/pvr_device.h      | 220 ++++++++
+ drivers/gpu/drm/imagination/pvr_device_info.c | 254 +++++++++
+ drivers/gpu/drm/imagination/pvr_device_info.h | 186 +++++++
+ drivers/gpu/drm/imagination/pvr_drv.c         | 521 +++++++++++++++++-
+ drivers/gpu/drm/imagination/pvr_drv.h         | 107 ++++
+ drivers/gpu/drm/imagination/pvr_fw.c          | 145 +++++
+ drivers/gpu/drm/imagination/pvr_fw.h          |  34 ++
+ drivers/gpu/drm/imagination/pvr_fw_info.h     | 135 +++++
+ 10 files changed, 1925 insertions(+), 2 deletions(-)
  create mode 100644 drivers/gpu/drm/imagination/pvr_device_info.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_device_info.h
+ create mode 100644 drivers/gpu/drm/imagination/pvr_fw.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_fw.h
+ create mode 100644 drivers/gpu/drm/imagination/pvr_fw_info.h
 
 diff --git a/drivers/gpu/drm/imagination/Makefile b/drivers/gpu/drm/imagination/Makefile
-index 186f920d615b..d713b1280776 100644
+index b4aa190c9d4a..9e144ff2742b 100644
 --- a/drivers/gpu/drm/imagination/Makefile
 +++ b/drivers/gpu/drm/imagination/Makefile
-@@ -5,6 +5,7 @@ subdir-ccflags-y := -I$(srctree)/$(src)
+@@ -5,6 +5,8 @@ subdir-ccflags-y := -I$(srctree)/$(src)
  
  powervr-y := \
  	pvr_device.o \
 +	pvr_device_info.o \
  	pvr_drv.o \
++	pvr_fw.o
  
  obj-$(CONFIG_DRM_POWERVR) += powervr.o
 diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/imagination/pvr_device.c
-index 790c36cebec1..2e03763f2eb7 100644
+index cef3511c0c42..b1fae182c4f6 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.c
 +++ b/drivers/gpu/drm/imagination/pvr_device.c
-@@ -2,20 +2,32 @@
- /* Copyright (c) 2022 Imagination Technologies Ltd. */
+@@ -2,19 +2,31 @@
+ /* Copyright (c) 2023 Imagination Technologies Ltd. */
  
  #include "pvr_device.h"
 +#include "pvr_device_info.h"
@@ -65,7 +87,6 @@ index 790c36cebec1..2e03763f2eb7 100644
 +#include <linux/interrupt.h>
  #include <linux/platform_device.h>
 +#include <linux/pm_runtime.h>
- #include <linux/regulator/consumer.h>
  #include <linux/slab.h>
  #include <linux/stddef.h>
  #include <linux/types.h>
@@ -76,31 +97,10 @@ index 790c36cebec1..2e03763f2eb7 100644
  
  /**
   * pvr_device_reg_init() - Initialize kernel access to a PowerVR device's
-@@ -205,6 +217,246 @@ pvr_device_regulator_init(struct pvr_device *pvr_dev)
- 	return err;
+@@ -100,6 +112,209 @@ static int pvr_device_clk_init(struct pvr_device *pvr_dev)
+ 	return 0;
  }
  
-+/**
-+ * pvr_device_clk_core_get_freq - Get current PowerVR device core clock frequency
-+ * @pvr_dev: Target PowerVR device.
-+ * @freq_out: Pointer to location to store core clock frequency in Hz.
-+ *
-+ * Returns:
-+ *  * 0 on success, or
-+ *  * -%EINVAL if frequency can not be determined.
-+ */
-+int
-+pvr_device_clk_core_get_freq(struct pvr_device *pvr_dev, u32 *freq_out)
-+{
-+	u32 freq = clk_get_rate(pvr_dev->core_clk);
-+
-+	if (!freq)
-+		return -EINVAL;
-+
-+	*freq_out = freq;
-+	return 0;
-+}
-+
 +/**
 + * pvr_build_firmware_filename() - Construct a PowerVR firmware filename
 + * @pvr_dev: Target PowerVR device.
@@ -128,6 +128,14 @@ index 790c36cebec1..2e03763f2eb7 100644
 +
 +	return kasprintf(GFP_KERNEL, "%s_%d.%d.%d.%d_v%d.fw", base, gpu_id->b,
 +			 gpu_id->v, gpu_id->n, gpu_id->c, major);
++}
++
++static void
++pvr_release_firmware(void *data)
++{
++	struct pvr_device *pvr_dev = data;
++
++	release_firmware(pvr_dev->fw_dev.firmware);
 +}
 +
 +/**
@@ -170,7 +178,7 @@ index 790c36cebec1..2e03763f2eb7 100644
 +
 +	pvr_dev->fw_dev.firmware = fw;
 +
-+	return 0;
++	return devm_add_action_or_reset(drm_dev->dev, pvr_release_firmware, pvr_dev);
 +
 +err_free_filename:
 +	kfree(filename);
@@ -195,7 +203,7 @@ index 790c36cebec1..2e03763f2eb7 100644
 +	 * Try reading the BVNC using the newer (cleaner) method first. If the
 +	 * B value is zero, fall back to the older method.
 +	 */
-+	bvnc = PVR_CR_READ64(pvr_dev, CORE_ID__PBVNC);
++	bvnc = pvr_cr_read64(pvr_dev, ROGUE_CR_CORE_ID__PBVNC);
 +
 +	gpu_id->b = PVR_CR_FIELD_GET(bvnc, CORE_ID__PBVNC__BRANCH_ID);
 +	if (gpu_id->b != 0) {
@@ -203,8 +211,8 @@ index 790c36cebec1..2e03763f2eb7 100644
 +		gpu_id->n = PVR_CR_FIELD_GET(bvnc, CORE_ID__PBVNC__NUMBER_OF_SCALABLE_UNITS);
 +		gpu_id->c = PVR_CR_FIELD_GET(bvnc, CORE_ID__PBVNC__CONFIG_ID);
 +	} else {
-+		u32 core_rev = PVR_CR_READ32(pvr_dev, CORE_REVISION);
-+		u32 core_id = PVR_CR_READ32(pvr_dev, CORE_ID);
++		u32 core_rev = pvr_cr_read32(pvr_dev, ROGUE_CR_CORE_REVISION);
++		u32 core_id = pvr_cr_read32(pvr_dev, ROGUE_CR_CORE_ID);
 +		u16 core_id_config = PVR_CR_FIELD_GET(core_id, CORE_ID_CONFIG);
 +
 +		gpu_id->b = PVR_CR_FIELD_GET(core_rev, CORE_REVISION_MAJOR);
@@ -239,11 +247,6 @@ index 790c36cebec1..2e03763f2eb7 100644
 +		return err;
 +	}
 +
-+	/*
-+	 * See the comment on &pvr_drm_driver.prime_fd_to_handle for an
-+	 * explanation of the dma_set_mask function and dma_set_max_seg_size
-+	 * calls below.
-+	 */
 +	err = dma_set_mask(drm_dev->dev, DMA_BIT_MASK(phys_bus_width));
 +	if (err) {
 +		drm_err(drm_dev, "Failed to set DMA mask (err=%d)\n", err);
@@ -281,67 +284,46 @@ index 790c36cebec1..2e03763f2eb7 100644
 +
 +	pvr_load_gpu_id(pvr_dev);
 +
-+	err = pvr_device_info_init(pvr_dev);
-+	if (err)
-+		goto err_out;
-+
-+	if (PVR_HAS_FEATURE(pvr_dev, meta)) {
-+		pvr_dev->fw_dev.processor_type = PVR_FW_PROCESSOR_TYPE_META;
-+	} else if (PVR_HAS_FEATURE(pvr_dev, mips)) {
-+		pvr_dev->fw_dev.processor_type = PVR_FW_PROCESSOR_TYPE_MIPS;
-+	} else if (PVR_HAS_FEATURE(pvr_dev, riscv_fw_processor)) {
-+		pvr_dev->fw_dev.processor_type = PVR_FW_PROCESSOR_TYPE_RISCV;
-+	} else {
-+		err = -EINVAL;
-+		goto err_out;
-+	}
-+
-+	err = pvr_set_dma_info(pvr_dev);
-+	if (err)
-+		goto err_out;
-+
 +	err = pvr_request_firmware(pvr_dev);
 +	if (err)
-+		goto err_out;
++		return err;
 +
-+	return 0;
++	err = pvr_fw_validate_init_device_info(pvr_dev);
++	if (err)
++		return err;
 +
-+err_out:
-+	return err;
-+}
++	if (PVR_HAS_FEATURE(pvr_dev, meta))
++		pvr_dev->fw_dev.processor_type = PVR_FW_PROCESSOR_TYPE_META;
++	else if (PVR_HAS_FEATURE(pvr_dev, mips))
++		pvr_dev->fw_dev.processor_type = PVR_FW_PROCESSOR_TYPE_MIPS;
++	else if (PVR_HAS_FEATURE(pvr_dev, riscv_fw_processor))
++		pvr_dev->fw_dev.processor_type = PVR_FW_PROCESSOR_TYPE_RISCV;
++	else
++		return -EINVAL;
 +
-+/**
-+ * pvr_device_gpu_fini() - GPU-specific deinitialization for a PowerVR device
-+ * @pvr_dev: Target PowerVR device.
-+ */
-+static void
-+pvr_device_gpu_fini(struct pvr_device *pvr_dev)
-+{
-+	release_firmware(pvr_dev->fw_dev.firmware);
++	return pvr_set_dma_info(pvr_dev);
 +}
 +
  /**
   * pvr_device_init() - Initialize a PowerVR device
   * @pvr_dev: Target PowerVR device.
-@@ -240,6 +492,11 @@ pvr_device_init(struct pvr_device *pvr_dev)
+@@ -130,7 +345,12 @@ pvr_device_init(struct pvr_device *pvr_dev)
+ 		return err;
  
  	/* Map the control registers into memory. */
- 	err = pvr_device_reg_init(pvr_dev);
+-	return pvr_device_reg_init(pvr_dev);
++	err = pvr_device_reg_init(pvr_dev);
 +	if (err)
-+		goto err_device_clk_fini;
++		return err;
 +
 +	/* Perform GPU-specific initialization steps. */
-+	err = pvr_device_gpu_init(pvr_dev);
- 	if (err)
- 		goto err_device_reg_fini;
++	return pvr_device_gpu_init(pvr_dev);
+ }
  
-@@ -266,6 +523,108 @@ pvr_device_fini(struct pvr_device *pvr_dev)
- 	 * Deinitialization stages are performed in reverse order compared to
+ /**
+@@ -145,3 +365,104 @@ pvr_device_fini(struct pvr_device *pvr_dev)
  	 * the initialization stages in pvr_device_init().
  	 */
-+	pvr_device_gpu_fini(pvr_dev);
- 	pvr_device_reg_fini(pvr_dev);
- 	pvr_device_clk_fini(pvr_dev);
  }
 +
 +bool
@@ -445,7 +427,7 @@ index 790c36cebec1..2e03763f2eb7 100644
 +	}
 +}
 diff --git a/drivers/gpu/drm/imagination/pvr_device.h b/drivers/gpu/drm/imagination/pvr_device.h
-index c0dd0562844c..d9d0cf5a3820 100644
+index d61b3615b49f..833fd686c8eb 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.h
 +++ b/drivers/gpu/drm/imagination/pvr_device.h
 @@ -4,6 +4,9 @@
@@ -458,9 +440,9 @@ index c0dd0562844c..d9d0cf5a3820 100644
  #include <drm/drm_device.h>
  #include <drm/drm_file.h>
  #include <drm/drm_mm.h>
-@@ -31,6 +34,26 @@ struct firmware;
- /* Forward declaration from <linux/regulator/consumer.h>. */
- struct regulator;
+@@ -28,6 +31,26 @@ struct clk;
+ /* Forward declaration from <linux/firmware.h>. */
+ struct firmware;
  
 +/**
 + * struct pvr_gpu_id - Hardware GPU ID information for a PowerVR device
@@ -485,7 +467,7 @@ index c0dd0562844c..d9d0cf5a3820 100644
  /**
   * struct pvr_device - powervr-specific wrapper for &struct drm_device
   */
-@@ -43,6 +66,35 @@ struct pvr_device {
+@@ -40,6 +63,35 @@ struct pvr_device {
  	 */
  	struct drm_device base;
  
@@ -518,24 +500,21 @@ index c0dd0562844c..d9d0cf5a3820 100644
 +	/** @fw_version: Firmware version detected at runtime. */
 +	struct pvr_fw_version fw_version;
 +
- 	/** @regs_resource: Resource representing device control registers. */
- 	struct resource *regs_resource;
- 
-@@ -65,6 +117,9 @@ struct pvr_device {
- 
- 	/** @regulator: Power regulator. */
- 	struct regulator *regulator;
+ 	/**
+ 	 * @regs: Device control registers.
+ 	 *
+@@ -70,6 +122,9 @@ struct pvr_device {
+ 	 * Interface (MEMIF). If present, this needs to be enabled/disabled together with @core_clk.
+ 	 */
+ 	struct clk *mem_clk;
 +
 +	/** @fw_dev: Firmware related data. */
 +	struct pvr_fw_device fw_dev;
  };
  
  /**
-@@ -85,8 +140,79 @@ struct pvr_file {
- 	 *           to_pvr_device().
- 	 */
+@@ -92,6 +147,76 @@ struct pvr_file {
  	struct pvr_device *pvr_dev;
-+
  };
  
 +/**
@@ -608,12 +587,12 @@ index c0dd0562844c..d9d0cf5a3820 100644
 + */
 +#define PVR_HAS_ENHANCEMENT(pvr_dev, enhancement) ((pvr_dev)->enhancements.has_ern##enhancement)
 +
- static __always_inline struct drm_device *
- from_pvr_device(struct pvr_device *pvr_dev)
- {
-@@ -111,12 +237,80 @@ to_pvr_file(struct drm_file *file)
- 	return file->driver_priv;
- }
+ #define from_pvr_device(pvr_dev) (&(pvr_dev)->base)
+ 
+ #define to_pvr_device(drm_dev) container_of_const(drm_dev, struct pvr_device, base)
+@@ -100,9 +225,77 @@ struct pvr_file {
+ 
+ #define to_pvr_file(file) ((file)->driver_priv)
  
 +/**
 + * PVR_PACKED_BVNC() - Packs B, V, N and C values into a 64-bit unsigned integer
@@ -679,9 +658,6 @@ index c0dd0562844c..d9d0cf5a3820 100644
  int pvr_device_init(struct pvr_device *pvr_dev);
  void pvr_device_fini(struct pvr_device *pvr_dev);
  
- int
- pvr_device_clk_core_get_freq(struct pvr_device *pvr_dev, u32 *freq_out);
- 
 +bool
 +pvr_device_has_uapi_quirk(struct pvr_device *pvr_dev, u32 quirk);
 +bool
@@ -690,9 +666,9 @@ index c0dd0562844c..d9d0cf5a3820 100644
 +pvr_device_has_feature(struct pvr_device *pvr_dev, u32 feature);
 +
  /**
-  * PVR_CR_READ32() - Read a 32-bit register from a PowerVR device
-  * @pvr_dev: Target PowerVR device.
-@@ -286,6 +480,29 @@ pvr_cr_poll_reg64(struct pvr_device *pvr_dev, u32 reg_addr, u64 reg_value,
+  * PVR_CR_FIELD_GET() - Extract a single field from a PowerVR control register
+  * @val: Value of the target register.
+@@ -208,6 +401,29 @@ pvr_cr_poll_reg64(struct pvr_device *pvr_dev, u32 reg_addr, u64 reg_value,
  		(value & reg_mask) == reg_value, 0, timeout_usec);
  }
  
@@ -708,21 +684,21 @@ index c0dd0562844c..d9d0cf5a3820 100644
 +static __always_inline size_t
 +pvr_round_up_to_cacheline_size(struct pvr_device *pvr_dev, size_t size)
 +{
-+	u16 slc_cacheline_size_in_bits = 0;
-+	u16 slc_cacheline_size_in_bytes;
++	u16 slc_cacheline_size_bits = 0;
++	u16 slc_cacheline_size_bytes;
 +
-+	WARN_ON(!PVR_HAS_FEATURE(pvr_dev, slc_cache_line_size_in_bits));
-+	PVR_FEATURE_VALUE(pvr_dev, slc_cache_line_size_in_bits,
-+			  &slc_cacheline_size_in_bits);
-+	slc_cacheline_size_in_bytes = slc_cacheline_size_in_bits / 8;
++	WARN_ON(!PVR_HAS_FEATURE(pvr_dev, slc_cache_line_size_bits));
++	PVR_FEATURE_VALUE(pvr_dev, slc_cache_line_size_bits,
++			  &slc_cacheline_size_bits);
++	slc_cacheline_size_bytes = slc_cacheline_size_bits / 8;
 +
-+	return round_up(size, slc_cacheline_size_in_bytes);
++	return round_up(size, slc_cacheline_size_bytes);
 +}
 +
  /**
   * DOC: IOCTL validation helpers
   *
-@@ -380,4 +597,8 @@ pvr_ioctl_union_padding_check(void *instance, size_t union_offset,
+@@ -302,4 +518,8 @@ pvr_ioctl_union_padding_check(void *instance, size_t union_offset,
  					      __union_size, __member_size);  \
  	})
  
@@ -733,241 +709,272 @@ index c0dd0562844c..d9d0cf5a3820 100644
  #endif /* PVR_DEVICE_H */
 diff --git a/drivers/gpu/drm/imagination/pvr_device_info.c b/drivers/gpu/drm/imagination/pvr_device_info.c
 new file mode 100644
-index 000000000000..660324e7c3a3
+index 000000000000..66ab64de7128
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_device_info.c
-@@ -0,0 +1,223 @@
+@@ -0,0 +1,254 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#include "pvr_device.h"
 +#include "pvr_device_info.h"
++#include "pvr_rogue_fwif_dev_info.h"
 +
 +#include <drm/drm_print.h>
 +
++#include <linux/bits.h>
++#include <linux/minmax.h>
++#include <linux/stddef.h>
 +#include <linux/types.h>
 +
-+static const struct pvr_device_features pvr_device_4_V_2_51 = {
-+	.has_cdm_control_stream_format = true,
-+	.has_cluster_grouping = true,
-+	.has_common_store_size_in_dwords = true,
-+	.has_compute = true,
-+	.has_compute_morton_capable = true,
-+	.has_compute_overlap = true,
-+	.has_fbcdc_algorithm = true,
-+	.has_isp_max_tiles_in_flight = true,
-+	.has_isp_samples_per_pixel = true,
-+	.has_max_partitions = true,
-+	.has_meta = true,
-+	.has_meta_coremem_size = true,
-+	.has_num_clusters = true,
-+	.has_num_isp_ipp_pipes = true,
-+	.has_num_raster_pipes = true,
-+	.has_phys_bus_width = true,
-+	.has_slc_cache_line_size_in_bits = true,
-+	.has_tile_size_x = true,
-+	.has_tile_size_y = true,
-+	.has_usc_min_output_registers_per_pix = true,
-+	.has_virtual_address_space_bits = true,
-+	.has_xt_top_infrastructure = true,
-+	.has_zls_subtile = true,
++#define QUIRK_MAPPING(quirk) \
++	[PVR_FW_HAS_BRN_##quirk] = offsetof(struct pvr_device, quirks.has_brn##quirk)
 +
-+	.cdm_control_stream_format = 1,
-+	.common_store_size_in_dwords = 1280U * 4U * 4U,
-+	.fbcdc_algorithm = 2,
-+	.isp_max_tiles_in_flight = 4,
-+	.isp_samples_per_pixel = 2,
-+	.max_partitions = 8,
-+	.meta = true,
-+	.meta_coremem_size = 32,
-+	.num_clusters = 2,
-+	.num_isp_ipp_pipes = 8,
-+	.num_raster_pipes = 1,
-+	.phys_bus_width = 40,
-+	.slc_cache_line_size_in_bits = 512,
-+	.tile_size_x = 32,
-+	.tile_size_y = 32,
-+	.usc_min_output_registers_per_pix = 2,
-+	.virtual_address_space_bits = 40,
++static const uintptr_t quirks_mapping[] = {
++	QUIRK_MAPPING(44079),
++	QUIRK_MAPPING(47217),
++	QUIRK_MAPPING(48492),
++	QUIRK_MAPPING(48545),
++	QUIRK_MAPPING(49927),
++	QUIRK_MAPPING(50767),
++	QUIRK_MAPPING(51764),
++	QUIRK_MAPPING(62269),
++	QUIRK_MAPPING(63142),
++	QUIRK_MAPPING(63553),
++	QUIRK_MAPPING(66011),
++	QUIRK_MAPPING(71242),
 +};
 +
-+static const struct pvr_device_quirks pvr_device_quirks_4_40_2_51 = {
-+	.has_brn44079 = true,
-+	.has_brn48492 = true,
-+	.has_brn48545 = true,
-+	.has_brn49927 = true,
-+	.has_brn51764 = true,
-+	.has_brn52354 = true,
-+	.has_brn62269 = true,
-+	.has_brn63142 = true,
-+	.has_brn66011 = true,
++#undef QUIRK_MAPPING
++
++#define ENHANCEMENT_MAPPING(enhancement)                             \
++	[PVR_FW_HAS_ERN_##enhancement] = offsetof(struct pvr_device, \
++						  enhancements.has_ern##enhancement)
++
++static const uintptr_t enhancements_mapping[] = {
++	ENHANCEMENT_MAPPING(35421),
++	ENHANCEMENT_MAPPING(38020),
++	ENHANCEMENT_MAPPING(38748),
++	ENHANCEMENT_MAPPING(42064),
++	ENHANCEMENT_MAPPING(42290),
++	ENHANCEMENT_MAPPING(42606),
++	ENHANCEMENT_MAPPING(47025),
++	ENHANCEMENT_MAPPING(57596),
 +};
 +
-+static const struct pvr_device_enhancements pvr_device_enhancements_4_40_2_51 = {
-+	.has_ern35421 = true,
-+	.has_ern38020 = true,
-+	.has_ern38748 = true,
-+	.has_ern42064 = true,
-+};
++#undef ENHANCEMENT_MAPPING
 +
-+static const struct pvr_device_features pvr_device_33_V_11_3 = {
-+	.has_cdm_control_stream_format = true,
-+	.has_common_store_size_in_dwords = true,
-+	.has_compute = true,
-+	.has_isp_max_tiles_in_flight = true,
-+	.has_isp_samples_per_pixel = true,
-+	.has_max_partitions = true,
-+	.has_mips = true,
-+	.has_num_clusters = true,
-+	.has_num_isp_ipp_pipes = true,
-+	.has_num_raster_pipes = true,
-+	.has_phys_bus_width = true,
-+	.has_roguexe = true,
-+	.has_simple_internal_parameter_format = true,
-+	.has_slc_cache_line_size_in_bits = true,
-+	.has_sys_bus_secure_reset = true,
-+	.has_tile_size_x = true,
-+	.has_tile_size_y = true,
-+	.has_usc_min_output_registers_per_pix = true,
-+	.has_virtual_address_space_bits = true,
-+	.has_xe_memory_hierarchy = true,
-+
-+	.cdm_control_stream_format = 1,
-+	.common_store_size_in_dwords = 512U * 4U * 4U,
-+	.isp_max_tiles_in_flight = 1,
-+	.isp_samples_per_pixel = 1,
-+	.max_partitions = 4,
-+	.mips = true,
-+	.num_clusters = 1,
-+	.num_isp_ipp_pipes = 1,
-+	.num_raster_pipes = 1,
-+	.phys_bus_width = 36,
-+	.simple_internal_parameter_format = 2,
-+	.slc_cache_line_size_in_bits = 512,
-+	.tile_size_x = 16,
-+	.tile_size_y = 16,
-+	.usc_min_output_registers_per_pix = 1,
-+	.virtual_address_space_bits = 40,
-+};
-+
-+static const struct pvr_device_quirks pvr_device_quirks_33_15_11_3 = {
-+	.has_brn63553 = true,
-+};
-+
-+static const struct pvr_device_enhancements pvr_device_enhancements_33_15_11_3 = {
-+	.has_ern35421 = true,
-+	.has_ern38748 = true,
-+};
-+
-+static const struct pvr_device_features pvr_device_36_V_104_796 = {
-+	.has_cdm_control_stream_format = true,
-+	.has_common_store_size_in_dwords = true,
-+	.has_compute = true,
-+	.has_compute_overlap = true,
-+	.has_fbcdc_algorithm = true,
-+	.has_gpu_multicore_support = true,
-+	.has_isp_max_tiles_in_flight = true,
-+	.has_isp_samples_per_pixel = true,
-+	.has_max_partitions = true,
-+	.has_num_clusters = true,
-+	.has_num_isp_ipp_pipes = true,
-+	.has_num_raster_pipes = true,
-+	.has_phys_bus_width = true,
-+	.has_riscv_fw_processor = true,
-+	.has_roguexe = true,
-+	.has_simple_internal_parameter_format = true,
-+	.has_slc_cache_line_size_in_bits = true,
-+	.has_sys_bus_secure_reset = true,
-+	.has_tile_size_x = true,
-+	.has_tile_size_y = true,
-+	.has_tpu_dm_global_registers = true,
-+	.has_usc_min_output_registers_per_pix = true,
-+	.has_virtual_address_space_bits = true,
-+	.has_xe_memory_hierarchy = true,
-+	.has_xpu_max_slaves = true,
-+
-+	.cdm_control_stream_format = 1,
-+	.common_store_size_in_dwords = 1344U * 4U * 4U,
-+	.fbcdc_algorithm = 50,
-+	.isp_max_tiles_in_flight = 6,
-+	.isp_samples_per_pixel = 4,
-+	.max_partitions = 16,
-+	.num_clusters = 1,
-+	.num_isp_ipp_pipes = 6,
-+	.num_raster_pipes = 1,
-+	.phys_bus_width = 36,
-+	.riscv_fw_processor = true,
-+	.simple_internal_parameter_format = 2,
-+	.slc_cache_line_size_in_bits = 512,
-+	.tile_size_x = 16,
-+	.tile_size_y = 16,
-+	.usc_min_output_registers_per_pix = 2,
-+	.virtual_address_space_bits = 40,
-+	.xpu_max_slaves = 3,
-+};
-+
-+static const struct pvr_device_quirks pvr_device_quirks_36_53_104_796 = {
-+	.has_brn44079 = true,
-+};
-+
-+static const struct pvr_device_enhancements pvr_device_enhancements_36_53_104_796 = {
-+	.has_ern35421 = true,
-+	.has_ern38748 = true,
-+};
-+
-+/**
-+ * pvr_device_info_init() - Initialize a PowerVR device's hardware features and quirks
-+ * @pvr_dev: Target PowerVR device.
-+ *
-+ * This function relies on &pvr_dev.gpu_id having already been initialized. If
-+ * PowerVR device version is supported then sets &pvr_dev.features and &pvr_dev.quirks.
-+ *
-+ * Return:
-+ *  * 0 on success, or
-+ *  * -%ENODEV if the device is not supported.
-+ */
-+int
-+pvr_device_info_init(struct pvr_device *pvr_dev)
++static void pvr_device_info_set_common(struct pvr_device *pvr_dev, const u64 *bitmask,
++				       u32 bitmask_size, const uintptr_t *mapping, u32 mapping_max)
 +{
-+	struct drm_device *drm_dev = from_pvr_device(pvr_dev);
-+	struct pvr_gpu_id *gpu_id = &pvr_dev->gpu_id;
-+	const u64 bvnc = pvr_gpu_id_to_packed_bvnc(gpu_id);
++	const u32 mapping_max_size = (mapping_max + 63) >> 6;
++	const u32 nr_bits = min(bitmask_size * 64, mapping_max);
 +
-+	/*
-+	 * This macro results in a "Macros with multiple statements should be
-+	 * enclosed in a do - while loop" checkpatch error. However, following
-+	 * this advice would make the macro look a bit odd and isn't necessary
-+	 * in this particular case, as the macro has a very specific use and a
-+	 * very limited lifetime. The error can therefore be ignored.
-+	 */
-+#define CASE_PACKED_BVNC_DEVICE_INFO(b, v, n, c)                  \
-+	case PVR_PACKED_BVNC(b, v, n, c):                         \
-+		pvr_dev->features = pvr_device_##b##_V_##n##_##c; \
-+		pvr_dev->quirks = pvr_device_quirks_##b##_##v##_##n##_##c; \
-+		pvr_dev->enhancements = pvr_device_enhancements_##b##_##v##_##n##_##c; \
-+		return 0
++	/* Warn if any unsupported values in the bitmask. */
++	if (bitmask_size > mapping_max_size) {
++		if (mapping == quirks_mapping)
++			drm_warn(from_pvr_device(pvr_dev), "Unsupported quirks in firmware image");
++		else
++			drm_warn(from_pvr_device(pvr_dev),
++				 "Unsupported enhancements in firmware image");
++	} else if (bitmask_size == mapping_max_size && (mapping_max & 63)) {
++		u64 invalid_mask = ~0ull << (mapping_max & 63);
 +
-+	switch (bvnc) {
-+		CASE_PACKED_BVNC_DEVICE_INFO(4, 40, 2, 51);
-+		CASE_PACKED_BVNC_DEVICE_INFO(33, 15, 11, 3);
-+		CASE_PACKED_BVNC_DEVICE_INFO(36, 53, 104, 796);
++		if (bitmask[bitmask_size - 1] & invalid_mask) {
++			if (mapping == quirks_mapping)
++				drm_warn(from_pvr_device(pvr_dev),
++					 "Unsupported quirks in firmware image");
++			else
++				drm_warn(from_pvr_device(pvr_dev),
++					 "Unsupported enhancements in firmware image");
++		}
 +	}
 +
-+#undef CASE_PACKED_BVNC_DEVICE_INFO
++	for (u32 i = 0; i < nr_bits; i++) {
++		if (bitmask[i >> 6] & BIT_ULL(i & 63))
++			*(bool *)((u8 *)pvr_dev + mapping[i]) = true;
++	}
++}
 +
-+	drm_warn(drm_dev, "Unsupported BVNC: %u.%u.%u.%u\n", gpu_id->b,
-+		 gpu_id->v, gpu_id->n, gpu_id->c);
++/**
++ * pvr_device_info_set_quirks() - Set device quirks from device information in firmware
++ * @pvr_dev: Device pointer.
++ * @quirks: Pointer to quirks mask in device information.
++ * @quirks_size: Size of quirks mask, in u64s.
++ */
++void pvr_device_info_set_quirks(struct pvr_device *pvr_dev, const u64 *quirks, u32 quirks_size)
++{
++	BUILD_BUG_ON(ARRAY_SIZE(quirks_mapping) != PVR_FW_HAS_BRN_MAX);
 +
-+	return -ENODEV;
++	pvr_device_info_set_common(pvr_dev, quirks, quirks_size, quirks_mapping,
++				   ARRAY_SIZE(quirks_mapping));
++}
++
++/**
++ * pvr_device_info_set_enhancements() - Set device enhancements from device information in firmware
++ * @pvr_dev: Device pointer.
++ * @quirks: Pointer to enhancements mask in device information.
++ * @quirks_size: Size of enhancements mask, in u64s.
++ */
++void pvr_device_info_set_enhancements(struct pvr_device *pvr_dev, const u64 *enhancements,
++				      u32 enhancements_size)
++{
++	BUILD_BUG_ON(ARRAY_SIZE(enhancements_mapping) != PVR_FW_HAS_ERN_MAX);
++
++	pvr_device_info_set_common(pvr_dev, enhancements, enhancements_size,
++				   enhancements_mapping, ARRAY_SIZE(enhancements_mapping));
++}
++
++#define FEATURE_MAPPING(fw_feature, feature)                                        \
++	[PVR_FW_HAS_FEATURE_##fw_feature] = {                                       \
++		.flag_offset = offsetof(struct pvr_device, features.has_##feature), \
++		.value_offset = 0                                                   \
++	}
++
++#define FEATURE_MAPPING_VALUE(fw_feature, feature)                                  \
++	[PVR_FW_HAS_FEATURE_##fw_feature] = {                                       \
++		.flag_offset = offsetof(struct pvr_device, features.has_##feature), \
++		.value_offset = offsetof(struct pvr_device, features.feature)       \
++	}
++
++static const struct {
++	uintptr_t flag_offset;
++	uintptr_t value_offset;
++} features_mapping[] = {
++	FEATURE_MAPPING(AXI_ACELITE, axi_acelite),
++	FEATURE_MAPPING_VALUE(CDM_CONTROL_STREAM_FORMAT, cdm_control_stream_format),
++	FEATURE_MAPPING(CLUSTER_GROUPING, cluster_grouping),
++	FEATURE_MAPPING_VALUE(COMMON_STORE_SIZE_IN_DWORDS, common_store_size_in_dwords),
++	FEATURE_MAPPING(COMPUTE, compute),
++	FEATURE_MAPPING(COMPUTE_MORTON_CAPABLE, compute_morton_capable),
++	FEATURE_MAPPING(COMPUTE_OVERLAP, compute_overlap),
++	FEATURE_MAPPING(COREID_PER_OS, coreid_per_os),
++	FEATURE_MAPPING(DYNAMIC_DUST_POWER, dynamic_dust_power),
++	FEATURE_MAPPING_VALUE(ECC_RAMS, ecc_rams),
++	FEATURE_MAPPING_VALUE(FBCDC, fbcdc),
++	FEATURE_MAPPING_VALUE(FBCDC_ALGORITHM, fbcdc_algorithm),
++	FEATURE_MAPPING_VALUE(FBCDC_ARCHITECTURE, fbcdc_architecture),
++	FEATURE_MAPPING_VALUE(FBC_MAX_DEFAULT_DESCRIPTORS, fbc_max_default_descriptors),
++	FEATURE_MAPPING_VALUE(FBC_MAX_LARGE_DESCRIPTORS, fbc_max_large_descriptors),
++	FEATURE_MAPPING(FB_CDC_V4, fb_cdc_v4),
++	FEATURE_MAPPING(GPU_MULTICORE_SUPPORT, gpu_multicore_support),
++	FEATURE_MAPPING(GPU_VIRTUALISATION, gpu_virtualisation),
++	FEATURE_MAPPING(GS_RTA_SUPPORT, gs_rta_support),
++	FEATURE_MAPPING(IRQ_PER_OS, irq_per_os),
++	FEATURE_MAPPING_VALUE(ISP_MAX_TILES_IN_FLIGHT, isp_max_tiles_in_flight),
++	FEATURE_MAPPING_VALUE(ISP_SAMPLES_PER_PIXEL, isp_samples_per_pixel),
++	FEATURE_MAPPING(ISP_ZLS_D24_S8_PACKING_OGL_MODE, isp_zls_d24_s8_packing_ogl_mode),
++	FEATURE_MAPPING_VALUE(LAYOUT_MARS, layout_mars),
++	FEATURE_MAPPING_VALUE(MAX_PARTITIONS, max_partitions),
++	FEATURE_MAPPING_VALUE(META, meta),
++	FEATURE_MAPPING_VALUE(META_COREMEM_SIZE, meta_coremem_size),
++	FEATURE_MAPPING(MIPS, mips),
++	FEATURE_MAPPING_VALUE(NUM_CLUSTERS, num_clusters),
++	FEATURE_MAPPING_VALUE(NUM_ISP_IPP_PIPES, num_isp_ipp_pipes),
++	FEATURE_MAPPING_VALUE(NUM_OSIDS, num_osids),
++	FEATURE_MAPPING_VALUE(NUM_RASTER_PIPES, num_raster_pipes),
++	FEATURE_MAPPING(PBE2_IN_XE, pbe2_in_xe),
++	FEATURE_MAPPING(PBVNC_COREID_REG, pbvnc_coreid_reg),
++	FEATURE_MAPPING(PERFBUS, perfbus),
++	FEATURE_MAPPING(PERF_COUNTER_BATCH, perf_counter_batch),
++	FEATURE_MAPPING_VALUE(PHYS_BUS_WIDTH, phys_bus_width),
++	FEATURE_MAPPING(RISCV_FW_PROCESSOR, riscv_fw_processor),
++	FEATURE_MAPPING(ROGUEXE, roguexe),
++	FEATURE_MAPPING(S7_TOP_INFRASTRUCTURE, s7_top_infrastructure),
++	FEATURE_MAPPING(SIMPLE_INTERNAL_PARAMETER_FORMAT, simple_internal_parameter_format),
++	FEATURE_MAPPING(SIMPLE_INTERNAL_PARAMETER_FORMAT_V2, simple_internal_parameter_format_v2),
++	FEATURE_MAPPING_VALUE(SIMPLE_PARAMETER_FORMAT_VERSION, simple_parameter_format_version),
++	FEATURE_MAPPING_VALUE(SLC_BANKS, slc_banks),
++	FEATURE_MAPPING_VALUE(SLC_CACHE_LINE_SIZE_BITS, slc_cache_line_size_bits),
++	FEATURE_MAPPING(SLC_SIZE_CONFIGURABLE, slc_size_configurable),
++	FEATURE_MAPPING_VALUE(SLC_SIZE_IN_KILOBYTES, slc_size_in_kilobytes),
++	FEATURE_MAPPING(SOC_TIMER, soc_timer),
++	FEATURE_MAPPING(SYS_BUS_SECURE_RESET, sys_bus_secure_reset),
++	FEATURE_MAPPING(TESSELLATION, tessellation),
++	FEATURE_MAPPING(TILE_REGION_PROTECTION, tile_region_protection),
++	FEATURE_MAPPING_VALUE(TILE_SIZE_X, tile_size_x),
++	FEATURE_MAPPING_VALUE(TILE_SIZE_Y, tile_size_y),
++	FEATURE_MAPPING(TLA, tla),
++	FEATURE_MAPPING(TPU_CEM_DATAMASTER_GLOBAL_REGISTERS, tpu_cem_datamaster_global_registers),
++	FEATURE_MAPPING(TPU_DM_GLOBAL_REGISTERS, tpu_dm_global_registers),
++	FEATURE_MAPPING(TPU_FILTERING_MODE_CONTROL, tpu_filtering_mode_control),
++	FEATURE_MAPPING_VALUE(USC_MIN_OUTPUT_REGISTERS_PER_PIX, usc_min_output_registers_per_pix),
++	FEATURE_MAPPING(VDM_DRAWINDIRECT, vdm_drawindirect),
++	FEATURE_MAPPING(VDM_OBJECT_LEVEL_LLS, vdm_object_level_lls),
++	FEATURE_MAPPING_VALUE(VIRTUAL_ADDRESS_SPACE_BITS, virtual_address_space_bits),
++	FEATURE_MAPPING(WATCHDOG_TIMER, watchdog_timer),
++	FEATURE_MAPPING(WORKGROUP_PROTECTION, workgroup_protection),
++	FEATURE_MAPPING_VALUE(XE_ARCHITECTURE, xe_architecture),
++	FEATURE_MAPPING(XE_MEMORY_HIERARCHY, xe_memory_hierarchy),
++	FEATURE_MAPPING(XE_TPU2, xe_tpu2),
++	FEATURE_MAPPING_VALUE(XPU_MAX_REGBANKS_ADDR_WIDTH, xpu_max_regbanks_addr_width),
++	FEATURE_MAPPING_VALUE(XPU_MAX_SLAVES, xpu_max_slaves),
++	FEATURE_MAPPING_VALUE(XPU_REGISTER_BROADCAST, xpu_register_broadcast),
++	FEATURE_MAPPING(XT_TOP_INFRASTRUCTURE, xt_top_infrastructure),
++	FEATURE_MAPPING(ZLS_SUBTILE, zls_subtile),
++};
++
++#undef FEATURE_MAPPING_VALUE
++#undef FEATURE_MAPPING
++
++/**
++ * pvr_device_info_set_features() - Set device features from device information in firmware
++ * @pvr_dev: Device pointer.
++ * @features: Pointer to features mask in device information.
++ * @features_size: Size of features mask, in u64s.
++ * @feature_param_size: Size of feature parameters, in u64s.
++ *
++ * Returns:
++ *  * 0 on success, or
++ *  * -%EINVAL on malformed stream.
++ */
++int pvr_device_info_set_features(struct pvr_device *pvr_dev, const u64 *features, u32 features_size,
++				 u32 feature_param_size)
++{
++	const u32 mapping_max = ARRAY_SIZE(features_mapping);
++	const u32 mapping_max_size = (mapping_max + 63) >> 6;
++	const u32 nr_bits = min(features_size * 64, mapping_max);
++	const u64 *feature_params = features + features_size;
++	u32 param_idx = 0;
++
++	BUILD_BUG_ON(ARRAY_SIZE(features_mapping) != PVR_FW_HAS_FEATURE_MAX);
++
++	/* Verify no unsupported values in the bitmask. */
++	if (features_size > mapping_max_size) {
++		drm_warn(from_pvr_device(pvr_dev), "Unsupported features in firmware image");
++	} else if (features_size == mapping_max_size && (mapping_max & 63)) {
++		u64 invalid_mask = ~0ull << (mapping_max & 63);
++
++		if (features[features_size - 1] & invalid_mask)
++			drm_warn(from_pvr_device(pvr_dev),
++				 "Unsupported features in firmware image");
++	}
++
++	for (u32 i = 0; i < nr_bits; i++) {
++		if (features[i >> 6] & BIT_ULL(i & 63)) {
++			*(bool *)((u8 *)pvr_dev + features_mapping[i].flag_offset) = true;
++
++			if (features_mapping[i].value_offset) {
++				if (param_idx >= feature_param_size)
++					return -EINVAL;
++
++				*(u64 *)((u8 *)pvr_dev + features_mapping[i].value_offset) =
++					feature_params[param_idx];
++				param_idx++;
++			}
++		}
++	}
++
++	return 0;
 +}
 diff --git a/drivers/gpu/drm/imagination/pvr_device_info.h b/drivers/gpu/drm/imagination/pvr_device_info.h
 new file mode 100644
-index 000000000000..36ad09dea420
+index 000000000000..f06ca2793885
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_device_info.h
-@@ -0,0 +1,133 @@
+@@ -0,0 +1,186 @@
 +/* SPDX-License-Identifier: GPL-2.0 OR MIT */
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#ifndef PVR_DEVICE_INFO_H
 +#define PVR_DEVICE_INFO_H
@@ -980,96 +987,149 @@ index 000000000000..36ad09dea420
 + * struct pvr_device_features - Hardware feature information
 + */
 +struct pvr_device_features {
-+	bool has_cdm_control_stream_format : 1;
-+	bool has_cluster_grouping : 1;
-+	bool has_common_store_size_in_dwords : 1;
-+	bool has_compute : 1;
-+	bool has_compute_morton_capable : 1;
-+	bool has_compute_overlap : 1;
-+	bool has_fb_cdc_v4 : 1;
-+	bool has_fbcdc_algorithm : 1;
-+	bool has_gpu_multicore_support : 1;
-+	bool has_isp_max_tiles_in_flight : 1;
-+	bool has_isp_samples_per_pixel : 1;
-+	bool has_isp_zls_d24_s8_packing_ogl_mode : 1;
-+	bool has_max_partitions : 1;
-+	bool has_meta : 1;
-+	bool has_meta_coremem_size : 1;
-+	bool has_mips : 1;
-+	bool has_num_clusters : 1;
-+	bool has_num_isp_ipp_pipes : 1;
-+	bool has_num_raster_pipes : 1;
-+	bool has_phys_bus_width : 1;
-+	bool has_riscv_fw_processor : 1;
-+	bool has_roguexe : 1;
-+	bool has_s7_top_infrastructure : 1;
-+	bool has_simple_internal_parameter_format : 1;
-+	bool has_slc_cache_line_size_in_bits : 1;
-+	bool has_sys_bus_secure_reset : 1;
-+	bool has_tessellation : 1;
-+	bool has_tile_size_x : 1;
-+	bool has_tile_size_y : 1;
-+	bool has_tpu_dm_global_registers : 1;
-+	bool has_usc_min_output_registers_per_pix : 1;
-+	bool has_vdm_drawindirect : 1;
-+	bool has_vdm_object_level_lls : 1;
-+	bool has_virtual_address_space_bits : 1;
-+	bool has_xe_memory_hierarchy : 1;
-+	bool has_xpu_max_slaves : 1;
-+	bool has_xt_top_infrastructure : 1;
-+	bool has_zls_subtile : 1;
++	bool has_axi_acelite;
++	bool has_cdm_control_stream_format;
++	bool has_cluster_grouping;
++	bool has_common_store_size_in_dwords;
++	bool has_compute;
++	bool has_compute_morton_capable;
++	bool has_compute_overlap;
++	bool has_coreid_per_os;
++	bool has_dynamic_dust_power;
++	bool has_ecc_rams;
++	bool has_fb_cdc_v4;
++	bool has_fbc_max_default_descriptors;
++	bool has_fbc_max_large_descriptors;
++	bool has_fbcdc;
++	bool has_fbcdc_algorithm;
++	bool has_fbcdc_architecture;
++	bool has_gpu_multicore_support;
++	bool has_gpu_virtualisation;
++	bool has_gs_rta_support;
++	bool has_irq_per_os;
++	bool has_isp_max_tiles_in_flight;
++	bool has_isp_samples_per_pixel;
++	bool has_isp_zls_d24_s8_packing_ogl_mode;
++	bool has_layout_mars;
++	bool has_max_partitions;
++	bool has_meta;
++	bool has_meta_coremem_size;
++	bool has_mips;
++	bool has_num_clusters;
++	bool has_num_isp_ipp_pipes;
++	bool has_num_osids;
++	bool has_num_raster_pipes;
++	bool has_pbe2_in_xe;
++	bool has_pbvnc_coreid_reg;
++	bool has_perfbus;
++	bool has_perf_counter_batch;
++	bool has_phys_bus_width;
++	bool has_riscv_fw_processor;
++	bool has_roguexe;
++	bool has_s7_top_infrastructure;
++	bool has_simple_internal_parameter_format;
++	bool has_simple_internal_parameter_format_v2;
++	bool has_simple_parameter_format_version;
++	bool has_slc_banks;
++	bool has_slc_cache_line_size_bits;
++	bool has_slc_size_configurable;
++	bool has_slc_size_in_kilobytes;
++	bool has_soc_timer;
++	bool has_sys_bus_secure_reset;
++	bool has_tessellation;
++	bool has_tile_region_protection;
++	bool has_tile_size_x;
++	bool has_tile_size_y;
++	bool has_tla;
++	bool has_tpu_cem_datamaster_global_registers;
++	bool has_tpu_dm_global_registers;
++	bool has_tpu_filtering_mode_control;
++	bool has_usc_min_output_registers_per_pix;
++	bool has_vdm_drawindirect;
++	bool has_vdm_object_level_lls;
++	bool has_virtual_address_space_bits;
++	bool has_watchdog_timer;
++	bool has_workgroup_protection;
++	bool has_xe_architecture;
++	bool has_xe_memory_hierarchy;
++	bool has_xe_tpu2;
++	bool has_xpu_max_regbanks_addr_width;
++	bool has_xpu_max_slaves;
++	bool has_xpu_register_broadcast;
++	bool has_xt_top_infrastructure;
++	bool has_zls_subtile;
 +
-+	u8 cdm_control_stream_format;
-+	u32 common_store_size_in_dwords;
-+	u8 fbcdc_algorithm;
-+	u16 isp_max_tiles_in_flight;
-+	bool isp_samples_per_pixel;
-+	u16 max_partitions;
-+	bool meta;
-+	u32 meta_coremem_size;
-+	bool mips;
-+	u16 num_clusters;
-+	u8 num_isp_ipp_pipes;
-+	u8 num_raster_pipes;
-+	u16 phys_bus_width;
-+	bool riscv_fw_processor;
-+	u32 simple_internal_parameter_format;
-+	u16 slc_cache_line_size_in_bits;
-+	u16 tile_size_x;
-+	u16 tile_size_y;
-+	u16 usc_min_output_registers_per_pix;
-+	u16 virtual_address_space_bits;
-+	u8 xpu_max_slaves;
++	u64 cdm_control_stream_format;
++	u64 common_store_size_in_dwords;
++	u64 ecc_rams;
++	u64 fbc_max_default_descriptors;
++	u64 fbc_max_large_descriptors;
++	u64 fbcdc;
++	u64 fbcdc_algorithm;
++	u64 fbcdc_architecture;
++	u64 isp_max_tiles_in_flight;
++	u64 isp_samples_per_pixel;
++	u64 layout_mars;
++	u64 max_partitions;
++	u64 meta;
++	u64 meta_coremem_size;
++	u64 num_clusters;
++	u64 num_isp_ipp_pipes;
++	u64 num_osids;
++	u64 num_raster_pipes;
++	u64 phys_bus_width;
++	u64 simple_parameter_format_version;
++	u64 slc_banks;
++	u64 slc_cache_line_size_bits;
++	u64 slc_size_in_kilobytes;
++	u64 tile_size_x;
++	u64 tile_size_y;
++	u64 usc_min_output_registers_per_pix;
++	u64 virtual_address_space_bits;
++	u64 xe_architecture;
++	u64 xpu_max_regbanks_addr_width;
++	u64 xpu_max_slaves;
++	u64 xpu_register_broadcast;
 +};
 +
 +/*
 + * struct pvr_device_quirks - Hardware quirk information
 + */
 +struct pvr_device_quirks {
-+	bool has_brn44079 : 1;
-+	bool has_brn47217 : 1;
-+	bool has_brn48492 : 1;
-+	bool has_brn48545 : 1;
-+	bool has_brn49927 : 1;
-+	bool has_brn51764 : 1;
-+	bool has_brn52354 : 1;
-+	bool has_brn62269 : 1;
-+	bool has_brn63142 : 1;
-+	bool has_brn63553 : 1;
-+	bool has_brn66011 : 1;
++	bool has_brn44079;
++	bool has_brn47217;
++	bool has_brn48492;
++	bool has_brn48545;
++	bool has_brn49927;
++	bool has_brn50767;
++	bool has_brn51764;
++	bool has_brn62269;
++	bool has_brn63142;
++	bool has_brn63553;
++	bool has_brn66011;
++	bool has_brn71242;
 +};
 +
 +/*
 + * struct pvr_device_enhancements - Hardware enhancement information
 + */
 +struct pvr_device_enhancements {
-+	bool has_ern35421 : 1;
-+	bool has_ern38020 : 1;
-+	bool has_ern38748 : 1;
-+	bool has_ern42064 : 1;
++	bool has_ern35421;
++	bool has_ern38020;
++	bool has_ern38748;
++	bool has_ern42064;
++	bool has_ern42290;
++	bool has_ern42606;
++	bool has_ern47025;
++	bool has_ern57596;
 +};
 +
-+int pvr_device_info_init(struct pvr_device *pvr_dev);
++void pvr_device_info_set_quirks(struct pvr_device *pvr_dev, const u64 *bitmask,
++				u32 bitmask_len);
++void pvr_device_info_set_enhancements(struct pvr_device *pvr_dev, const u64 *bitmask,
++				      u32 bitmask_len);
++int pvr_device_info_set_features(struct pvr_device *pvr_dev, const u64 *features, u32 features_size,
++				 u32 feature_param_size);
 +
 +/*
 + * Meta cores
@@ -1100,7 +1160,7 @@ index 000000000000..36ad09dea420
 +
 +#endif /* PVR_DEVICE_INFO_H */
 diff --git a/drivers/gpu/drm/imagination/pvr_drv.c b/drivers/gpu/drm/imagination/pvr_drv.c
-index 48a870715426..5ebdea49c3be 100644
+index e007d6946bdc..ecdef9720eea 100644
 --- a/drivers/gpu/drm/imagination/pvr_drv.c
 +++ b/drivers/gpu/drm/imagination/pvr_drv.c
 @@ -3,6 +3,9 @@
@@ -1113,7 +1173,7 @@ index 48a870715426..5ebdea49c3be 100644
  
  #include <uapi/drm/pvr_drm.h>
  
-@@ -88,6 +91,422 @@ pvr_ioctl_get_bo_mmap_offset(__always_unused struct drm_device *drm_dev,
+@@ -87,6 +90,382 @@ pvr_ioctl_get_bo_mmap_offset(struct drm_device *drm_dev, void *raw_args,
  	return -ENOTTY;
  }
  
@@ -1319,46 +1379,6 @@ index 48a870715426..5ebdea49c3be 100644
 +}
 +
 +/**
-+ * pvr_dev_query_hwrt_info_get()
-+ * @pvr_dev: Device pointer.
-+ * @args: [IN] Device query arguments containing a pointer to a userspace
-+ *        struct drm_pvr_dev_query_hwrt_info.
-+ *
-+ * If the query object pointer is NULL, the size field is updated with the
-+ * expected size of the query object.
-+ *
-+ * Returns:
-+ *  * 0 on success, or if size is requested using a NULL pointer, or
-+ *  * -%E2BIG if the indicated length of the allocation is less than is
-+ *    required to contain the copied data, or
-+ *  * -%EFAULT if local memory could not be copied to userspace.
-+ */
-+static int
-+pvr_dev_query_hwrt_info_get(struct pvr_device *pvr_dev,
-+			    struct drm_pvr_ioctl_dev_query_args *args)
-+{
-+	struct drm_pvr_dev_query_hwrt_info hwrt_info = {0};
-+	int err;
-+
-+	if (!args->pointer) {
-+		args->size = sizeof(struct drm_pvr_dev_query_hwrt_info);
-+		return 0;
-+	}
-+
-+	hwrt_info.num_geomdatas = ROGUE_FWIF_NUM_GEOMDATAS;
-+	hwrt_info.num_rtdatas = ROGUE_FWIF_NUM_RTDATAS;
-+	hwrt_info.num_freelists = ROGUE_FWIF_NUM_RTDATA_FREELISTS;
-+
-+	err = PVR_UOBJ_SET(args->pointer, args->size, hwrt_info);
-+	if (err < 0)
-+		return err;
-+
-+	if (args->size > sizeof(hwrt_info))
-+		args->size = sizeof(hwrt_info);
-+	return 0;
-+}
-+
-+/**
 + * pvr_dev_query_quirks_get() - Unpack array of quirks at the address given
 + * in a struct drm_pvr_dev_query_quirks, or gets the amount of space required
 + * for it.
@@ -1536,29 +1556,35 @@ index 48a870715426..5ebdea49c3be 100644
  /**
   * pvr_ioctl_dev_query() - IOCTL to copy information about a device
   * @drm_dev: [IN] DRM device.
-@@ -112,7 +531,33 @@ static int
+@@ -111,7 +490,41 @@ static int
  pvr_ioctl_dev_query(struct drm_device *drm_dev, void *raw_args,
  		    struct drm_file *file)
  {
 -	return -ENOTTY;
 +	struct pvr_device *pvr_dev = to_pvr_device(drm_dev);
 +	struct drm_pvr_ioctl_dev_query_args *args = raw_args;
++	int idx;
++	int ret = -EINVAL;
++
++	if (!drm_dev_enter(drm_dev, &idx))
++		return -EIO;
 +
 +	switch ((enum drm_pvr_dev_query)args->type) {
 +	case DRM_PVR_DEV_QUERY_GPU_INFO_GET:
-+		return pvr_dev_query_gpu_info_get(pvr_dev, args);
++		ret = pvr_dev_query_gpu_info_get(pvr_dev, args);
++		break;
 +
 +	case DRM_PVR_DEV_QUERY_RUNTIME_INFO_GET:
-+		return pvr_dev_query_runtime_info_get(pvr_dev, args);
-+
-+	case DRM_PVR_DEV_QUERY_HWRT_INFO_GET:
-+		return pvr_dev_query_hwrt_info_get(pvr_dev, args);
++		ret = pvr_dev_query_runtime_info_get(pvr_dev, args);
++		break;
 +
 +	case DRM_PVR_DEV_QUERY_QUIRKS_GET:
-+		return pvr_dev_query_quirks_get(pvr_dev, args);
++		ret = pvr_dev_query_quirks_get(pvr_dev, args);
++		break;
 +
 +	case DRM_PVR_DEV_QUERY_ENHANCEMENTS_GET:
-+		return pvr_dev_query_enhancements_get(pvr_dev, args);
++		ret = pvr_dev_query_enhancements_get(pvr_dev, args);
++		break;
 +
 +	case DRM_PVR_DEV_QUERY_HEAP_INFO_GET:
 +		return -EINVAL;
@@ -1567,11 +1593,13 @@ index 48a870715426..5ebdea49c3be 100644
 +		return -EINVAL;
 +	}
 +
-+	return -EINVAL;
++	drm_dev_exit(idx);
++
++	return ret;
  }
  
  /**
-@@ -350,6 +795,112 @@ pvr_ioctl_submit_jobs(struct drm_device *drm_dev, void *raw_args,
+@@ -349,6 +762,112 @@ pvr_ioctl_submit_jobs(struct drm_device *drm_dev, void *raw_args,
  	return -ENOTTY;
  }
  
@@ -1685,10 +1713,10 @@ index 48a870715426..5ebdea49c3be 100644
  	DRM_IOCTL_DEF_DRV(PVR_##_name, pvr_ioctl_##_func, _flags)
  
 diff --git a/drivers/gpu/drm/imagination/pvr_drv.h b/drivers/gpu/drm/imagination/pvr_drv.h
-index 8e6f4a4dde3f..febdf1f09571 100644
+index ecd8f6011ae9..04cd550d8b48 100644
 --- a/drivers/gpu/drm/imagination/pvr_drv.h
 +++ b/drivers/gpu/drm/imagination/pvr_drv.h
-@@ -19,4 +19,112 @@
+@@ -19,4 +19,111 @@
  #define PVR_DRIVER_MINOR 0
  #define PVR_DRIVER_PATCHLEVEL 0
  
@@ -1736,7 +1764,6 @@ index 8e6f4a4dde3f..febdf1f09571 100644
 +	PVR_UOBJ_DECL(struct drm_pvr_sync_op, value) \
 +	PVR_UOBJ_DECL(struct drm_pvr_dev_query_gpu_info, num_phantoms) \
 +	PVR_UOBJ_DECL(struct drm_pvr_dev_query_runtime_info, cdm_max_local_mem_size_regs) \
-+	PVR_UOBJ_DECL(struct drm_pvr_dev_query_hwrt_info, _padding_4) \
 +	PVR_UOBJ_DECL(struct drm_pvr_dev_query_quirks, _padding_c) \
 +	PVR_UOBJ_DECL(struct drm_pvr_dev_query_enhancements, _padding_c) \
 +	PVR_UOBJ_DECL(struct drm_pvr_heap, page_size_log2) \
@@ -1801,32 +1828,338 @@ index 8e6f4a4dde3f..febdf1f09571 100644
 +			   sizeof((_src_array)[0]), _src_array)
 +
  #endif /* PVR_DRV_H */
+diff --git a/drivers/gpu/drm/imagination/pvr_fw.c b/drivers/gpu/drm/imagination/pvr_fw.c
+new file mode 100644
+index 000000000000..c48de4a3af46
+--- /dev/null
++++ b/drivers/gpu/drm/imagination/pvr_fw.c
+@@ -0,0 +1,145 @@
++// SPDX-License-Identifier: GPL-2.0 OR MIT
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
++
++#include "pvr_device.h"
++#include "pvr_device_info.h"
++#include "pvr_fw.h"
++
++#include <drm/drm_drv.h>
++#include <linux/firmware.h>
++#include <linux/sizes.h>
++
++#define FW_MAX_SUPPORTED_MAJOR_VERSION 1
++
++/**
++ * pvr_fw_validate() - Parse firmware header and check compatibility
++ * @pvr_dev: Device pointer.
++ *
++ * Returns:
++ *  * 0 on success, or
++ *  * -EINVAL if firmware is incompatible.
++ */
++static int
++pvr_fw_validate(struct pvr_device *pvr_dev)
++{
++	struct drm_device *drm_dev = from_pvr_device(pvr_dev);
++	const struct firmware *firmware = pvr_dev->fw_dev.firmware;
++	const struct pvr_fw_layout_entry *layout_entries;
++	const struct pvr_fw_info_header *header;
++	const u8 *fw = firmware->data;
++	u32 fw_offset = firmware->size - SZ_4K;
++	u32 layout_table_size;
++	u32 entry;
++
++	if (firmware->size < SZ_4K || (firmware->size % FW_BLOCK_SIZE))
++		return -EINVAL;
++
++	header = (const struct pvr_fw_info_header *)&fw[fw_offset];
++
++	if (header->info_version != PVR_FW_INFO_VERSION) {
++		drm_err(drm_dev, "Unsupported fw info version %u\n",
++			header->info_version);
++		return -EINVAL;
++	}
++
++	if (header->header_len != sizeof(struct pvr_fw_info_header) ||
++	    header->layout_entry_size != sizeof(struct pvr_fw_layout_entry) ||
++	    header->layout_entry_num > PVR_FW_INFO_MAX_NUM_ENTRIES) {
++		drm_err(drm_dev, "FW info format mismatch\n");
++		return -EINVAL;
++	}
++
++	if (!(header->flags & PVR_FW_FLAGS_OPEN_SOURCE) ||
++	    header->fw_version_major > FW_MAX_SUPPORTED_MAJOR_VERSION ||
++	    header->fw_version_major == 0) {
++		drm_err(drm_dev, "Unsupported FW version %u.%u (build: %u%s)\n",
++			header->fw_version_major, header->fw_version_minor,
++			header->fw_version_build,
++			(header->flags & PVR_FW_FLAGS_OPEN_SOURCE) ? " OS" : "");
++		return -EINVAL;
++	}
++
++	if (pvr_gpu_id_to_packed_bvnc(&pvr_dev->gpu_id) != header->bvnc) {
++		struct pvr_gpu_id fw_gpu_id;
++
++		packed_bvnc_to_pvr_gpu_id(header->bvnc, &fw_gpu_id);
++		drm_err(drm_dev, "FW built for incorrect GPU ID %i.%i.%i.%i (expected %i.%i.%i.%i)\n",
++			fw_gpu_id.b, fw_gpu_id.v, fw_gpu_id.n, fw_gpu_id.c,
++			pvr_dev->gpu_id.b, pvr_dev->gpu_id.v, pvr_dev->gpu_id.n, pvr_dev->gpu_id.c);
++		return -EINVAL;
++	}
++
++	fw_offset += header->header_len;
++	layout_table_size =
++		header->layout_entry_size * header->layout_entry_num;
++	if ((fw_offset + layout_table_size) > firmware->size)
++		return -EINVAL;
++
++	layout_entries = (const struct pvr_fw_layout_entry *)&fw[fw_offset];
++	for (entry = 0; entry < header->layout_entry_num; entry++) {
++		u32 start_addr = layout_entries[entry].base_addr;
++		u32 end_addr = start_addr + layout_entries[entry].alloc_size;
++
++		if (start_addr >= end_addr)
++			return -EINVAL;
++	}
++
++	fw_offset = (firmware->size - SZ_4K) - header->device_info_size;
++
++	drm_info(drm_dev, "FW version v%u.%u (build %u OS)\n", header->fw_version_major,
++		 header->fw_version_minor, header->fw_version_build);
++
++	pvr_dev->fw_version.major = header->fw_version_major;
++	pvr_dev->fw_version.minor = header->fw_version_minor;
++
++	pvr_dev->fw_dev.header = header;
++	pvr_dev->fw_dev.layout_entries = layout_entries;
++
++	return 0;
++}
++
++static int
++pvr_fw_get_device_info(struct pvr_device *pvr_dev)
++{
++	const struct firmware *firmware = pvr_dev->fw_dev.firmware;
++	struct pvr_fw_device_info_header *header;
++	const u8 *fw = firmware->data;
++	const u64 *dev_info;
++	u32 fw_offset;
++
++	fw_offset = (firmware->size - SZ_4K) - pvr_dev->fw_dev.header->device_info_size;
++
++	header = (struct pvr_fw_device_info_header *)&fw[fw_offset];
++	dev_info = (u64 *)(header + 1);
++
++	pvr_device_info_set_quirks(pvr_dev, dev_info, header->brn_mask_size);
++	dev_info += header->brn_mask_size;
++
++	pvr_device_info_set_enhancements(pvr_dev, dev_info, header->ern_mask_size);
++	dev_info += header->ern_mask_size;
++
++	return pvr_device_info_set_features(pvr_dev, dev_info, header->feature_mask_size,
++					    header->feature_param_size);
++}
++
++/**
++ * pvr_fw_validate_init_device_info() - Validate firmware and initialise device information
++ * @pvr_dev: Target PowerVR device.
++ *
++ * This function must be called before querying device information.
++ *
++ * Returns:
++ *  * 0 on success, or
++ *  * -%EINVAL if firmware validation fails.
++ */
++int
++pvr_fw_validate_init_device_info(struct pvr_device *pvr_dev)
++{
++	int err;
++
++	err = pvr_fw_validate(pvr_dev);
++	if (err)
++		return err;
++
++	return pvr_fw_get_device_info(pvr_dev);
++}
 diff --git a/drivers/gpu/drm/imagination/pvr_fw.h b/drivers/gpu/drm/imagination/pvr_fw.h
 new file mode 100644
-index 000000000000..ba3bfd41867f
+index 000000000000..dca7fe5b3dd0
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_fw.h
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,34 @@
 +/* SPDX-License-Identifier: GPL-2.0 OR MIT */
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#ifndef PVR_FW_H
 +#define PVR_FW_H
 +
-+#include <linux/firmware.h>
++#include "pvr_fw_info.h"
++
++#include <linux/types.h>
++
++/* Forward declarations from "pvr_device.h". */
++struct pvr_device;
++struct pvr_file;
 +
 +struct pvr_fw_device {
 +	/** @firmware: Handle to the firmware loaded into the device. */
 +	const struct firmware *firmware;
 +
-+	/*
++	/** @header: Pointer to firmware header. */
++	const struct pvr_fw_info_header *header;
++
++	/** @layout_entries: Pointer to firmware layout. */
++	const struct pvr_fw_layout_entry *layout_entries;
++
++	/**
 +	 * @processor_type: FW processor type for this device. Must be one of
 +	 *                  %PVR_FW_PROCESSOR_TYPE_*.
 +	 */
 +	u16 processor_type;
 +};
 +
++int pvr_fw_validate_init_device_info(struct pvr_device *pvr_dev);
++
 +#endif /* PVR_FW_H */
+diff --git a/drivers/gpu/drm/imagination/pvr_fw_info.h b/drivers/gpu/drm/imagination/pvr_fw_info.h
+new file mode 100644
+index 000000000000..40bf66f1c4b6
+--- /dev/null
++++ b/drivers/gpu/drm/imagination/pvr_fw_info.h
+@@ -0,0 +1,135 @@
++/* SPDX-License-Identifier: GPL-2.0 OR MIT */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
++
++#ifndef PVR_FW_INFO_H
++#define PVR_FW_INFO_H
++
++#include <linux/bits.h>
++#include <linux/sizes.h>
++#include <linux/types.h>
++
++/*
++ * Firmware binary block unit in bytes.
++ * Raw data stored in FW binary will be aligned to this size.
++ */
++#define FW_BLOCK_SIZE SZ_4K
++
++/* Maximum number of entries in firmware layout table. */
++#define PVR_FW_INFO_MAX_NUM_ENTRIES 8
++
++enum pvr_fw_section_id {
++	META_CODE = 0,
++	META_PRIVATE_DATA,
++	META_COREMEM_CODE,
++	META_COREMEM_DATA,
++	MIPS_CODE,
++	MIPS_EXCEPTIONS_CODE,
++	MIPS_BOOT_CODE,
++	MIPS_PRIVATE_DATA,
++	MIPS_BOOT_DATA,
++	MIPS_STACK,
++	RISCV_UNCACHED_CODE,
++	RISCV_CACHED_CODE,
++	RISCV_PRIVATE_DATA,
++	RISCV_COREMEM_CODE,
++	RISCV_COREMEM_DATA,
++};
++
++enum pvr_fw_section_type {
++	NONE = 0,
++	FW_CODE,
++	FW_DATA,
++	FW_COREMEM_CODE,
++	FW_COREMEM_DATA,
++};
++
++/*
++ * FW binary format with FW info attached:
++ *
++ *          Contents        Offset
++ *     +-----------------+
++ *     |                 |    0
++ *     |                 |
++ *     | Original binary |
++ *     |      file       |
++ *     |   (.ldr/.elf)   |
++ *     |                 |
++ *     |                 |
++ *     +-----------------+
++ *     |   Device info   |  FILE_SIZE - 4K - device_info_size
++ *     +-----------------+
++ *     | FW info header  |  FILE_SIZE - 4K
++ *     +-----------------+
++ *     |                 |
++ *     | FW layout table |
++ *     |                 |
++ *     +-----------------+
++ *                          FILE_SIZE
++ */
++
++#define PVR_FW_INFO_VERSION 3
++
++#define PVR_FW_FLAGS_OPEN_SOURCE BIT(0)
++
++/** struct pvr_fw_info_header - Firmware header */
++struct pvr_fw_info_header {
++	/** @info_version: FW info header version. */
++	u32 info_version;
++	/** @header_len: Header length. */
++	u32 header_len;
++	/** @layout_entry_num: Number of entries in the layout table. */
++	u32 layout_entry_num;
++	/** @layout_entry_size: Size of an entry in the layout table. */
++	u32 layout_entry_size;
++	/** @bvnc: GPU ID supported by firmware. */
++	aligned_u64 bvnc;
++	/** @fw_page_size: Page size of processor on which firmware executes. */
++	u32 fw_page_size;
++	/** @flags: Compatibility flags. */
++	u32 flags;
++	/** @fw_version_major: Firmware major version number. */
++	u16 fw_version_major;
++	/** @fw_version_minor: Firmware minor version number. */
++	u16 fw_version_minor;
++	/** @fw_version_build: Firmware build number. */
++	u32 fw_version_build;
++	/** @device_info_size: Size of device info structure. */
++	u32 device_info_size;
++	/** @padding: Padding. */
++	u32 padding;
++};
++
++/**
++ * struct pvr_fw_layout_entry - Entry in firmware layout table, describing a
++ *                              section of the firmware image
++ */
++struct pvr_fw_layout_entry {
++	/** @id: Section ID. */
++	enum pvr_fw_section_id id;
++	/** @type: Section type. */
++	enum pvr_fw_section_type type;
++	/** @base_addr: Base address of section in FW address space. */
++	u32 base_addr;
++	/** @max_size: Maximum size of section, in bytes. */
++	u32 max_size;
++	/** @alloc_size: Allocation size of section, in bytes. */
++	u32 alloc_size;
++	/** @alloc_offset: Allocation offset of section. */
++	u32 alloc_offset;
++};
++
++/**
++ * struct pvr_fw_device_info_header - Device information header.
++ */
++struct pvr_fw_device_info_header {
++	/* BRN Mask size (in u64s). */
++	u64 brn_mask_size;
++	/* ERN Mask size (in u64s). */
++	u64 ern_mask_size;
++	/* Feature Mask size (in u64s). */
++	u64 feature_mask_size;
++	/* Feature Parameter size (in u64s). */
++	u64 feature_param_size;
++};
++
++#endif /* PVR_FW_INFO_H */
 -- 
 2.39.2
 

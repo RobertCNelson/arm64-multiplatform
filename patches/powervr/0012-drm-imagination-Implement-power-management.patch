@@ -1,38 +1,70 @@
-From a69a031ce66c9c963782e4ea97a6fd0b56ee0fce Mon Sep 17 00:00:00 2001
+From b68d61176d1c2c503768a4adb1a784dbde4f7ea9 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Tue, 13 Jun 2023 15:47:52 +0100
-Subject: [PATCH 09/17] drm/imagination: Implement power management
+Date: Wed, 6 Sep 2023 10:55:34 +0100
+Subject: [PATCH 12/20] drm/imagination: Implement power management
 
 Add power management to the driver, using runtime pm. The power off
 sequence depends on firmware commands which are not implemented in this
 patch.
 
+Changes since v5:
+- Use RUNTIME_PM_OPS() to declare PM callbacks
+- Add Kconfig dependency on CONFIG_PM
+
+Changes since v4:
+- Suspend runtime PM before unplugging device on rmmod
+
+Changes since v3:
+- Don't power device when calling pvr_device_gpu_fini()
+- Documentation for pvr_dev->lost has been improved
+- pvr_power_init() renamed to pvr_watchdog_init()
+- Use drm_dev_{enter,exit}
+
+Changes since v2:
+- Use runtime PM
+- Implement watchdog
+
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
+Reviewed-by: Maxime Ripard <mripard@kernel.org>
 ---
+ drivers/gpu/drm/imagination/Kconfig      |   1 +
  drivers/gpu/drm/imagination/Makefile     |   1 +
- drivers/gpu/drm/imagination/pvr_device.c |  20 +-
- drivers/gpu/drm/imagination/pvr_device.h |  17 ++
- drivers/gpu/drm/imagination/pvr_drv.c    |  35 +++-
- drivers/gpu/drm/imagination/pvr_power.c  | 239 +++++++++++++++++++++++
- drivers/gpu/drm/imagination/pvr_power.h  |  41 ++++
- 6 files changed, 351 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/imagination/pvr_device.c |  23 +-
+ drivers/gpu/drm/imagination/pvr_device.h |  22 ++
+ drivers/gpu/drm/imagination/pvr_drv.c    |  20 +-
+ drivers/gpu/drm/imagination/pvr_mmu.c    |   6 +-
+ drivers/gpu/drm/imagination/pvr_power.c  | 271 +++++++++++++++++++++++
+ drivers/gpu/drm/imagination/pvr_power.h  |  39 ++++
+ 8 files changed, 378 insertions(+), 5 deletions(-)
  create mode 100644 drivers/gpu/drm/imagination/pvr_power.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_power.h
 
+diff --git a/drivers/gpu/drm/imagination/Kconfig b/drivers/gpu/drm/imagination/Kconfig
+index e9aaa5313485..47c294b431b6 100644
+--- a/drivers/gpu/drm/imagination/Kconfig
++++ b/drivers/gpu/drm/imagination/Kconfig
+@@ -5,6 +5,7 @@ config DRM_POWERVR
+ 	tristate "Imagination Technologies PowerVR (Series 6 and later) & IMG Graphics"
+ 	depends on ARM64
+ 	depends on DRM
++	depends on PM
+ 	select DRM_GEM_SHMEM_HELPER
+ 	select DRM_SCHED
+ 	select FW_LOADER
 diff --git a/drivers/gpu/drm/imagination/Makefile b/drivers/gpu/drm/imagination/Makefile
-index 93d89909a8d7..00036b075505 100644
+index 8fcabc1bea36..235e2d329e29 100644
 --- a/drivers/gpu/drm/imagination/Makefile
 +++ b/drivers/gpu/drm/imagination/Makefile
-@@ -8,6 +8,7 @@ powervr-y := \
- 	pvr_device_info.o \
- 	pvr_drv.o \
+@@ -10,6 +10,7 @@ powervr-y := \
+ 	pvr_fw.o \
  	pvr_gem.o \
+ 	pvr_mmu.o \
 +	pvr_power.o \
  	pvr_vm.o
  
  obj-$(CONFIG_DRM_POWERVR) += powervr.o
 diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/imagination/pvr_device.c
-index 6f7ef3767e56..8428e1270a22 100644
+index ef8f7a2ff1a9..5dbd05f21238 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.c
 +++ b/drivers/gpu/drm/imagination/pvr_device.c
 @@ -5,6 +5,7 @@
@@ -43,7 +75,7 @@ index 6f7ef3767e56..8428e1270a22 100644
  #include "pvr_rogue_cr_defs.h"
  #include "pvr_vm.h"
  
-@@ -492,6 +493,8 @@ pvr_device_gpu_fini(struct pvr_device *pvr_dev)
+@@ -357,6 +358,8 @@ pvr_device_gpu_fini(struct pvr_device *pvr_dev)
  int
  pvr_device_init(struct pvr_device *pvr_dev)
  {
@@ -52,72 +84,43 @@ index 6f7ef3767e56..8428e1270a22 100644
  	int err;
  
  	/* Enable and initialize clocks required for the device to operate. */
-@@ -503,21 +506,31 @@ pvr_device_init(struct pvr_device *pvr_dev)
+@@ -364,13 +367,29 @@ pvr_device_init(struct pvr_device *pvr_dev)
  	if (err)
- 		goto err_device_clk_fini;
+ 		return err;
  
 +	/* Explicitly power the GPU so we can access control registers before the FW is booted. */
 +	err = pm_runtime_resume_and_get(dev);
 +	if (err)
-+		goto err_device_clk_fini;
++		return err;
 +
  	/* Map the control registers into memory. */
  	err = pvr_device_reg_init(pvr_dev);
  	if (err)
--		goto err_device_clk_fini;
+-		return err;
 +		goto err_pm_runtime_put;
  
  	/* Perform GPU-specific initialization steps. */
- 	err = pvr_device_gpu_init(pvr_dev);
- 	if (err)
- 		goto err_device_reg_fini;
- 
-+	pm_runtime_put_autosuspend(dev);
+-	return pvr_device_gpu_init(pvr_dev);
++	err = pvr_device_gpu_init(pvr_dev);
++	if (err)
++		goto err_pm_runtime_put;
 +
- 	return 0;
- 
- err_device_reg_fini:
- 	pvr_device_reg_fini(pvr_dev);
- 
++	pm_runtime_put(dev);
++
++	return 0;
++
 +err_pm_runtime_put:
 +	pm_runtime_put_sync_suspend(dev);
 +
- err_device_clk_fini:
- 	pvr_device_clk_fini(pvr_dev);
- 
-@@ -532,12 +545,17 @@ pvr_device_init(struct pvr_device *pvr_dev)
- void
- pvr_device_fini(struct pvr_device *pvr_dev)
- {
-+	struct drm_device *drm_dev = from_pvr_device(pvr_dev);
-+	struct device *dev = drm_dev->dev;
-+
- 	/*
- 	 * Deinitialization stages are performed in reverse order compared to
- 	 * the initialization stages in pvr_device_init().
- 	 */
-+	pm_runtime_get_sync(dev);
- 	pvr_device_gpu_fini(pvr_dev);
- 	pvr_device_reg_fini(pvr_dev);
-+	pm_runtime_put_sync_suspend(dev);
- 	pvr_device_clk_fini(pvr_dev);
++	return err;
  }
  
+ /**
 diff --git a/drivers/gpu/drm/imagination/pvr_device.h b/drivers/gpu/drm/imagination/pvr_device.h
-index ce10bca36eb1..e5c5e47bf573 100644
+index 350e894a2939..f7eb14942195 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.h
 +++ b/drivers/gpu/drm/imagination/pvr_device.h
-@@ -118,6 +118,9 @@ struct pvr_device {
- 	/** @regulator: Power regulator. */
- 	struct regulator *regulator;
- 
-+	/** @irq_wq: Workqueue for actions triggered off the IRQ handler. */
-+	struct workqueue_struct *irq_wq;
-+
- 	/**
- 	 * @kernel_vm_ctx: Virtual memory context used for kernel mappings.
- 	 *
-@@ -130,6 +133,20 @@ struct pvr_device {
+@@ -135,6 +135,28 @@ struct pvr_device {
  
  	/** @fw_dev: Firmware related data. */
  	struct pvr_fw_device fw_dev;
@@ -133,13 +136,21 @@ index ce10bca36eb1..e5c5e47bf573 100644
 +		u32 kccb_stall_count;
 +	} watchdog;
 +
-+	/** @lost: %true if the device has been lost. */
++	/**
++	 * @lost: %true if the device has been lost.
++	 *
++	 * This variable is set if the device has become irretrievably unavailable, e.g. if the
++	 * firmware processor has stopped responding and can not be revived via a hard reset.
++	 */
 +	bool lost;
++
++	/** @sched_wq: Workqueue for schedulers. */
++	struct workqueue_struct *sched_wq;
  };
  
  /**
 diff --git a/drivers/gpu/drm/imagination/pvr_drv.c b/drivers/gpu/drm/imagination/pvr_drv.c
-index 547b4fbe355c..9d26cfcc7a16 100644
+index 4b0c52118735..cfd4cea5a69c 100644
 --- a/drivers/gpu/drm/imagination/pvr_drv.c
 +++ b/drivers/gpu/drm/imagination/pvr_drv.c
 @@ -4,6 +4,7 @@
@@ -150,108 +161,51 @@ index 547b4fbe355c..9d26cfcc7a16 100644
  #include "pvr_rogue_defs.h"
  #include "pvr_rogue_fwif_client.h"
  #include "pvr_rogue_fwif_shared.h"
-@@ -73,6 +74,9 @@ pvr_ioctl_create_bo(struct drm_device *drm_dev, void *raw_args,
- 
- 	int err;
- 
-+	if (pvr_dev->lost)
-+		return -EIO;
-+
- 	/* All padding fields must be zeroed. */
- 	if (args->_padding_c != 0)
- 		return -EINVAL;
-@@ -159,11 +163,15 @@ pvr_ioctl_get_bo_mmap_offset(__always_unused struct drm_device *drm_dev,
- 			     void *raw_args, struct drm_file *file)
- {
- 	struct drm_pvr_ioctl_get_bo_mmap_offset_args *args = raw_args;
-+	struct pvr_device *pvr_dev = to_pvr_device(drm_dev);
- 	struct pvr_file *pvr_file = to_pvr_file(file);
- 	struct pvr_gem_object *pvr_obj;
- 	struct drm_gem_object *gem_obj;
- 	int ret;
- 
-+	if (pvr_dev->lost)
-+		return -EIO;
-+
- 	/* All padding fields must be zeroed. */
- 	if (args->_padding_4 != 0)
- 		return -EINVAL;
-@@ -647,6 +655,9 @@ pvr_ioctl_dev_query(struct drm_device *drm_dev, void *raw_args,
- 	struct pvr_device *pvr_dev = to_pvr_device(drm_dev);
- 	struct drm_pvr_ioctl_dev_query_args *args = raw_args;
- 
-+	if (pvr_dev->lost)
-+		return -EIO;
-+
- 	switch ((enum drm_pvr_dev_query)args->type) {
- 	case DRM_PVR_DEV_QUERY_GPU_INFO_GET:
- 		return pvr_dev_query_gpu_info_get(pvr_dev, args);
-@@ -813,10 +824,14 @@ pvr_ioctl_create_vm_context(struct drm_device *drm_dev, void *raw_args,
- 			    struct drm_file *file)
- {
- 	struct drm_pvr_ioctl_create_vm_context_args *args = raw_args;
-+	struct pvr_device *pvr_dev = to_pvr_device(drm_dev);
- 	struct pvr_file *pvr_file = to_pvr_file(file);
- 	struct pvr_vm_context *vm_ctx;
- 	int err;
- 
-+	if (pvr_dev->lost)
-+		return -EIO;
-+
- 	if (args->_padding_4)
- 		return -EINVAL;
- 
-@@ -911,6 +926,9 @@ pvr_ioctl_vm_map(struct drm_device *drm_dev, void *raw_args,
- 	u64 offset_plus_size;
- 	int err;
- 
-+	if (pvr_dev->lost)
-+		return -EIO;
-+
- 	/* Initial validation of args. */
- 	if (args->_padding_14)
- 		return -EINVAL;
-@@ -1285,9 +1303,15 @@ pvr_probe(struct platform_device *plat_dev)
+@@ -1277,9 +1278,16 @@ pvr_probe(struct platform_device *plat_dev)
  
  	platform_set_drvdata(plat_dev, drm_dev);
  
 +	devm_pm_runtime_enable(&plat_dev->dev);
++	pm_runtime_mark_last_busy(&plat_dev->dev);
 +
 +	pm_runtime_set_autosuspend_delay(&plat_dev->dev, 50);
 +	pm_runtime_use_autosuspend(&plat_dev->dev);
-+	pvr_power_init(pvr_dev);
++	pvr_watchdog_init(pvr_dev);
 +
  	err = pvr_device_init(pvr_dev);
  	if (err)
--		goto err_out;
-+		goto err_power_fini;
+-		return err;
++		goto err_watchdog_fini;
  
  	err = drm_dev_register(drm_dev, 0);
  	if (err)
-@@ -1298,6 +1322,9 @@ pvr_probe(struct platform_device *plat_dev)
+@@ -1290,6 +1298,9 @@ pvr_probe(struct platform_device *plat_dev)
  err_device_fini:
  	pvr_device_fini(pvr_dev);
  
-+err_power_fini:
-+	pvr_power_fini(pvr_dev);
++err_watchdog_fini:
++	pvr_watchdog_fini(pvr_dev);
 +
- err_out:
  	return err;
  }
-@@ -1310,6 +1337,7 @@ pvr_remove(struct platform_device *plat_dev)
  
- 	drm_dev_unregister(drm_dev);
+@@ -1299,8 +1310,10 @@ pvr_remove(struct platform_device *plat_dev)
+ 	struct drm_device *drm_dev = platform_get_drvdata(plat_dev);
+ 	struct pvr_device *pvr_dev = to_pvr_device(drm_dev);
+ 
++	pm_runtime_suspend(drm_dev->dev);
+ 	drm_dev_unplug(drm_dev);
  	pvr_device_fini(pvr_dev);
-+	pvr_power_fini(pvr_dev);
++	pvr_watchdog_fini(pvr_dev);
  
  	return 0;
  }
-@@ -1321,11 +1349,16 @@ static const struct of_device_id dt_match[] = {
+@@ -1311,11 +1324,16 @@ static const struct of_device_id dt_match[] = {
  };
  MODULE_DEVICE_TABLE(of, dt_match);
  
 +static const struct dev_pm_ops pvr_pm_ops = {
-+	SET_RUNTIME_PM_OPS(pvr_power_device_suspend, pvr_power_device_resume, pvr_power_device_idle)
++	RUNTIME_PM_OPS(pvr_power_device_suspend, pvr_power_device_resume, pvr_power_device_idle)
 +};
 +
  static struct platform_driver pvr_driver = {
@@ -263,27 +217,44 @@ index 547b4fbe355c..9d26cfcc7a16 100644
  		.of_match_table = dt_match,
  	},
  };
+diff --git a/drivers/gpu/drm/imagination/pvr_mmu.c b/drivers/gpu/drm/imagination/pvr_mmu.c
+index 895e206fe555..34a290136f74 100644
+--- a/drivers/gpu/drm/imagination/pvr_mmu.c
++++ b/drivers/gpu/drm/imagination/pvr_mmu.c
+@@ -61,8 +61,10 @@
+  * pvr_mmu_flush() - Request flush of all MMU caches.
+  * @pvr_dev: Target PowerVR device.
+  *
+- * This function must be called following any possible change to the MMU page
+- * tables.
++ * This function must be called following any possible change to the MMU page tables.
++ *
++ * As a failure to flush the MMU caches could risk memory corruption, if the flush fails (implying
++ * the firmware is not responding) then the GPU device is marked as lost.
+  *
+  * Returns:
+  *  * 0 on success, or
 diff --git a/drivers/gpu/drm/imagination/pvr_power.c b/drivers/gpu/drm/imagination/pvr_power.c
 new file mode 100644
-index 000000000000..fa1a84934127
+index 000000000000..a494fed92e81
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_power.c
-@@ -0,0 +1,239 @@
+@@ -0,0 +1,271 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#include "pvr_device.h"
 +#include "pvr_fw.h"
 +#include "pvr_power.h"
 +#include "pvr_rogue_fwif.h"
 +
++#include <drm/drm_drv.h>
 +#include <drm/drm_managed.h>
 +#include <linux/clk.h>
 +#include <linux/interrupt.h>
 +#include <linux/mutex.h>
 +#include <linux/platform_device.h>
 +#include <linux/pm_runtime.h>
-+#include <linux/regulator/consumer.h>
 +#include <linux/timer.h>
 +#include <linux/types.h>
 +#include <linux/workqueue.h>
@@ -292,13 +263,6 @@ index 000000000000..fa1a84934127
 +
 +#define WATCHDOG_TIME_MS (500)
 +
-+static void
-+pvr_device_lost(struct pvr_device *pvr_dev)
-+{
-+	if (!pvr_dev->lost)
-+		pvr_dev->lost = true;
-+}
-+
 +static int
 +pvr_power_send_command(struct pvr_device *pvr_dev, struct rogue_fwif_kccb_cmd *pow_cmd)
 +{
@@ -306,7 +270,7 @@ index 000000000000..fa1a84934127
 +	return -ENODEV;
 +}
 +
-+int
++static int
 +pvr_power_request_idle(struct pvr_device *pvr_dev)
 +{
 +	struct rogue_fwif_kccb_cmd pow_cmd;
@@ -319,7 +283,7 @@ index 000000000000..fa1a84934127
 +	return pvr_power_send_command(pvr_dev, &pow_cmd);
 +}
 +
-+int
++static int
 +pvr_power_request_pwr_off(struct pvr_device *pvr_dev)
 +{
 +	struct rogue_fwif_kccb_cmd pow_cmd;
@@ -333,19 +297,21 @@ index 000000000000..fa1a84934127
 +}
 +
 +static int
-+pvr_power_fw_disable(struct pvr_device *pvr_dev)
++pvr_power_fw_disable(struct pvr_device *pvr_dev, bool hard_reset)
 +{
-+	int err;
++	if (!hard_reset) {
++		int err;
 +
-+	cancel_delayed_work_sync(&pvr_dev->watchdog.work);
++		cancel_delayed_work_sync(&pvr_dev->watchdog.work);
 +
-+	err = pvr_power_request_idle(pvr_dev);
-+	if (err)
-+		return err;
++		err = pvr_power_request_idle(pvr_dev);
++		if (err)
++			return err;
 +
-+	err = pvr_power_request_pwr_off(pvr_dev);
-+	if (err)
-+		return err;
++		err = pvr_power_request_pwr_off(pvr_dev);
++		if (err)
++			return err;
++	}
 +
 +	/* TODO: stop firmware */
 +	return -ENODEV;
@@ -361,7 +327,7 @@ index 000000000000..fa1a84934127
 +	if (err)
 +		return err;
 +
-+	queue_delayed_work(pvr_dev->irq_wq, &pvr_dev->watchdog.work,
++	queue_delayed_work(pvr_dev->sched_wq, &pvr_dev->watchdog.work,
 +			   msecs_to_jiffies(WATCHDOG_TIME_MS));
 +
 +	return 0;
@@ -392,25 +358,28 @@ index 000000000000..fa1a84934127
 +		return;
 +
 +	if (pm_runtime_get_if_in_use(from_pvr_device(pvr_dev)->dev) <= 0)
-+		return;
++		goto out_requeue;
 +
 +	stalled = pvr_watchdog_kccb_stalled(pvr_dev);
 +
 +	if (stalled) {
-+		drm_err(from_pvr_device(pvr_dev), "GPU device lost");
-+		pvr_device_lost(pvr_dev);
-+	}
++		drm_err(from_pvr_device(pvr_dev), "FW stalled, trying hard reset");
 +
-+	if (!pvr_dev->lost) {
-+		queue_delayed_work(pvr_dev->irq_wq, &pvr_dev->watchdog.work,
-+				   msecs_to_jiffies(WATCHDOG_TIME_MS));
++		pvr_power_reset(pvr_dev, true);
++		/* Device may be lost at this point. */
 +	}
 +
 +	pm_runtime_put(from_pvr_device(pvr_dev)->dev);
++
++out_requeue:
++	if (!pvr_dev->lost) {
++		queue_delayed_work(pvr_dev->sched_wq, &pvr_dev->watchdog.work,
++				   msecs_to_jiffies(WATCHDOG_TIME_MS));
++	}
 +}
 +
 +/**
-+ * pvr_power_init() - Initialise power management for device
++ * pvr_watchdog_init() - Initialise watchdog for device
 + * @pvr_dev: Target PowerVR device.
 + *
 + * Returns:
@@ -418,7 +387,7 @@ index 000000000000..fa1a84934127
 + *  * -%ENOMEM on out of memory.
 + */
 +int
-+pvr_power_init(struct pvr_device *pvr_dev)
++pvr_watchdog_init(struct pvr_device *pvr_dev)
 +{
 +	INIT_DELAYED_WORK(&pvr_dev->watchdog.work, pvr_watchdog_worker);
 +
@@ -431,13 +400,16 @@ index 000000000000..fa1a84934127
 +	struct platform_device *plat_dev = to_platform_device(dev);
 +	struct drm_device *drm_dev = platform_get_drvdata(plat_dev);
 +	struct pvr_device *pvr_dev = to_pvr_device(drm_dev);
++	int idx;
 +
-+	clk_disable(pvr_dev->mem_clk);
-+	clk_disable(pvr_dev->sys_clk);
-+	clk_disable(pvr_dev->core_clk);
++	if (!drm_dev_enter(drm_dev, &idx))
++		return -EIO;
 +
-+	if (pvr_dev->regulator)
-+		regulator_disable(pvr_dev->regulator);
++	clk_disable_unprepare(pvr_dev->mem_clk);
++	clk_disable_unprepare(pvr_dev->sys_clk);
++	clk_disable_unprepare(pvr_dev->core_clk);
++
++	drm_dev_exit(idx);
 +
 +	return 0;
 +}
@@ -448,19 +420,38 @@ index 000000000000..fa1a84934127
 +	struct platform_device *plat_dev = to_platform_device(dev);
 +	struct drm_device *drm_dev = platform_get_drvdata(plat_dev);
 +	struct pvr_device *pvr_dev = to_pvr_device(drm_dev);
++	int idx;
 +	int err;
 +
-+	if (pvr_dev->regulator) {
-+		err = regulator_enable(pvr_dev->regulator);
-+		if (err)
-+			return err;
-+	}
++	if (!drm_dev_enter(drm_dev, &idx))
++		return -EIO;
 +
-+	clk_enable(pvr_dev->core_clk);
-+	clk_enable(pvr_dev->sys_clk);
-+	clk_enable(pvr_dev->mem_clk);
++	err = clk_prepare_enable(pvr_dev->core_clk);
++	if (err)
++		goto err_drm_dev_exit;
++
++	err = clk_prepare_enable(pvr_dev->sys_clk);
++	if (err)
++		goto err_core_clk_disable;
++
++	err = clk_prepare_enable(pvr_dev->mem_clk);
++	if (err)
++		goto err_sys_clk_disable;
++
++	drm_dev_exit(idx);
 +
 +	return 0;
++
++err_sys_clk_disable:
++	clk_disable_unprepare(pvr_dev->sys_clk);
++
++err_core_clk_disable:
++	clk_disable_unprepare(pvr_dev->core_clk);
++
++err_drm_dev_exit:
++	drm_dev_exit(idx);
++
++	return err;
 +}
 +
 +int
@@ -473,20 +464,33 @@ index 000000000000..fa1a84934127
 +	return pvr_power_is_idle(pvr_dev) ? 0 : -EBUSY;
 +}
 +
++/**
++ * pvr_power_reset() - Reset the GPU
++ * @pvr_dev: Device pointer
++ * @hard_reset: %true for hard reset, %false for soft reset
++ *
++ * If @hard_reset is %false and the FW processor fails to respond during the reset process, this
++ * function will attempt a hard reset.
++ *
++ * If a hard reset fails then the GPU device is reported as lost.
++ *
++ * Returns:
++ *  * 0 on success, or
++ *  * Any error code returned by pvr_power_get, pvr_power_fw_disable or pvr_power_fw_enable().
++ */
 +int
-+pvr_power_reset(struct pvr_device *pvr_dev)
++pvr_power_reset(struct pvr_device *pvr_dev, bool hard_reset)
 +{
++	/* TODO: Implement hard reset. */
 +	int err;
 +
 +	/*
 +	 * Take a power reference during the reset. This should prevent any interference with the
 +	 * power state during reset.
 +	 */
-+	err = pvr_power_get(pvr_dev);
-+	if (err)
-+		goto err_out;
++	WARN_ON(pvr_power_get(pvr_dev));
 +
-+	err = pvr_power_fw_disable(pvr_dev);
++	err = pvr_power_fw_disable(pvr_dev, false);
 +	if (err)
 +		goto err_power_put;
 +
@@ -495,27 +499,26 @@ index 000000000000..fa1a84934127
 +err_power_put:
 +	pvr_power_put(pvr_dev);
 +
-+err_out:
 +	return err;
 +}
 +
 +/**
-+ * pvr_power_fini() - Shutdown power management for device
++ * pvr_watchdog_fini() - Shutdown watchdog for device
 + * @pvr_dev: Target PowerVR device.
 + */
 +void
-+pvr_power_fini(struct pvr_device *pvr_dev)
++pvr_watchdog_fini(struct pvr_device *pvr_dev)
 +{
 +	cancel_delayed_work_sync(&pvr_dev->watchdog.work);
 +}
 diff --git a/drivers/gpu/drm/imagination/pvr_power.h b/drivers/gpu/drm/imagination/pvr_power.h
 new file mode 100644
-index 000000000000..557457e7bdcd
+index 000000000000..439f08d13655
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_power.h
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,39 @@
 +/* SPDX-License-Identifier: GPL-2.0 OR MIT */
-+/* Copyright (c) 2022 Imagination Technologies Ltd. */
++/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
 +#ifndef PVR_POWER_H
 +#define PVR_POWER_H
@@ -525,18 +528,16 @@ index 000000000000..557457e7bdcd
 +#include <linux/mutex.h>
 +#include <linux/pm_runtime.h>
 +
-+int pvr_power_init(struct pvr_device *pvr_dev);
-+void pvr_power_fini(struct pvr_device *pvr_dev);
-+bool pvr_power_is_idle(struct pvr_device *pvr_dev);
++int pvr_watchdog_init(struct pvr_device *pvr_dev);
++void pvr_watchdog_fini(struct pvr_device *pvr_dev);
 +
-+int pvr_power_request_idle(struct pvr_device *pvr_dev);
-+int pvr_power_request_pwr_off(struct pvr_device *pvr_dev);
++bool pvr_power_is_idle(struct pvr_device *pvr_dev);
 +
 +int pvr_power_device_suspend(struct device *dev);
 +int pvr_power_device_resume(struct device *dev);
 +int pvr_power_device_idle(struct device *dev);
 +
-+int pvr_power_reset(struct pvr_device *pvr_dev);
++int pvr_power_reset(struct pvr_device *pvr_dev, bool hard_reset);
 +
 +static __always_inline int
 +pvr_power_get(struct pvr_device *pvr_dev)
