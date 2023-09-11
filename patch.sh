@@ -231,7 +231,7 @@ local_patch () {
 #external_git
 #rt
 wireless_regdb
-beagleboard_dtbs
+#beagleboard_dtbs
 #local_patch
 
 pre_backports () {
