@@ -178,7 +178,7 @@ cleanup_dts_builds () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.5.x"
+	branch="v6.6.x"
 	https_repo="https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -231,7 +231,7 @@ local_patch () {
 #external_git
 #rt
 wireless_regdb
-#beagleboard_dtbs
+beagleboard_dtbs
 #local_patch
 
 pre_backports () {
