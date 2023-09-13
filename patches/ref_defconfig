@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.5.2 Kernel Configuration
+# Linux/arm64 6.5.3 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 13.2.0"
 CONFIG_CC_IS_GCC=y
@@ -5240,10 +5240,7 @@ CONFIG_MEDIA_ATTACH=y
 # IR I2C driver auto-selected by 'Autoselect ancillary drivers'
 #
 CONFIG_VIDEO_IR_I2C=m
-
-#
-# Camera sensor devices
-#
+CONFIG_VIDEO_CAMERA_SENSOR=y
 # CONFIG_VIDEO_AR0521 is not set
 # CONFIG_VIDEO_HI556 is not set
 # CONFIG_VIDEO_HI846 is not set
@@ -5311,7 +5308,6 @@ CONFIG_VIDEO_OV5645=m
 # CONFIG_VIDEO_ST_VGXY61 is not set
 # CONFIG_VIDEO_CCS is not set
 # CONFIG_VIDEO_ET8EK8 is not set
-# end of Camera sensor devices
 
 #
 # Lens drivers
@@ -7599,13 +7595,7 @@ CONFIG_STAGING=y
 # CONFIG_MFD_NVEC is not set
 CONFIG_STAGING_MEDIA=y
 # CONFIG_DVB_AV7110 is not set
-CONFIG_VIDEO_IMX_MEDIA=m
-
-#
-# i.MX5/6/7/8 Media Sub devices
-#
-# end of i.MX5/6/7/8 Media Sub devices
-
+# CONFIG_VIDEO_IMX_MEDIA is not set
 # CONFIG_VIDEO_IMX8MQ_MIPI_CSI2 is not set
 CONFIG_VIDEO_MAX96712=m
 # CONFIG_VIDEO_MESON_VDEC is not set
@@ -7921,7 +7911,7 @@ CONFIG_MSM_GCC_8916=y
 # CONFIG_MSM_GCC_8976 is not set
 CONFIG_MSM_MMCC_8994=m
 CONFIG_MSM_GCC_8994=y
-CONFIG_MSM_GCC_8996=m
+CONFIG_MSM_GCC_8996=y
 CONFIG_MSM_MMCC_8996=m
 CONFIG_MSM_GCC_8998=y
 # CONFIG_MSM_GPUCC_8998 is not set

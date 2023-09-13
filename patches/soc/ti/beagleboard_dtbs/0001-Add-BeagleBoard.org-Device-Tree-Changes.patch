@@ -1,11 +1,11 @@
-From f6b8fa2fb7a0418a6cbb3091f3bdbf16dc62f523 Mon Sep 17 00:00:00 2001
+From 96f24f55447463999c710cc3525a92db5c9aa44f Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Thu, 7 Sep 2023 14:33:25 -0500
+Date: Wed, 13 Sep 2023 12:41:47 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.5.x
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/1d0090621555fb1049abb0ead2d3da7088c5fafd
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/c309e025d8009ee23796a719f479d7d2daeb50f3
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  52 ++++-
@@ -13,7 +13,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/k3-am62.dtsi           |   8 +
  .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 154 ++++++++++++-
  arch/arm64/boot/dts/ti/k3-am625-sk.dts        |   2 +-
- .../arm64/boot/dts/ti/k3-am62x-sk-common.dtsi |  93 +++++++-
+ .../arm64/boot/dts/ti/k3-am62x-sk-common.dtsi |  91 ++++++++
  arch/arm64/boot/dts/ti/k3-am69-sk.dts         |  12 ++
  .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |  63 ++----
  .../dts/ti/k3-j721e-common-proc-board.dts     |  42 +---
@@ -21,14 +21,14 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../boot/dts/ti/k3-j721e-mcu-wakeup.dtsi      |  25 ++-
  arch/arm64/boot/dts/ti/k3-j721e-sk.dts        |  60 +-----
  arch/arm64/boot/dts/ti/k3-j721e-som-p0.dtsi   |  17 +-
- arch/arm64/boot/dts/ti/k3-j784s4-evm.dts      |  91 +++++---
- arch/arm64/boot/dts/ti/k3-j784s4-main.dtsi    |  41 +++-
- .../boot/dts/ti/k3-j784s4-mcu-wakeup.dtsi     |  18 +-
+ arch/arm64/boot/dts/ti/k3-j784s4-evm.dts      |  30 ++-
+ arch/arm64/boot/dts/ti/k3-j784s4-main.dtsi    |  39 +++-
+ .../boot/dts/ti/k3-j784s4-mcu-wakeup.dtsi     |  16 +-
  arch/arm64/boot/dts/ti/k3-j784s4.dtsi         |   2 +
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |  12 ++
  arch/arm64/boot/dts/ti/k3-serdes.h            | 204 ++++++++++++++++++
  include/dt-bindings/pinctrl/omap.h            |   8 +-
- 20 files changed, 758 insertions(+), 218 deletions(-)
+ 20 files changed, 721 insertions(+), 188 deletions(-)
  create mode 100644 arch/arm64/boot/dts/ti/k3-serdes.h
 
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
@@ -388,7 +388,7 @@ index 3f9ef4053aa6..7c98c1b855d1 100644
  		reg = <0x0>;
  		spi-tx-bus-width = <8>;
 diff --git a/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi b/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi
-index 34c8ffc553ec..677ff8de4b6e 100644
+index 540ed8a0d7fb..677ff8de4b6e 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi
 @@ -114,6 +114,17 @@ sound_master: simple-audio-card,codec {
@@ -449,15 +449,6 @@ index 34c8ffc553ec..677ff8de4b6e 100644
  };
  
  &mcu_pmx0 {
-@@ -300,7 +344,7 @@ &main_i2c1 {
- 	status = "okay";
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&main_i2c1_pins_default>;
--	clock-frequency = <400000>;
-+	clock-frequency = <100000>;
- 
- 	tlv320aic3106: audio-codec@1b {
- 		#sound-dai-cells = <0>;
 @@ -313,6 +357,36 @@ tlv320aic3106: audio-codec@1b {
  		IOVDD-supply = <&vcc_3v3_sys>;
  		DRVDD-supply = <&vcc_3v3_sys>;
@@ -1295,7 +1286,7 @@ index 38ae13cc3aa3..7f0686c2ce37 100644
  	memory-region = <&c71_0_dma_memory_region>,
  			<&c71_0_memory_region>;
 diff --git a/arch/arm64/boot/dts/ti/k3-j784s4-evm.dts b/arch/arm64/boot/dts/ti/k3-j784s4-evm.dts
-index 430b8a2c5df5..5991c2e1d994 100644
+index bf772f064117..5991c2e1d994 100644
 --- a/arch/arm64/boot/dts/ti/k3-j784s4-evm.dts
 +++ b/arch/arm64/boot/dts/ti/k3-j784s4-evm.dts
 @@ -252,7 +252,9 @@ vdd_sd_dv: regulator-TLV71033 {
@@ -1342,49 +1333,7 @@ index 430b8a2c5df5..5991c2e1d994 100644
  		pinctrl-single,pins = <
  			J784S4_WKUP_IOPAD(0x090, PIN_INPUT, 0) /* (H37) WKUP_GPIO0_14.MCU_UART0_CTSn */
  			J784S4_WKUP_IOPAD(0x094, PIN_OUTPUT, 0) /* (K37) WKUP_GPIO0_15.MCU_UART0_RTSn */
-@@ -340,33 +347,35 @@ J784S4_WKUP_IOPAD(0x030, PIN_INPUT, 0) /* (B35) MCU_MDIO0_MDIO */
- 
- 	mcu_adc0_pins_default: mcu-adc0-default-pins {
- 		pinctrl-single,pins = <
--			J784S4_WKUP_IOPAD(0x134, PIN_INPUT, 0) /* (P36) MCU_ADC0_AIN0 */
--			J784S4_WKUP_IOPAD(0x138, PIN_INPUT, 0) /* (V36) MCU_ADC0_AIN1 */
--			J784S4_WKUP_IOPAD(0x13c, PIN_INPUT, 0) /* (T34) MCU_ADC0_AIN2 */
--			J784S4_WKUP_IOPAD(0x140, PIN_INPUT, 0) /* (T36) MCU_ADC0_AIN3 */
--			J784S4_WKUP_IOPAD(0x144, PIN_INPUT, 0) /* (P34) MCU_ADC0_AIN4 */
--			J784S4_WKUP_IOPAD(0x148, PIN_INPUT, 0) /* (R37) MCU_ADC0_AIN5 */
--			J784S4_WKUP_IOPAD(0x14c, PIN_INPUT, 0) /* (R33) MCU_ADC0_AIN6 */
--			J784S4_WKUP_IOPAD(0x150, PIN_INPUT, 0) /* (V38) MCU_ADC0_AIN7 */
-+			J784S4_WKUP_IOPAD(0x0cc, PIN_INPUT, 0) /* (P36) MCU_ADC0_AIN0 */
-+			J784S4_WKUP_IOPAD(0x0d0, PIN_INPUT, 0) /* (V36) MCU_ADC0_AIN1 */
-+			J784S4_WKUP_IOPAD(0x0d4, PIN_INPUT, 0) /* (T34) MCU_ADC0_AIN2 */
-+			J784S4_WKUP_IOPAD(0x0d8, PIN_INPUT, 0) /* (T36) MCU_ADC0_AIN3 */
-+			J784S4_WKUP_IOPAD(0x0dc, PIN_INPUT, 0) /* (P34) MCU_ADC0_AIN4 */
-+			J784S4_WKUP_IOPAD(0x0e0, PIN_INPUT, 0) /* (R37) MCU_ADC0_AIN5 */
-+			J784S4_WKUP_IOPAD(0x0e4, PIN_INPUT, 0) /* (R33) MCU_ADC0_AIN6 */
-+			J784S4_WKUP_IOPAD(0x0e8, PIN_INPUT, 0) /* (V38) MCU_ADC0_AIN7 */
- 		>;
- 	};
- 
- 	mcu_adc1_pins_default: mcu-adc1-default-pins {
- 		pinctrl-single,pins = <
--			J784S4_WKUP_IOPAD(0x154, PIN_INPUT, 0) /* (Y38) MCU_ADC1_AIN0 */
--			J784S4_WKUP_IOPAD(0x158, PIN_INPUT, 0) /* (Y34) MCU_ADC1_AIN1 */
--			J784S4_WKUP_IOPAD(0x15c, PIN_INPUT, 0) /* (V34) MCU_ADC1_AIN2 */
--			J784S4_WKUP_IOPAD(0x160, PIN_INPUT, 0) /* (W37) MCU_ADC1_AIN3 */
--			J784S4_WKUP_IOPAD(0x164, PIN_INPUT, 0) /* (AA37) MCU_ADC1_AIN4 */
--			J784S4_WKUP_IOPAD(0x168, PIN_INPUT, 0) /* (W33) MCU_ADC1_AIN5 */
--			J784S4_WKUP_IOPAD(0x16c, PIN_INPUT, 0) /* (U33) MCU_ADC1_AIN6 */
--			J784S4_WKUP_IOPAD(0x170, PIN_INPUT, 0) /* (Y36) MCU_ADC1_AIN7 */
-+			J784S4_WKUP_IOPAD(0x0ec, PIN_INPUT, 0) /* (Y38) MCU_ADC1_AIN0 */
-+			J784S4_WKUP_IOPAD(0x0f0, PIN_INPUT, 0) /* (Y34) MCU_ADC1_AIN1 */
-+			J784S4_WKUP_IOPAD(0x0f4, PIN_INPUT, 0) /* (V34) MCU_ADC1_AIN2 */
-+			J784S4_WKUP_IOPAD(0x0f8, PIN_INPUT, 0) /* (W37) MCU_ADC1_AIN3 */
-+			J784S4_WKUP_IOPAD(0x0fc, PIN_INPUT, 0) /* (AA37) MCU_ADC1_AIN4 */
-+			J784S4_WKUP_IOPAD(0x100, PIN_INPUT, 0) /* (W33) MCU_ADC1_AIN5 */
-+			J784S4_WKUP_IOPAD(0x104, PIN_INPUT, 0) /* (U33) MCU_ADC1_AIN6 */
-+			J784S4_WKUP_IOPAD(0x108, PIN_INPUT, 0) /* (Y36) MCU_ADC1_AIN7 */
- 		>;
- 	};
+@@ -366,7 +373,9 @@ J784S4_WKUP_IOPAD(0x108, PIN_INPUT, 0) /* (Y36) MCU_ADC1_AIN7 */
  };
  
  &wkup_pmx0 {
@@ -1394,49 +1343,25 @@ index 430b8a2c5df5..5991c2e1d994 100644
  		pinctrl-single,pins = <
  			J784S4_WKUP_IOPAD(0x000, PIN_OUTPUT, 0) /* (E32) MCU_OSPI0_CLK */
  			J784S4_WKUP_IOPAD(0x02c, PIN_OUTPUT, 0) /* (A32) MCU_OSPI0_CSn0 */
-@@ -379,21 +388,31 @@ J784S4_WKUP_IOPAD(0x020, PIN_INPUT, 0) /* (D34) MCU_OSPI0_D5 */
- 			J784S4_WKUP_IOPAD(0x024, PIN_INPUT, 0) /* (E34) MCU_OSPI0_D6 */
- 			J784S4_WKUP_IOPAD(0x028, PIN_INPUT, 0) /* (E33) MCU_OSPI0_D7 */
- 			J784S4_WKUP_IOPAD(0x008, PIN_INPUT, 0) /* (C34) MCU_OSPI0_DQS */
--			J784S4_WKUP_IOPAD(0x03c, PIN_OUTPUT, 6) /* (C32) MCU_OSPI0_CSn3.MCU_OSPI0_ECC_FAIL */
--			J784S4_WKUP_IOPAD(0x038, PIN_OUTPUT, 6) /* (B34) MCU_OSPI0_CSn2.MCU_OSPI0_RESET_OUT0 */
-+		>;
-+	};
-+};
-+
-+&wkup_pmx1 {
+@@ -384,7 +393,9 @@ J784S4_WKUP_IOPAD(0x008, PIN_INPUT, 0) /* (C34) MCU_OSPI0_DQS */
+ };
+ 
+ &wkup_pmx1 {
 +	bootph-all;
-+	mcu_fss0_ospi0_1_pins_default: mcu-fss0-ospi0-1-default-pins {
+ 	mcu_fss0_ospi0_1_pins_default: mcu-fss0-ospi0-1-default-pins {
 +		bootph-all;
-+		pinctrl-single,pins = <
-+			J784S4_WKUP_IOPAD(0x004, PIN_OUTPUT, 6) /* (C32) MCU_OSPI0_ECC_FAIL */
-+			J784S4_WKUP_IOPAD(0x000, PIN_OUTPUT, 6) /* (B34) MCU_OSPI0_RESET_OUT0 */
- 		>;
+ 		pinctrl-single,pins = <
+ 			J784S4_WKUP_IOPAD(0x004, PIN_OUTPUT, 6) /* (C32) MCU_OSPI0_ECC_FAIL */
+ 			J784S4_WKUP_IOPAD(0x000, PIN_OUTPUT, 6) /* (B34) MCU_OSPI0_RESET_OUT0 */
+@@ -392,6 +403,7 @@ J784S4_WKUP_IOPAD(0x000, PIN_OUTPUT, 6) /* (B34) MCU_OSPI0_RESET_OUT0 */
  	};
  
  	mcu_fss0_ospi1_pins_default: mcu-fss0-ospi1-default-pins {
 +		bootph-all;
  		pinctrl-single,pins = <
--			J784S4_WKUP_IOPAD(0x040, PIN_OUTPUT, 0) /* (F32) MCU_OSPI1_CLK */
--			J784S4_WKUP_IOPAD(0x05c, PIN_OUTPUT, 0) /* (G32) MCU_OSPI1_CSn0 */
--			J784S4_WKUP_IOPAD(0x04c, PIN_INPUT, 0) /* (E35) MCU_OSPI1_D0 */
--			J784S4_WKUP_IOPAD(0x050, PIN_INPUT, 0) /* (D31) MCU_OSPI1_D1 */
--			J784S4_WKUP_IOPAD(0x054, PIN_INPUT, 0) /* (G31) MCU_OSPI1_D2 */
--			J784S4_WKUP_IOPAD(0x058, PIN_INPUT, 0) /* (F33) MCU_OSPI1_D3 */
--			J784S4_WKUP_IOPAD(0x048, PIN_INPUT, 0) /* (F31) MCU_OSPI1_DQS */
--			J784S4_WKUP_IOPAD(0x044, PIN_INPUT, 0) /* (C31) MCU_OSPI1_LBCLKO */
-+			J784S4_WKUP_IOPAD(0x008, PIN_OUTPUT, 0) /* (F32) MCU_OSPI1_CLK */
-+			J784S4_WKUP_IOPAD(0x024, PIN_OUTPUT, 0) /* (G32) MCU_OSPI1_CSn0 */
-+			J784S4_WKUP_IOPAD(0x014, PIN_INPUT, 0) /* (E35) MCU_OSPI1_D0 */
-+			J784S4_WKUP_IOPAD(0x018, PIN_INPUT, 0) /* (D31) MCU_OSPI1_D1 */
-+			J784S4_WKUP_IOPAD(0x01C, PIN_INPUT, 0) /* (G31) MCU_OSPI1_D2 */
-+			J784S4_WKUP_IOPAD(0x020, PIN_INPUT, 0) /* (F33) MCU_OSPI1_D3 */
-+			J784S4_WKUP_IOPAD(0x010, PIN_INPUT, 0) /* (F31) MCU_OSPI1_DQS */
-+			J784S4_WKUP_IOPAD(0x00C, PIN_INPUT, 0) /* (C31) MCU_OSPI1_LBCLKO */
- 		>;
- 	};
- };
-@@ -406,6 +425,7 @@ &wkup_uart0 {
+ 			J784S4_WKUP_IOPAD(0x008, PIN_OUTPUT, 0) /* (F32) MCU_OSPI1_CLK */
+ 			J784S4_WKUP_IOPAD(0x024, PIN_OUTPUT, 0) /* (G32) MCU_OSPI1_CSn0 */
+@@ -413,6 +425,7 @@ &wkup_uart0 {
  };
  
  &wkup_i2c0 {
@@ -1444,7 +1369,7 @@ index 430b8a2c5df5..5991c2e1d994 100644
  	status = "okay";
  	pinctrl-names = "default";
  	pinctrl-0 = <&wkup_i2c0_pins_default>;
-@@ -419,27 +439,36 @@ eeprom@50 {
+@@ -426,27 +439,36 @@ eeprom@50 {
  };
  
  &mcu_uart0 {
@@ -1474,15 +1399,14 @@ index 430b8a2c5df5..5991c2e1d994 100644
 +	bootph-all;
  	status = "okay";
  	pinctrl-names = "default";
--	pinctrl-0 = <&mcu_fss0_ospi0_pins_default>;
-+	pinctrl-0 = <&mcu_fss0_ospi0_pins_default>, <&mcu_fss0_ospi0_1_pins_default>;
+ 	pinctrl-0 = <&mcu_fss0_ospi0_pins_default>, <&mcu_fss0_ospi0_1_pins_default>;
  
  	flash@0 {
 +		bootph-all;
  		compatible = "jedec,spi-nor";
  		reg = <0x0>;
  		spi-tx-bus-width = <8>;
-@@ -487,6 +516,7 @@ partition@800000 {
+@@ -494,6 +516,7 @@ partition@800000 {
  			};
  
  			partition@3fc0000 {
@@ -1490,7 +1414,7 @@ index 430b8a2c5df5..5991c2e1d994 100644
  				label = "ospi.phypattern";
  				reg = <0x3fc0000 0x40000>;
  			};
-@@ -495,11 +525,13 @@ partition@3fc0000 {
+@@ -502,11 +525,13 @@ partition@3fc0000 {
  };
  
  &ospi1 {
@@ -1505,7 +1429,7 @@ index 430b8a2c5df5..5991c2e1d994 100644
  		compatible = "jedec,spi-nor";
  		reg = <0x0>;
  		spi-tx-bus-width = <1>;
-@@ -547,6 +579,7 @@ partition@800000 {
+@@ -554,6 +579,7 @@ partition@800000 {
  			};
  
  			partition@3fc0000 {
@@ -1513,7 +1437,7 @@ index 430b8a2c5df5..5991c2e1d994 100644
  				label = "qspi.phypattern";
  				reg = <0x3fc0000 0x40000>;
  			};
-@@ -591,6 +624,7 @@ exp2: gpio@22 {
+@@ -598,6 +624,7 @@ exp2: gpio@22 {
  };
  
  &main_sdhci0 {
@@ -1521,7 +1445,7 @@ index 430b8a2c5df5..5991c2e1d994 100644
  	/* eMMC */
  	status = "okay";
  	non-removable;
-@@ -599,6 +633,7 @@ &main_sdhci0 {
+@@ -606,6 +633,7 @@ &main_sdhci0 {
  };
  
  &main_sdhci1 {
@@ -1530,18 +1454,9 @@ index 430b8a2c5df5..5991c2e1d994 100644
  	status = "okay";
  	pinctrl-0 = <&main_mmc1_pins_default>;
 diff --git a/arch/arm64/boot/dts/ti/k3-j784s4-main.dtsi b/arch/arm64/boot/dts/ti/k3-j784s4-main.dtsi
-index 2ea0adae6832..efed2d683f63 100644
+index 76e610d8782b..efed2d683f63 100644
 --- a/arch/arm64/boot/dts/ti/k3-j784s4-main.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-j784s4-main.dtsi
-@@ -60,7 +60,7 @@ main_gpio_intr: interrupt-controller@a00000 {
- 		#interrupt-cells = <1>;
- 		ti,sci = <&sms>;
- 		ti,sci-dev-id = <10>;
--		ti,interrupt-ranges = <8 360 56>;
-+		ti,interrupt-ranges = <8 392 56>;
- 	};
- 
- 	main_pmx0: pinctrl@11c000 {
 @@ -618,7 +618,7 @@ main_sdhci0: mmc@4f80000 {
  		interrupts = <GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>;
  		power-domains = <&k3_pds 140 TI_SCI_PD_EXCLUSIVE>;
@@ -1651,7 +1566,7 @@ index 2ea0adae6832..efed2d683f63 100644
  	};
  };
 diff --git a/arch/arm64/boot/dts/ti/k3-j784s4-mcu-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-j784s4-mcu-wakeup.dtsi
-index 657fb1d72512..4ab4018d3695 100644
+index 62a0f172fb2d..4ab4018d3695 100644
 --- a/arch/arm64/boot/dts/ti/k3-j784s4-mcu-wakeup.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-j784s4-mcu-wakeup.dtsi
 @@ -7,6 +7,7 @@
@@ -1689,15 +1604,6 @@ index 657fb1d72512..4ab4018d3695 100644
  		compatible = "ti,am654-chipid";
  		reg = <0x00 0x43000014 0x00 0x4>;
  	};
-@@ -107,7 +112,7 @@ wkup_gpio_intr: interrupt-controller@42200000 {
- 		#interrupt-cells = <1>;
- 		ti,sci = <&sms>;
- 		ti,sci-dev-id = <177>;
--		ti,interrupt-ranges = <16 928 16>;
-+		ti,interrupt-ranges = <16 960 16>;
- 	};
- 
- 	/* MCU_TIMERIO pad input CTRLMMR_MCU_TIMER*_CTRL registers */
 @@ -161,6 +166,7 @@ mcu_timer0: timer@40400000 {
  	};
  

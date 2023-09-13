@@ -1,9 +1,9 @@
-From 0606fcd72f665d93c15a2d2902c8b570e2eff743 Mon Sep 17 00:00:00 2001
+From adf52bebba828921bb8d6ec06a35e6c399593f8e Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Thu, 7 Sep 2023 14:34:07 -0500
+Date: Wed, 13 Sep 2023 12:32:52 -0500
 Subject: [PATCH] merge: CONFIG_PREEMPT_RT Patch Set
 
-patch-6.5-rt6.patch.xz
+patch-6.5.2-rt8.patch.xz
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
@@ -995,7 +995,7 @@ index d63b02940747..2de8ec3020ae 100644
  #define _TIF_IO_BITMAP		(1 << TIF_IO_BITMAP)
  #define _TIF_SPEC_FORCE_UPDATE	(1 << TIF_SPEC_FORCE_UPDATE)
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index e3a65e9fc750..1b27c47c59e7 100644
+index 00f043a094fc..6cfd73125e17 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
 @@ -2300,8 +2300,7 @@ void store_cpu_caps(struct cpuinfo_x86 *curr_info)
@@ -3596,7 +3596,7 @@ index 9ea0b28068f4..00a01d50a3a9 100644
  
  #ifndef CONFIG_HAVE_ARCH_WITHIN_STACK_FRAMES
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index 1e8bbdb8da90..936c79821fc8 100644
+index f99d798093ab..667b71b4a454 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
 @@ -81,6 +81,7 @@ struct trace_entry {
@@ -3934,7 +3934,7 @@ index 21db0df0eb00..e56585ef489c 100644
  
  	return rt_mutex_slowlock(lock, NULL, state);
 diff --git a/kernel/locking/rwbase_rt.c b/kernel/locking/rwbase_rt.c
-index 25ec0239477c..b5e881250fec 100644
+index 25ec0239477c..34a59569db6b 100644
 --- a/kernel/locking/rwbase_rt.c
 +++ b/kernel/locking/rwbase_rt.c
 @@ -71,6 +71,7 @@ static int __sched __rwbase_read_lock(struct rwbase_rt *rwb,
@@ -3965,7 +3965,7 @@ index 25ec0239477c..b5e881250fec 100644
  	/* Force readers into slow path */
  	atomic_sub(READER_BIAS, &rwb->readers);
  
-+	rt_mutex_pre_schedule();
++	rwbase_pre_schedule();
 +
  	raw_spin_lock_irqsave(&rtm->wait_lock, flags);
  	if (__rwbase_write_trylock(rwb))
@@ -3974,7 +3974,7 @@ index 25ec0239477c..b5e881250fec 100644
  		if (rwbase_signal_pending_state(state, current)) {
  			rwbase_restore_current_state();
  			__rwbase_write_unlock(rwb, 0, flags);
-+			rt_mutex_post_schedule();
++			rwbase_post_schedule();
  			trace_contention_end(rwb, -EINTR);
  			return -EINTR;
  		}
@@ -3982,7 +3982,7 @@ index 25ec0239477c..b5e881250fec 100644
  
  out_unlock:
  	raw_spin_unlock_irqrestore(&rtm->wait_lock, flags);
-+	rt_mutex_post_schedule();
++	rwbase_post_schedule();
  	return 0;
  }
  
@@ -7353,7 +7353,7 @@ index c52c2eba7c73..fe944fa1efc4 100644
  	 * The idle tasks have their own, simple scheduling class:
  	 */
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index b3e25be58e2b..f4cbb860e751 100644
+index 1d9c2482c5a3..2d28baae8069 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -5005,7 +5005,7 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
@@ -7401,7 +7401,7 @@ index b3e25be58e2b..f4cbb860e751 100644
  			return;
  		}
  		hrtick_start(rq, delta);
-@@ -8007,7 +8007,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
+@@ -8004,7 +8004,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
  	return;
  
  preempt:
@@ -7410,7 +7410,7 @@ index b3e25be58e2b..f4cbb860e751 100644
  	/*
  	 * Only set the backward buddy when the current task is still
  	 * on the rq. This can happen when a wakeup gets interleaved
-@@ -12186,7 +12186,7 @@ static void task_fork_fair(struct task_struct *p)
+@@ -12183,7 +12183,7 @@ static void task_fork_fair(struct task_struct *p)
  		 * 'current' within the tree based on its new key value.
  		 */
  		swap(curr->vruntime, se->vruntime);
@@ -7419,7 +7419,7 @@ index b3e25be58e2b..f4cbb860e751 100644
  	}
  
  	se->vruntime -= cfs_rq->min_vruntime;
-@@ -12213,7 +12213,7 @@ prio_changed_fair(struct rq *rq, struct task_struct *p, int oldprio)
+@@ -12210,7 +12210,7 @@ prio_changed_fair(struct rq *rq, struct task_struct *p, int oldprio)
  	 */
  	if (task_current(rq, p)) {
  		if (p->prio > oldprio)
@@ -7443,7 +7443,7 @@ index ee7f23c76bd3..e13090e33f3c 100644
  
  /*
 diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
-index 00e0e5074115..338cd150973f 100644
+index 185d3d749f6b..5d9f2f01441a 100644
 --- a/kernel/sched/rt.c
 +++ b/kernel/sched/rt.c
 @@ -2247,8 +2247,11 @@ static int rto_next_cpu(struct root_domain *rd)
@@ -7732,7 +7732,7 @@ index 63a8ce7177dd..b3fbe97d1e34 100644
  
  /*
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 2656ca3b9b39..8fa756640747 100644
+index 745332d10b3e..818329c0b9fd 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
 @@ -2720,11 +2720,19 @@ unsigned int tracing_gen_ctx_irq_test(unsigned int irqs_status)
@@ -7990,10 +7990,10 @@ index 69a3e544676c..dcbea746018f 100644
  
  		init_gro_hash(&sd->backlog);
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index a298992060e6..e188f2232b54 100644
+index acdf94bb54c8..8ccbb164561a 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -6762,8 +6762,13 @@ nodefer:	__kfree_skb(skb);
+@@ -6774,8 +6774,13 @@ nodefer:	__kfree_skb(skb);
  	/* Make sure to trigger NET_RX_SOFTIRQ on the remote CPU
  	 * if we are unlucky enough (this seems very unlikely).
  	 */
