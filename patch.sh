@@ -111,7 +111,7 @@ rt_cleanup () {
 rt () {
 	rt_patch="${KERNEL_REL}${kernel_rt}"
 
-	#${git_bin} revert --no-edit xyz
+	${git_bin} revert --no-edit f89944f2aecfbb8ef23ec467a7d43c8737959477
 
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
@@ -305,7 +305,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.5.2"
+		backport_tag="v6.5.3"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
