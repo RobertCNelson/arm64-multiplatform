@@ -1,6 +1,6 @@
-From 579dfca2d3cda1ead08cd73cb9789fafb3640064 Mon Sep 17 00:00:00 2001
+From 013314ef086145363753e98f0f9d1d36fd4e496b Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 15 Sep 2023 16:38:31 -0500
+Date: Fri, 15 Sep 2023 18:12:25 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.2.x
@@ -9,15 +9,13 @@ https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/9cfd0f0
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm64/boot/dts/ti/Makefile               |   1 +
- arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  56 +-
+ arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  46 ++
  .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 764 ++++++++++++++++++
- arch/arm64/boot/dts/ti/k3-am625.dtsi          |   2 +-
- arch/arm64/boot/dts/ti/k3-j721e-main.dtsi     |   1 +
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |  53 ++
  include/dt-bindings/gpio/gpio.h               |   2 +-
  include/dt-bindings/pinctrl/k3.h              |   3 +
  include/dt-bindings/pinctrl/omap.h            |   4 +-
- 9 files changed, 877 insertions(+), 9 deletions(-)
+ 7 files changed, 870 insertions(+), 3 deletions(-)
  create mode 100644 arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
  create mode 100644 arch/arm64/boot/dts/ti/k3-pinctrl.h
 
@@ -31,54 +29,9 @@ index cf7c509538a4..2b9d2ae4e1b5 100644
  dtb-$(CONFIG_ARCH_K3) += k3-am62a7-sk.dtb
 +dtb-$(CONFIG_ARCH_K3) += k3-am625-beagleplay.dtb
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
-index 0bdc16b0d08f..7dcfeaadd8e3 100644
+index 072903649d6e..7dcfeaadd8e3 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
-@@ -413,7 +413,7 @@ main_spi0: spi@20100000 {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		power-domains = <&k3_pds 141 TI_SCI_PD_EXCLUSIVE>;
--		clocks = <&k3_clks 141 0>;
-+		clocks = <&k3_clks 172 0>;
- 		status = "disabled";
- 	};
- 
-@@ -424,7 +424,7 @@ main_spi1: spi@20110000 {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		power-domains = <&k3_pds 142 TI_SCI_PD_EXCLUSIVE>;
--		clocks = <&k3_clks 142 0>;
-+		clocks = <&k3_clks 173 0>;
- 		status = "disabled";
- 	};
- 
-@@ -435,7 +435,7 @@ main_spi2: spi@20120000 {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		power-domains = <&k3_pds 143 TI_SCI_PD_EXCLUSIVE>;
--		clocks = <&k3_clks 143 0>;
-+		clocks = <&k3_clks 174 0>;
- 		status = "disabled";
- 	};
- 
-@@ -461,7 +461,7 @@ main_gpio0: gpio@600000 {
- 			     <193>, <194>, <195>;
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
--		ti,ngpio = <92>;
-+		ti,ngpio = <87>;
- 		ti,davinci-gpio-unbanked = <0>;
- 		power-domains = <&k3_pds 77 TI_SCI_PD_EXCLUSIVE>;
- 		clocks = <&k3_clks 77 0>;
-@@ -478,7 +478,7 @@ main_gpio1: gpio@601000 {
- 			     <183>, <184>, <185>;
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
--		ti,ngpio = <52>;
-+		ti,ngpio = <88>;
- 		ti,davinci-gpio-unbanked = <0>;
- 		power-domains = <&k3_pds 78 TI_SCI_PD_EXCLUSIVE>;
- 		clocks = <&k3_clks 78 0>;
 @@ -553,6 +553,52 @@ sdhci2: mmc@fa20000 {
  		status = "disabled";
  	};
@@ -902,31 +855,6 @@ index 000000000000..2d552c2d0479
 +	status = "okay";
 +	symlink = "play/cc1352/uart";
 +};
-diff --git a/arch/arm64/boot/dts/ti/k3-am625.dtsi b/arch/arm64/boot/dts/ti/k3-am625.dtsi
-index 26d78562ceba..cea2cc7de5dd 100644
---- a/arch/arm64/boot/dts/ti/k3-am625.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-am625.dtsi
-@@ -147,7 +147,7 @@ opp-1250000000 {
- 	L2_0: l2-cache0 {
- 		compatible = "cache";
- 		cache-level = <2>;
--		cache-size = <0x80000>;
-+		cache-size = <0x40000>;
- 		cache-line-size = <64>;
- 		cache-sets = <512>;
- 	};
-diff --git a/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi
-index bfa296dce3a3..c935622f0102 100644
---- a/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi
-@@ -1180,6 +1180,7 @@ main_sdhci0: mmc@4f80000 {
- 		ti,itap-del-sel-mmc-hs = <0xa>;
- 		ti,itap-del-sel-ddr52 = <0x3>;
- 		ti,trm-icp = <0x8>;
-+		ti,strobe-sel = <0x77>;
- 		dma-coherent;
- 	};
- 
 diff --git a/arch/arm64/boot/dts/ti/k3-pinctrl.h b/arch/arm64/boot/dts/ti/k3-pinctrl.h
 new file mode 100644
 index 000000000000..c97548a3f42d
