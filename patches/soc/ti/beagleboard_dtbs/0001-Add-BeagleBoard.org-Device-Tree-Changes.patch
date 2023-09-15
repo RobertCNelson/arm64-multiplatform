@@ -1,16 +1,16 @@
-From 579ce168943807f48407f67664d7852a0bca676e Mon Sep 17 00:00:00 2001
+From f0af4cfbc575f6d82edfbdefe176d72402285e56 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 15 Sep 2023 11:06:31 -0500
+Date: Fri, 15 Sep 2023 15:38:55 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.6.x
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/89730228acf25d366d6bc6a621bfd7fe1edf3273
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/297f0c3886ab519b2c72c7d177526ff8779c48cd
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  9 ++++++++
- .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 23 +++++++++++++++++--
- 2 files changed, 30 insertions(+), 2 deletions(-)
+ .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 22 +++++++++++++++++--
+ 2 files changed, 29 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
 index 284b90c94da8..df5e6a944016 100644
@@ -31,7 +31,7 @@ index 284b90c94da8..df5e6a944016 100644
 +	};
  };
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
-index 7cfdf562b53b..2cddde4237dc 100644
+index 7cfdf562b53b..0e4063882226 100644
 --- a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 @@ -43,6 +43,8 @@ aliases {
@@ -43,15 +43,7 @@ index 7cfdf562b53b..2cddde4237dc 100644
  	};
  
  	memory@80000000 {
-@@ -110,6 +112,7 @@ wlan_en: regulator-3 {
- 		regulator-max-microvolt = <1800000>;
- 		enable-active-high;
- 		regulator-always-on;
-+		startup-delay-us = <100000>;
- 		vin-supply = <&vdd_3v3>;
- 		gpio = <&main_gpio0 38 GPIO_ACTIVE_HIGH>;
- 		pinctrl-names = "default";
-@@ -149,6 +152,7 @@ leds {
+@@ -149,6 +151,7 @@ leds {
  		compatible = "gpio-leds";
  
  		led-0 {
@@ -59,7 +51,7 @@ index 7cfdf562b53b..2cddde4237dc 100644
  			gpios = <&main_gpio0 3 GPIO_ACTIVE_HIGH>;
  			linux,default-trigger = "heartbeat";
  			function = LED_FUNCTION_HEARTBEAT;
-@@ -156,24 +160,31 @@ led-0 {
+@@ -156,24 +159,31 @@ led-0 {
  		};
  
  		led-1 {
@@ -93,7 +85,7 @@ index 7cfdf562b53b..2cddde4237dc 100644
  			function = LED_FUNCTION_WLAN;
  		};
  	};
-@@ -742,6 +753,7 @@ &main_i2c1 {
+@@ -742,6 +752,7 @@ &main_i2c1 {
  	pinctrl-0 = <&grove_pins_default>;
  	clock-frequency = <100000>;
  	status = "okay";
@@ -101,7 +93,7 @@ index 7cfdf562b53b..2cddde4237dc 100644
  };
  
  &main_i2c2 {
-@@ -792,6 +804,7 @@ &main_i2c3 {
+@@ -792,6 +803,7 @@ &main_i2c3 {
  	pinctrl-0 = <&mikrobus_i2c_pins_default>;
  	clock-frequency = <400000>;
  	status = "okay";
@@ -109,7 +101,7 @@ index 7cfdf562b53b..2cddde4237dc 100644
  };
  
  &main_spi2 {
-@@ -864,12 +877,18 @@ &main_uart5 {
+@@ -864,12 +876,18 @@ &main_uart5 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&mikrobus_uart_pins_default>;
  	status = "okay";
