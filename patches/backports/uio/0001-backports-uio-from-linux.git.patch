@@ -1,9 +1,9 @@
-From 785bc057fe8fc33f0ef7bcaf9c3013216c3ca07f Mon Sep 17 00:00:00 2001
+From 6165d02122f0b80d8913c97b7b653d111292a831 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 19 Sep 2023 15:35:31 -0500
+Date: Mon, 25 Sep 2023 13:49:21 -0500
 Subject: [PATCH] backports: uio: from: linux.git
 
-Reference: v5.10.195
+Reference: v5.10.197
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  drivers/uio/uio_pruss.c | 51 ++++++++++++++++++++++++++++-------------
