@@ -1,11 +1,11 @@
-From da8fdde4192999b7e2e3a867d11979b4f930ce29 Mon Sep 17 00:00:00 2001
+From c301bd9933bef32c752bc368e306eb479bb9fd46 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 25 Sep 2023 13:48:41 -0500
+Date: Mon, 2 Oct 2023 20:57:01 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.6.x
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/96dd176331f548c5081448bc69cea70ceac84142
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/1cceec052c33eb531c2989387c6cb1ca3896abaf
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  9 ++++++++
