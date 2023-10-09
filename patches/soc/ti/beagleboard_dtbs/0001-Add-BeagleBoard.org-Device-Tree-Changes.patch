@@ -1,11 +1,11 @@
-From 3c6b7df48af3fd23c95f8230a57d23695bbc75de Mon Sep 17 00:00:00 2001
+From ae0167122a2e5f8337904b7c10bd76fd77de8c50 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Sun, 8 Oct 2023 22:19:19 -0500
+Date: Mon, 9 Oct 2023 12:43:48 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.6.x
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/1cceec052c33eb531c2989387c6cb1ca3896abaf
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/d93a4d3e360bb5f7c4ecfa5a343a0450404cf3eb
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  9 ++++++++
@@ -31,7 +31,7 @@ index 284b90c94da8..df5e6a944016 100644
 +	};
  };
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
-index 7cfdf562b53b..0e4063882226 100644
+index 7cfdf562b53b..75a6cf9091cc 100644
 --- a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 @@ -43,6 +43,8 @@ aliases {
@@ -114,8 +114,8 @@ index 7cfdf562b53b..0e4063882226 100644
  	status = "okay";
 +	symlink = "play/cc1352/uart";
 +
-+	beaglecc1352 {
-+		compatible = "beagle,cc1352";
++	mcu {
++		compatible = "ti,cc1352p7";
 +	};
  };
  
