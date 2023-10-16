@@ -29,3 +29,4 @@ build:
     name: "$CI_PROJECT_NAME-v6.6.x-arm64-k3-$CI_JOB_ID"
     paths:
       - "deploy/linux-image-*.deb"
+
