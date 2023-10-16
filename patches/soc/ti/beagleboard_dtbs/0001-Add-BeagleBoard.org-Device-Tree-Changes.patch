@@ -1,16 +1,16 @@
-From ae0167122a2e5f8337904b7c10bd76fd77de8c50 Mon Sep 17 00:00:00 2001
+From 8a043501a2901bb80eea6557ee3fdfd1917a1fcb Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 9 Oct 2023 12:43:48 -0500
+Date: Mon, 16 Oct 2023 14:09:44 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.6.x
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/d93a4d3e360bb5f7c4ecfa5a343a0450404cf3eb
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/6a3779e1720eabcffa6042235674f80b865e02a4
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
- arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  9 ++++++++
- .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 22 +++++++++++++++++--
- 2 files changed, 29 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  9 +++++++
+ .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 25 +++++++++++++++++--
+ 2 files changed, 32 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
 index 284b90c94da8..df5e6a944016 100644
@@ -31,7 +31,7 @@ index 284b90c94da8..df5e6a944016 100644
 +	};
  };
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
-index 7cfdf562b53b..75a6cf9091cc 100644
+index 7cfdf562b53b..6df8ec54364d 100644
 --- a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 @@ -43,6 +43,8 @@ aliases {
@@ -85,7 +85,23 @@ index 7cfdf562b53b..75a6cf9091cc 100644
  			function = LED_FUNCTION_WLAN;
  		};
  	};
-@@ -742,6 +752,7 @@ &main_i2c1 {
+@@ -544,6 +554,7 @@ &wkup_i2c0 {
+ 	pinctrl-0 = <&i2c_csi_pins_default>;
+ 	clock-frequency = <400000>;
+ 	/* Enable with overlay for camera sensor */
++	symlink = "play/csi/i2c";
+ };
+ 
+ &mcu_i2c0 {
+@@ -551,6 +562,7 @@ &mcu_i2c0 {
+ 	pinctrl-0 = <&i2c_qwiic_pins_default>;
+ 	clock-frequency = <100000>;
+ 	status = "okay";
++	symlink = "play/qwiic/i2c";
+ };
+ 
+ &usbss0 {
+@@ -742,6 +754,7 @@ &main_i2c1 {
  	pinctrl-0 = <&grove_pins_default>;
  	clock-frequency = <100000>;
  	status = "okay";
@@ -93,7 +109,7 @@ index 7cfdf562b53b..75a6cf9091cc 100644
  };
  
  &main_i2c2 {
-@@ -792,6 +803,7 @@ &main_i2c3 {
+@@ -792,12 +805,14 @@ &main_i2c3 {
  	pinctrl-0 = <&mikrobus_i2c_pins_default>;
  	clock-frequency = <400000>;
  	status = "okay";
@@ -101,7 +117,14 @@ index 7cfdf562b53b..75a6cf9091cc 100644
  };
  
  &main_spi2 {
-@@ -864,12 +876,18 @@ &main_uart5 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&mikrobus_spi_pins_default>;
+ 	status = "okay";
++	symlink = "play/mikrobus/spi";
+ };
+ 
+ &sdhci0 {
+@@ -864,12 +879,18 @@ &main_uart5 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&mikrobus_uart_pins_default>;
  	status = "okay";
