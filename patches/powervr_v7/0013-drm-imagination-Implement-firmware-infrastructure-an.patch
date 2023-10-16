@@ -1,6 +1,6 @@
-From cf6708f05086165e361e39e2f64f71442907167b Mon Sep 17 00:00:00 2001
+From a5ab9528d9f13c83076d192e9e9426028ff0e550 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:35 +0100
+Date: Tue, 10 Oct 2023 14:37:31 +0100
 Subject: [PATCH 13/20] drm/imagination: Implement firmware infrastructure and
  META FW support
 
@@ -10,6 +10,9 @@ ringbuffers and starting & stopping the firmware processor.
 
 This patch also adds the necessary support code for the META firmware
 processor.
+
+Changes since v6:
+- Add a minimum retry count to pvr_kccb_reserve_slot_sync()
 
 Changes since v5:
 - Add workaround for BRN 71242
@@ -29,25 +32,25 @@ Changes since v3:
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
 ---
  drivers/gpu/drm/imagination/Makefile          |    4 +
- drivers/gpu/drm/imagination/pvr_ccb.c         |  631 ++++++++
+ drivers/gpu/drm/imagination/pvr_ccb.c         |  638 ++++++++
  drivers/gpu/drm/imagination/pvr_ccb.h         |   71 +
- drivers/gpu/drm/imagination/pvr_device.c      |  100 ++
+ drivers/gpu/drm/imagination/pvr_device.c      |  103 ++
  drivers/gpu/drm/imagination/pvr_device.h      |   60 +
  drivers/gpu/drm/imagination/pvr_drv.c         |    1 +
- drivers/gpu/drm/imagination/pvr_fw.c          | 1323 +++++++++++++++++
+ drivers/gpu/drm/imagination/pvr_fw.c          | 1342 +++++++++++++++++
  drivers/gpu/drm/imagination/pvr_fw.h          |  474 ++++++
  drivers/gpu/drm/imagination/pvr_fw_meta.c     |  554 +++++++
  drivers/gpu/drm/imagination/pvr_fw_meta.h     |   14 +
- .../gpu/drm/imagination/pvr_fw_startstop.c    |  304 ++++
+ .../gpu/drm/imagination/pvr_fw_startstop.c    |  306 ++++
  .../gpu/drm/imagination/pvr_fw_startstop.h    |   13 +
  drivers/gpu/drm/imagination/pvr_fw_trace.c    |  120 ++
  drivers/gpu/drm/imagination/pvr_fw_trace.h    |   78 +
  drivers/gpu/drm/imagination/pvr_gem.h         |    7 +
  drivers/gpu/drm/imagination/pvr_mmu.c         |   67 +-
- drivers/gpu/drm/imagination/pvr_power.c       |  166 ++-
+ drivers/gpu/drm/imagination/pvr_power.c       |  166 +-
  drivers/gpu/drm/imagination/pvr_power.h       |    2 +
  drivers/gpu/drm/imagination/pvr_vm.c          |   26 +-
- 19 files changed, 3992 insertions(+), 23 deletions(-)
+ 19 files changed, 4023 insertions(+), 23 deletions(-)
  create mode 100644 drivers/gpu/drm/imagination/pvr_ccb.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_ccb.h
  create mode 100644 drivers/gpu/drm/imagination/pvr_fw_meta.c
@@ -78,10 +81,10 @@ index 235e2d329e29..5b02440841be 100644
  	pvr_power.o \
 diff --git a/drivers/gpu/drm/imagination/pvr_ccb.c b/drivers/gpu/drm/imagination/pvr_ccb.c
 new file mode 100644
-index 000000000000..1dfcce963e67
+index 000000000000..64b58b8989ca
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_ccb.c
-@@ -0,0 +1,631 @@
+@@ -0,0 +1,638 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
 +/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
@@ -102,6 +105,7 @@ index 000000000000..1dfcce963e67
 +#include <linux/workqueue.h>
 +
 +#define RESERVE_SLOT_TIMEOUT (1 * HZ) /* 1s */
++#define RESERVE_SLOT_MIN_RETRIES 10
 +
 +static void
 +ccb_ctrl_init(void *cpu_ptr, void *priv)
@@ -388,19 +392,25 @@ index 000000000000..1dfcce963e67
 + *
 + * Return:
 + *  * 0 on success, or
-+ *  * -EBUSY if now slots were reserved after %RESERVE_SLOT_TIMEOUT.
++ *  * -EBUSY if no slots were reserved after %RESERVE_SLOT_TIMEOUT, with a minimum of
++ *    %RESERVE_SLOT_MIN_RETRIES retries.
 + */
 +static int pvr_kccb_reserve_slot_sync(struct pvr_device *pvr_dev)
 +{
 +	unsigned long start_timestamp = jiffies;
 +	bool reserved = false;
++	u32 retries = 0;
 +
-+	while ((jiffies - start_timestamp) < (u32)RESERVE_SLOT_TIMEOUT) {
++	while ((jiffies - start_timestamp) < (u32)RESERVE_SLOT_TIMEOUT ||
++	       retries < RESERVE_SLOT_MIN_RETRIES) {
 +		reserved = pvr_kccb_try_reserve_slot(pvr_dev);
 +		if (reserved)
 +			break;
 +
 +		usleep_range(1, 50);
++
++		if (retries < U32_MAX)
++			retries++;
 +	}
 +
 +	return reserved ? 0 : -EBUSY;
@@ -791,7 +801,7 @@ index 000000000000..60ebaa7dca63
 +
 +#endif /* PVR_CCB_H */
 diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/imagination/pvr_device.c
-index 5dbd05f21238..ad198ed432fe 100644
+index 51ff10522d23..6055cf6054f7 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.c
 +++ b/drivers/gpu/drm/imagination/pvr_device.c
 @@ -114,6 +114,87 @@ static int pvr_device_clk_init(struct pvr_device *pvr_dev)
@@ -882,9 +892,9 @@ index 5dbd05f21238..ad198ed432fe 100644
  /**
   * pvr_build_firmware_filename() - Construct a PowerVR firmware filename
   * @pvr_dev: Target PowerVR device.
-@@ -322,7 +403,17 @@ pvr_device_gpu_init(struct pvr_device *pvr_dev)
- 	if (IS_ERR(pvr_dev->kernel_vm_ctx))
- 		return PTR_ERR(pvr_dev->kernel_vm_ctx);
+@@ -324,7 +405,19 @@ pvr_device_gpu_init(struct pvr_device *pvr_dev)
+ 			return PTR_ERR(pvr_dev->kernel_vm_ctx);
+ 	}
  
 +	err = pvr_fw_init(pvr_dev);
 +	if (err)
@@ -893,22 +903,25 @@ index 5dbd05f21238..ad198ed432fe 100644
  	return 0;
 +
 +err_vm_ctx_put:
-+	pvr_vm_context_put(pvr_dev->kernel_vm_ctx);
-+	pvr_dev->kernel_vm_ctx = NULL;
++	if (pvr_dev->fw_dev.processor_type != PVR_FW_PROCESSOR_TYPE_MIPS) {
++		pvr_vm_context_put(pvr_dev->kernel_vm_ctx);
++		pvr_dev->kernel_vm_ctx = NULL;
++	}
 +
 +	return err;
  }
  
  /**
-@@ -332,6 +423,7 @@ pvr_device_gpu_init(struct pvr_device *pvr_dev)
+@@ -334,6 +427,8 @@ pvr_device_gpu_init(struct pvr_device *pvr_dev)
  static void
  pvr_device_gpu_fini(struct pvr_device *pvr_dev)
  {
 +	pvr_fw_fini(pvr_dev);
- 	WARN_ON(!pvr_vm_context_put(pvr_dev->kernel_vm_ctx));
- 	pvr_dev->kernel_vm_ctx = NULL;
- }
-@@ -382,10 +474,17 @@ pvr_device_init(struct pvr_device *pvr_dev)
++
+ 	if (pvr_dev->fw_dev.processor_type != PVR_FW_PROCESSOR_TYPE_MIPS) {
+ 		WARN_ON(!pvr_vm_context_put(pvr_dev->kernel_vm_ctx));
+ 		pvr_dev->kernel_vm_ctx = NULL;
+@@ -386,10 +481,17 @@ pvr_device_init(struct pvr_device *pvr_dev)
  	if (err)
  		goto err_pm_runtime_put;
  
@@ -926,7 +939,7 @@ index 5dbd05f21238..ad198ed432fe 100644
  err_pm_runtime_put:
  	pm_runtime_put_sync_suspend(dev);
  
-@@ -403,6 +502,7 @@ pvr_device_fini(struct pvr_device *pvr_dev)
+@@ -407,6 +509,7 @@ pvr_device_fini(struct pvr_device *pvr_dev)
  	 * Deinitialization stages are performed in reverse order compared to
  	 * the initialization stages in pvr_device_init().
  	 */
@@ -1036,7 +1049,7 @@ index cfd4cea5a69c..fb37d8e41d84 100644
  MODULE_IMPORT_NS(DMA_BUF);
 +MODULE_FIRMWARE("powervr/rogue_33.15.11.3_v1.fw");
 diff --git a/drivers/gpu/drm/imagination/pvr_fw.c b/drivers/gpu/drm/imagination/pvr_fw.c
-index c48de4a3af46..449984c0f233 100644
+index c48de4a3af46..4ea663be4596 100644
 --- a/drivers/gpu/drm/imagination/pvr_fw.c
 +++ b/drivers/gpu/drm/imagination/pvr_fw.c
 @@ -1,16 +1,84 @@
@@ -1124,7 +1137,7 @@ index c48de4a3af46..449984c0f233 100644
  /**
   * pvr_fw_validate() - Parse firmware header and check compatibility
   * @pvr_dev: Device pointer.
-@@ -122,6 +190,685 @@ pvr_fw_get_device_info(struct pvr_device *pvr_dev)
+@@ -122,6 +190,704 @@ pvr_fw_get_device_info(struct pvr_device *pvr_dev)
  					    header->feature_param_size);
  }
  
@@ -1347,6 +1360,24 @@ index c48de4a3af46..449984c0f233 100644
 +	       sizeof(fwif_sysinit->bvnc_km_feature_flags));
 +}
 +
++#define ROGUE_FWIF_SLC_MIN_SIZE_FOR_DM_OVERLAP_KB 4
++
++static void
++fw_sysdata_init(void *cpu_ptr, void *priv)
++{
++	struct rogue_fwif_sysdata *fwif_sysdata = cpu_ptr;
++	struct pvr_device *pvr_dev = priv;
++	u32 slc_size_in_kilobytes = 0;
++	u32 config_flags = 0;
++
++	WARN_ON(PVR_FEATURE_VALUE(pvr_dev, slc_size_in_kilobytes, &slc_size_in_kilobytes));
++
++	if (slc_size_in_kilobytes < ROGUE_FWIF_SLC_MIN_SIZE_FOR_DM_OVERLAP_KB)
++		config_flags |= ROGUE_FWIF_INICFG_DISABLE_DM_OVERLAP;
++
++	fwif_sysdata->config_flags = config_flags;
++}
++
 +static void
 +fw_runtime_cfg_init(void *cpu_ptr, void *priv)
 +{
@@ -1409,7 +1440,8 @@ index c48de4a3af46..449984c0f233 100644
 +	fw_dev->fwif_sysdata = pvr_fw_object_create_and_map(pvr_dev,
 +							    sizeof(*fw_dev->fwif_sysdata),
 +							    PVR_BO_FW_FLAGS_DEVICE_UNCACHED,
-+							    NULL, NULL, &fw_mem->sysdata_obj);
++							    fw_sysdata_init, pvr_dev,
++							    &fw_mem->sysdata_obj);
 +	if (IS_ERR(fw_dev->fwif_sysdata)) {
 +		drm_err(drm_dev, "Unable to allocate FW SYSDATA structure\n");
 +		err = PTR_ERR(fw_dev->fwif_sysdata);
@@ -1810,7 +1842,7 @@ index c48de4a3af46..449984c0f233 100644
  /**
   * pvr_fw_validate_init_device_info() - Validate firmware and initialise device information
   * @pvr_dev: Target PowerVR device.
-@@ -143,3 +890,579 @@ pvr_fw_validate_init_device_info(struct pvr_device *pvr_dev)
+@@ -143,3 +909,579 @@ pvr_fw_validate_init_device_info(struct pvr_device *pvr_dev)
  
  	return pvr_fw_get_device_info(pvr_dev);
  }
@@ -3478,10 +3510,10 @@ index 000000000000..d88970e82334
 +#endif /* PVR_FW_META_H */
 diff --git a/drivers/gpu/drm/imagination/pvr_fw_startstop.c b/drivers/gpu/drm/imagination/pvr_fw_startstop.c
 new file mode 100644
-index 000000000000..f087f21c0742
+index 000000000000..89794eb2078f
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_fw_startstop.c
-@@ -0,0 +1,304 @@
+@@ -0,0 +1,306 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
 +/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
@@ -3637,8 +3669,10 @@ index 000000000000..f087f21c0742
 +	/* We must init the AXI-ACE interface before first BIF transaction. */
 +	rogue_axi_ace_list_init(pvr_dev);
 +
-+	/* Initialise BIF. */
-+	rogue_bif_init(pvr_dev);
++	if (pvr_dev->fw_dev.processor_type != PVR_FW_PROCESSOR_TYPE_MIPS) {
++		/* Initialise BIF. */
++		rogue_bif_init(pvr_dev);
++	}
 +
 +	/* Need to wait for at least 16 cycles before taking the FW processor out of reset ... */
 +	udelay(3);
@@ -4410,10 +4444,10 @@ index 439f08d13655..3e53189f0eda 100644
  
  int pvr_power_device_suspend(struct device *dev);
 diff --git a/drivers/gpu/drm/imagination/pvr_vm.c b/drivers/gpu/drm/imagination/pvr_vm.c
-index 9d8d3710acc9..f367392bf121 100644
+index ec5ad49d3bdd..f76802a8e438 100644
 --- a/drivers/gpu/drm/imagination/pvr_vm.c
 +++ b/drivers/gpu/drm/imagination/pvr_vm.c
-@@ -334,6 +334,16 @@ static const struct drm_gpuva_fn_ops pvr_vm_gpuva_ops = {
+@@ -334,6 +334,16 @@ static const struct drm_gpuvm_ops pvr_vm_gpuva_ops = {
  	.sm_step_unmap = pvr_vm_gpuva_unmap,
  };
  
@@ -4462,8 +4496,8 @@ index 9d8d3710acc9..f367392bf121 100644
 +	if (vm_ctx->fw_mem_ctx_obj)
 +		pvr_fw_object_destroy(vm_ctx->fw_mem_ctx_obj);
  
- 	WARN_ON(pvr_vm_unmap(vm_ctx, vm_ctx->gpuva_mgr.mm_start,
- 			     vm_ctx->gpuva_mgr.mm_range));
+ 	WARN_ON(pvr_vm_unmap(vm_ctx, vm_ctx->gpuvm_mgr.mm_start,
+ 			     vm_ctx->gpuvm_mgr.mm_range));
 -- 
 2.39.2
 

@@ -1,19 +1,27 @@
-From 3af04293b67aee64bf2ef960024820100904d45f Mon Sep 17 00:00:00 2001
+From 372670d66d6221e964c5e9d44e93d105d302db4c Mon Sep 17 00:00:00 2001
 From: Donald Robson <donald.robson@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:24 +0100
-Subject: [PATCH 02/20] drm/gpuva_mgr: Helper to get range of unmap from a
- remap op.
+Date: Tue, 10 Oct 2023 14:37:20 +0100
+Subject: [PATCH 02/20] drm/gpuvm: Helper to get range of unmap from a remap
+ op.
+
+Determining the start and range of the unmap stage of a remap op is a
+common piece of code currently implemented by multiple drivers. Add a
+helper for this.
+
+Changes since v6:
+- Remove use of __always_inline
 
 Signed-off-by: Donald Robson <donald.robson@imgtec.com>
+Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
 ---
- include/drm/drm_gpuva_mgr.h | 27 +++++++++++++++++++++++++++
+ include/drm/drm_gpuvm.h | 27 +++++++++++++++++++++++++++
  1 file changed, 27 insertions(+)
 
-diff --git a/include/drm/drm_gpuva_mgr.h b/include/drm/drm_gpuva_mgr.h
-index ed8d50200cc3..be7b3a6d7e67 100644
---- a/include/drm/drm_gpuva_mgr.h
-+++ b/include/drm/drm_gpuva_mgr.h
-@@ -703,4 +703,31 @@ void drm_gpuva_remap(struct drm_gpuva *prev,
+diff --git a/include/drm/drm_gpuvm.h b/include/drm/drm_gpuvm.h
+index c7ed6bf441d4..932e942da921 100644
+--- a/include/drm/drm_gpuvm.h
++++ b/include/drm/drm_gpuvm.h
+@@ -702,4 +702,31 @@ void drm_gpuva_remap(struct drm_gpuva *prev,
  
  void drm_gpuva_unmap(struct drm_gpuva_op_unmap *op);
  
@@ -27,7 +35,7 @@ index ed8d50200cc3..be7b3a6d7e67 100644
 + * These parameters can then be used by the caller to unmap memory pages that
 + * are no longer required.
 + */
-+static __always_inline void
++static inline void
 +drm_gpuva_op_remap_get_unmap_range(const struct drm_gpuva_op_remap *op,
 +				   u64 *start_addr, u64 *range)
 +{
@@ -44,7 +52,7 @@ index ed8d50200cc3..be7b3a6d7e67 100644
 +		*range = va_end - va_start;
 +}
 +
- #endif /* __DRM_GPUVA_MGR_H__ */
+ #endif /* __DRM_GPUVM_H__ */
 -- 
 2.39.2
 

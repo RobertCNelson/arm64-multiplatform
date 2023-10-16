@@ -1,9 +1,13 @@
-From b818e511eb349625a6d742b1202eaf4def3433c2 Mon Sep 17 00:00:00 2001
+From 6b5f8afc98d46a31fda3abaa6bcf8837d129b533 Mon Sep 17 00:00:00 2001
 From: Matt Coster <matt.coster@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:23 +0100
-Subject: [PATCH 01/20] sizes.h: Add entries between 32G and 64T
+Date: Tue, 10 Oct 2023 14:37:19 +0100
+Subject: [PATCH 01/20] sizes.h: Add entries between SZ_32G and SZ_64T
+
+sizes.h has a gap in defines between SZ_32G and SZ_64T. Add the missing
+defines so they can be used in drivers.
 
 Signed-off-by: Matt Coster <matt.coster@imgtec.com>
+Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
 Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 ---
  include/linux/sizes.h | 9 +++++++++

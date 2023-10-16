@@ -1,6 +1,6 @@
-From bfc941077808db202deddd8a15f608f53cd14b74 Mon Sep 17 00:00:00 2001
+From e8c51e744e086b5d0e14229b33d82ca8710191ef Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 7 Jun 2023 13:08:42 +0100
+Date: Tue, 10 Oct 2023 14:37:37 +0100
 Subject: [PATCH 19/20] drm/imagination: Add firmware trace to debugfs
 
 Firmware trace is exposed at /sys/debug/dri/<dev_nr>/pvr_fw/trace_0.
@@ -144,7 +144,7 @@ index 000000000000..7b7ff384053e
 +
 +#endif /* PVR_DEBUGFS_H */
 diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/imagination/pvr_device.c
-index 9ae758a88644..a01544f64d8e 100644
+index e22a62ba21a4..53c9db71e882 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.c
 +++ b/drivers/gpu/drm/imagination/pvr_device.c
 @@ -5,6 +5,7 @@
@@ -155,7 +155,7 @@ index 9ae758a88644..a01544f64d8e 100644
  #include "pvr_power.h"
  #include "pvr_queue.h"
  #include "pvr_rogue_cr_defs.h"
-@@ -488,6 +489,14 @@ pvr_device_init(struct pvr_device *pvr_dev)
+@@ -495,6 +496,14 @@ pvr_device_init(struct pvr_device *pvr_dev)
  	struct device *dev = drm_dev->dev;
  	int err;
  

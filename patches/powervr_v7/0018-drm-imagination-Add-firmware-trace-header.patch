@@ -1,6 +1,6 @@
-From 6b2fcab1d75ab35de7c2f123c05fd92c0b97a83a Mon Sep 17 00:00:00 2001
+From f3f379db36632a8879fbd90312033d602c734668 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Fri, 1 Sep 2023 15:07:24 +0100
+Date: Tue, 10 Oct 2023 14:37:36 +0100
 Subject: [PATCH 18/20] drm/imagination: Add firmware trace header
 
 Changes since v5:

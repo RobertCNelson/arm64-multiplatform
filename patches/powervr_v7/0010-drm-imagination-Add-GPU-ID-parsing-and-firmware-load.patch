@@ -1,6 +1,6 @@
-From 1b13501b98958fb6167b9cff9692967d82b39bf8 Mon Sep 17 00:00:00 2001
+From 46d78de7109b4897128c21e09c15d3330fa5691d Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:32 +0100
+Date: Tue, 10 Oct 2023 14:37:28 +0100
 Subject: [PATCH 10/20] drm/imagination: Add GPU ID parsing and firmware
  loading
 

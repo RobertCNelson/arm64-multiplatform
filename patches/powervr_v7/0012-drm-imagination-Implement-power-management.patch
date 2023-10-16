@@ -1,6 +1,6 @@
-From b68d61176d1c2c503768a4adb1a784dbde4f7ea9 Mon Sep 17 00:00:00 2001
+From 298d1553bc6dbf607af68cd69fe888f39429d84c Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:34 +0100
+Date: Tue, 10 Oct 2023 14:37:30 +0100
 Subject: [PATCH 12/20] drm/imagination: Implement power management
 
 Add power management to the driver, using runtime pm. The power off
@@ -40,7 +40,7 @@ Reviewed-by: Maxime Ripard <mripard@kernel.org>
  create mode 100644 drivers/gpu/drm/imagination/pvr_power.h
 
 diff --git a/drivers/gpu/drm/imagination/Kconfig b/drivers/gpu/drm/imagination/Kconfig
-index e9aaa5313485..47c294b431b6 100644
+index 3e167d5470b4..2639fbf3ebac 100644
 --- a/drivers/gpu/drm/imagination/Kconfig
 +++ b/drivers/gpu/drm/imagination/Kconfig
 @@ -5,6 +5,7 @@ config DRM_POWERVR
@@ -50,7 +50,7 @@ index e9aaa5313485..47c294b431b6 100644
 +	depends on PM
  	select DRM_GEM_SHMEM_HELPER
  	select DRM_SCHED
- 	select FW_LOADER
+ 	select DRM_GPUVM
 diff --git a/drivers/gpu/drm/imagination/Makefile b/drivers/gpu/drm/imagination/Makefile
 index 8fcabc1bea36..235e2d329e29 100644
 --- a/drivers/gpu/drm/imagination/Makefile
@@ -64,7 +64,7 @@ index 8fcabc1bea36..235e2d329e29 100644
  
  obj-$(CONFIG_DRM_POWERVR) += powervr.o
 diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/imagination/pvr_device.c
-index ef8f7a2ff1a9..5dbd05f21238 100644
+index f71e400ea24e..51ff10522d23 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.c
 +++ b/drivers/gpu/drm/imagination/pvr_device.c
 @@ -5,6 +5,7 @@
@@ -75,7 +75,7 @@ index ef8f7a2ff1a9..5dbd05f21238 100644
  #include "pvr_rogue_cr_defs.h"
  #include "pvr_vm.h"
  
-@@ -357,6 +358,8 @@ pvr_device_gpu_fini(struct pvr_device *pvr_dev)
+@@ -361,6 +362,8 @@ pvr_device_gpu_fini(struct pvr_device *pvr_dev)
  int
  pvr_device_init(struct pvr_device *pvr_dev)
  {
@@ -84,7 +84,7 @@ index ef8f7a2ff1a9..5dbd05f21238 100644
  	int err;
  
  	/* Enable and initialize clocks required for the device to operate. */
-@@ -364,13 +367,29 @@ pvr_device_init(struct pvr_device *pvr_dev)
+@@ -368,13 +371,29 @@ pvr_device_init(struct pvr_device *pvr_dev)
  	if (err)
  		return err;
  

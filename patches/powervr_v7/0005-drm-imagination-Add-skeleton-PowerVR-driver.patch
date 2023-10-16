@@ -1,6 +1,6 @@
-From 48438402ab62a0d7423f531e94065f7fd8c03469 Mon Sep 17 00:00:00 2001
+From ead98168d286e19598329282898eb65042f2b409 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:27 +0100
+Date: Tue, 10 Oct 2023 14:37:23 +0100
 Subject: [PATCH 05/20] drm/imagination: Add skeleton PowerVR driver
 
 This adds the basic skeleton of the driver. The driver registers
@@ -43,10 +43,10 @@ Reviewed-by: Maxime Ripard <mripard@kernel.org>
  create mode 100644 drivers/gpu/drm/imagination/pvr_drv.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 953b0556551d..d4ba9dd07388 100644
+index 59f34b99cc5f..a912e6b72649 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -10237,6 +10237,7 @@ M:	Sarah Walker <sarah.walker@imgtec.com>
+@@ -10243,6 +10243,7 @@ M:	Frank Binns <frank.binns@imgtec.com>
  M:	Donald Robson <donald.robson@imgtec.com>
  S:	Supported
  F:	Documentation/devicetree/bindings/gpu/img,powervr.yaml
@@ -55,7 +55,7 @@ index 953b0556551d..d4ba9dd07388 100644
  
  IMON SOUNDGRAPH USB IR RECEIVER
 diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index ab9ef1c20349..be36ac4d0baa 100644
+index 3caa020391c7..44e43a5af046 100644
 --- a/drivers/gpu/drm/Kconfig
 +++ b/drivers/gpu/drm/Kconfig
 @@ -387,6 +387,8 @@ source "drivers/gpu/drm/solomon/Kconfig"
@@ -68,7 +68,7 @@ index ab9ef1c20349..be36ac4d0baa 100644
  	tristate "DRM Support for Hyper-V synthetic video device"
  	depends on DRM && PCI && MMU && HYPERV
 diff --git a/drivers/gpu/drm/Makefile b/drivers/gpu/drm/Makefile
-index 215e78e79125..3255e7d4504a 100644
+index 7a84b3cddeab..ce34d2b9418f 100644
 --- a/drivers/gpu/drm/Makefile
 +++ b/drivers/gpu/drm/Makefile
 @@ -198,3 +198,4 @@ obj-$(CONFIG_DRM_HYPERV) += hyperv/

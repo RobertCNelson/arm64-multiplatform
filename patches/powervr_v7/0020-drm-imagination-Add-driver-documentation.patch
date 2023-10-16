@@ -1,6 +1,6 @@
-From af7e3048103ed388011973b538dc7e6cbbd8fc7b Mon Sep 17 00:00:00 2001
+From fe4ef052794d6e40e2b95d6058d19789bee54431 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 7 Jun 2023 13:10:08 +0100
+Date: Tue, 10 Oct 2023 14:37:38 +0100
 Subject: [PATCH 20/20] drm/imagination: Add driver documentation
 
 Add documentation for the UAPI.
@@ -239,10 +239,10 @@ index 000000000000..2227ea7e6222
 +   :identifiers: PVR_STATIC_ASSERT_64BIT_ALIGNED PVR_IOCTL_UNION_PADDING_CHECK
 +                 pvr_ioctl_union_padding_check
 diff --git a/MAINTAINERS b/MAINTAINERS
-index d4ba9dd07388..98008abb1f97 100644
+index a912e6b72649..e2d21ef67e9a 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -10237,6 +10237,7 @@ M:	Sarah Walker <sarah.walker@imgtec.com>
+@@ -10243,6 +10243,7 @@ M:	Frank Binns <frank.binns@imgtec.com>
  M:	Donald Robson <donald.robson@imgtec.com>
  S:	Supported
  F:	Documentation/devicetree/bindings/gpu/img,powervr.yaml

@@ -1,12 +1,15 @@
-From 0b1a616aac5d6dbc30f558aa532871a4c34e8957 Mon Sep 17 00:00:00 2001
+From 994f5644c0548a3ca6525134816c3ce7d1c79e32 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:37 +0100
+Date: Tue, 10 Oct 2023 14:37:33 +0100
 Subject: [PATCH 15/20] drm/imagination: Implement free list and HWRT create
  and destroy ioctls
 
 Implement ioctls to create and destroy free lists and HWRT datasets. Free
 lists are used for GPU-side memory allocation during geometry processing.
 HWRT datasets are the FW-side structures representing render targets.
+
+Changes since v6:
+- Fix out-of-bounds shift in get_cr_multisamplectl_val()
 
 Changes since v4:
 - Remove use of drm_gem_shmem_get_pages()
@@ -55,7 +58,7 @@ index 0a6532d30c00..fca2ee2efbac 100644
  	pvr_power.o \
  	pvr_vm.o \
 diff --git a/drivers/gpu/drm/imagination/pvr_ccb.c b/drivers/gpu/drm/imagination/pvr_ccb.c
-index 1dfcce963e67..faa32a548a80 100644
+index 64b58b8989ca..f0ea71f72776 100644
 --- a/drivers/gpu/drm/imagination/pvr_ccb.c
 +++ b/drivers/gpu/drm/imagination/pvr_ccb.c
 @@ -4,6 +4,7 @@
@@ -66,7 +69,7 @@ index 1dfcce963e67..faa32a548a80 100644
  #include "pvr_fw.h"
  #include "pvr_gem.h"
  #include "pvr_power.h"
-@@ -138,6 +139,15 @@ process_fwccb_command(struct pvr_device *pvr_dev, struct rogue_fwif_fwccb_cmd *c
+@@ -139,6 +140,15 @@ process_fwccb_command(struct pvr_device *pvr_dev, struct rogue_fwif_fwccb_cmd *c
  		pvr_power_reset(pvr_dev, false);
  		break;
  
@@ -1138,7 +1141,7 @@ index 000000000000..9f3ed6d7c4c5
 +#endif /* PVR_FREE_LIST_H */
 diff --git a/drivers/gpu/drm/imagination/pvr_hwrt.c b/drivers/gpu/drm/imagination/pvr_hwrt.c
 new file mode 100644
-index 000000000000..684dccf30148
+index 000000000000..cd611cdd1179
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_hwrt.c
 @@ -0,0 +1,549 @@
@@ -1308,11 +1311,11 @@ index 000000000000..684dccf30148
 +		return -EINVAL;
 +
 +	for (u32 i = 0; i < 8; i++) {
-+		value |= sample_positions[idx].x[i] << (i * 8);
++		value |= ((u64)sample_positions[idx].x[i]) << (i * 8);
 +		if (y_flip)
-+			value |= ((16 - sample_positions[idx].y[i]) & 0xf) << (i * 8 + 4);
++			value |= (((u64)(16 - sample_positions[idx].y[i]) & 0xf)) << (i * 8 + 4);
 +		else
-+			value |= (sample_positions[idx].y[i]) << (i * 8 + 4);
++			value |= ((u64)sample_positions[idx].y[i]) << (i * 8 + 4);
 +	}
 +
 +	*value_out = value;

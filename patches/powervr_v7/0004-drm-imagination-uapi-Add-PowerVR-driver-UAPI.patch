@@ -1,9 +1,14 @@
-From 35b6a989bd589c983307a97417ebd8d577dcfc27 Mon Sep 17 00:00:00 2001
+From 1086e112b72487fdc441422c7b8f939ec7a31cee Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:26 +0100
+Date: Tue, 10 Oct 2023 14:37:22 +0100
 Subject: [PATCH 04/20] drm/imagination/uapi: Add PowerVR driver UAPI
 
 Add the UAPI implementation for the PowerVR driver.
+
+Changes from v6
+- Add padding to struct drm_pvr_dev_query_gpu_info
+- Improve BYPASS_CACHE flag documentation
+- Add SUBMIT_JOB_FRAG_CMD_DISABLE_PIXELMERGE flag
 
 Changes from v4:
 - Remove CREATE_ZEROED flag for BO creation (all buffers are now zeroed)
@@ -19,15 +24,15 @@ Signed-off-by: Donald Robson <donald.robson@imgtec.com>
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
 ---
  MAINTAINERS                |    1 +
- include/uapi/drm/pvr_drm.h | 1306 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 1307 insertions(+)
+ include/uapi/drm/pvr_drm.h | 1319 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 1320 insertions(+)
  create mode 100644 include/uapi/drm/pvr_drm.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 1bfafad5dbd8..953b0556551d 100644
+index 31111de6e160..59f34b99cc5f 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -10237,6 +10237,7 @@ M:	Sarah Walker <sarah.walker@imgtec.com>
+@@ -10243,6 +10243,7 @@ M:	Frank Binns <frank.binns@imgtec.com>
  M:	Donald Robson <donald.robson@imgtec.com>
  S:	Supported
  F:	Documentation/devicetree/bindings/gpu/img,powervr.yaml
@@ -37,10 +42,10 @@ index 1bfafad5dbd8..953b0556551d 100644
  M:	Sean Young <sean@mess.org>
 diff --git a/include/uapi/drm/pvr_drm.h b/include/uapi/drm/pvr_drm.h
 new file mode 100644
-index 000000000000..04a9b56f5262
+index 000000000000..ca021dae7de7
 --- /dev/null
 +++ b/include/uapi/drm/pvr_drm.h
-@@ -0,0 +1,1306 @@
+@@ -0,0 +1,1319 @@
 +/* SPDX-License-Identifier: (GPL-2.0 WITH Linux-syscall-note) OR MIT */
 +/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
@@ -182,6 +187,9 @@ index 000000000000..04a9b56f5262
 +	 * @num_phantoms: Number of Phantoms present.
 +	 */
 +	__u32 num_phantoms;
++
++	/** @_padding_c: Reserved. This field must be zeroed. */
++	__u32 _padding_c;
 +};
 +
 +/**
@@ -585,8 +593,12 @@ index 000000000000..04a9b56f5262
 + * Device mapping options
 + *    These use the prefix ``DRM_PVR_BO_DEVICE_``.
 + *
-+ *    :BYPASS_CACHE: There are very few situations where this flag is useful.
-+ *       By default, the device flushes its memory caches after every job.
++ *    :BYPASS_CACHE: Specify that device accesses to this memory will bypass the cache.
++ *       This is used for buffers that will either be regularly updated by the CPU (eg
++ *       free lists) or will be accessed only once and therefore isn't worth caching (eg
++ *       partial render buffers).
++ *       By default, the device flushes its memory caches after every job, so this
++ *       is not normally required for coherency.
 + *    :PM_FW_PROTECT: Specify that only the Parameter Manager (PM) and/or
 + *       firmware processor should be allowed to access this memory when mapped
 + *       to the device. It is not valid to specify this flag with
@@ -1192,6 +1204,10 @@ index 000000000000..04a9b56f5262
 + *    the final surface. It also forces the full screen copy expected to be
 + *    present on the last render after all partial renders have completed.
 + *
++ * .. c:macro:: DRM_PVR_SUBMIT_JOB_FRAG_CMD_DISABLE_PIXELMERGE
++ *
++ *    Disable pixel merging for this render.
++ *
 + * .. c:macro:: DRM_PVR_SUBMIT_JOB_FRAG_CMD_FLAGS_MASK
 + *
 + *    Logical OR of all the fragment cmd flags.
@@ -1203,6 +1219,7 @@ index 000000000000..04a9b56f5262
 +#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_SCRATCHBUFFER _BITULL(4)
 +#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_GET_VIS_RESULTS _BITULL(5)
 +#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_PARTIAL_RENDER _BITULL(6)
++#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_DISABLE_PIXELMERGE _BITULL(7)
 +#define DRM_PVR_SUBMIT_JOB_FRAG_CMD_FLAGS_MASK                                 \
 +	(DRM_PVR_SUBMIT_JOB_FRAG_CMD_SINGLE_CORE |                             \
 +	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_DEPTHBUFFER |                             \
@@ -1210,7 +1227,8 @@ index 000000000000..04a9b56f5262
 +	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_PREVENT_CDM_OVERLAP |                     \
 +	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_SCRATCHBUFFER |                           \
 +	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_GET_VIS_RESULTS |                         \
-+	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_PARTIAL_RENDER)
++	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_PARTIAL_RENDER |                          \
++	 DRM_PVR_SUBMIT_JOB_FRAG_CMD_DISABLE_PIXELMERGE)
 +
 +/**
 + * DOC: Flags for SUBMIT_JOB ioctl compute command.

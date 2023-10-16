@@ -1,6 +1,6 @@
-From 6e2d0033b0356160cdbd6a8de6be3f499ac641cd Mon Sep 17 00:00:00 2001
+From 5ac56d07c0881f2da0d7bc84249dcb546f303844 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:39 +0100
+Date: Tue, 10 Oct 2023 14:37:35 +0100
 Subject: [PATCH 17/20] drm/imagination: Implement job submission and
  scheduling
 
@@ -27,6 +27,11 @@ drm/sched: Submit job before starting TDR:
   https://lore.kernel.org/dri-devel/20230404002211.3611376-7-matthew.brost@intel.com/
 drm/sched: Add helper to set TDR timeout:
   https://lore.kernel.org/dri-devel/20230404002211.3611376-8-matthew.brost@intel.com/
+
+Changes since v6:
+- Fix fence handling in pvr_sync_signal_array_add()
+- Add handling for SUBMIT_JOB_FRAG_CMD_DISABLE_PIXELMERGE flag
+- Fix missing dma_resv locking in job submit path
 
 Changes since v5:
 - Fix leak in job creation error path
@@ -56,15 +61,15 @@ Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
  drivers/gpu/drm/imagination/pvr_device.c      |   31 +
  drivers/gpu/drm/imagination/pvr_device.h      |   21 +
  drivers/gpu/drm/imagination/pvr_drv.c         |   40 +-
- drivers/gpu/drm/imagination/pvr_job.c         |  773 +++++++++
+ drivers/gpu/drm/imagination/pvr_job.c         |  777 +++++++++
  drivers/gpu/drm/imagination/pvr_job.h         |  161 ++
  drivers/gpu/drm/imagination/pvr_power.c       |   28 +
  drivers/gpu/drm/imagination/pvr_queue.c       | 1455 +++++++++++++++++
  drivers/gpu/drm/imagination/pvr_queue.h       |  179 ++
  drivers/gpu/drm/imagination/pvr_stream_defs.c |  226 +++
- drivers/gpu/drm/imagination/pvr_sync.c        |  287 ++++
+ drivers/gpu/drm/imagination/pvr_sync.c        |  289 ++++
  drivers/gpu/drm/imagination/pvr_sync.h        |   84 +
- 15 files changed, 3454 insertions(+), 4 deletions(-)
+ 15 files changed, 3460 insertions(+), 4 deletions(-)
  create mode 100644 drivers/gpu/drm/imagination/pvr_job.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_job.h
  create mode 100644 drivers/gpu/drm/imagination/pvr_queue.c
@@ -73,7 +78,7 @@ Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
  create mode 100644 drivers/gpu/drm/imagination/pvr_sync.h
 
 diff --git a/drivers/gpu/drm/imagination/Kconfig b/drivers/gpu/drm/imagination/Kconfig
-index 47c294b431b6..8d7483663b0e 100644
+index 2639fbf3ebac..084e72aa82eb 100644
 --- a/drivers/gpu/drm/imagination/Kconfig
 +++ b/drivers/gpu/drm/imagination/Kconfig
 @@ -6,6 +6,7 @@ config DRM_POWERVR
@@ -83,7 +88,7 @@ index 47c294b431b6..8d7483663b0e 100644
 +	select DRM_EXEC
  	select DRM_GEM_SHMEM_HELPER
  	select DRM_SCHED
- 	select FW_LOADER
+ 	select DRM_GPUVM
 diff --git a/drivers/gpu/drm/imagination/Makefile b/drivers/gpu/drm/imagination/Makefile
 index 0c8ab120f277..313af5312d7b 100644
 --- a/drivers/gpu/drm/imagination/Makefile
@@ -345,7 +350,7 @@ index fa7115380272..582d64c44d5f 100644
   * pvr_context_get() - Take additional reference on context.
   * @ctx: Context pointer.
 diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/imagination/pvr_device.c
-index bc7333444388..9ae758a88644 100644
+index aac5e62d6cbe..e22a62ba21a4 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.c
 +++ b/drivers/gpu/drm/imagination/pvr_device.c
 @@ -6,7 +6,9 @@
@@ -566,10 +571,10 @@ index 138eee20f238..4c1eedbe8f1d 100644
  	return 0;
 diff --git a/drivers/gpu/drm/imagination/pvr_job.c b/drivers/gpu/drm/imagination/pvr_job.c
 new file mode 100644
-index 000000000000..c53f3b1aff00
+index 000000000000..08c9f3e4ceb3
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_job.c
-@@ -0,0 +1,773 @@
+@@ -0,0 +1,777 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
 +/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
@@ -710,6 +715,8 @@ index 000000000000..c53f3b1aff00
 +		out_flags |= ROGUE_FRAG_FLAGS_SCRATCHBUFFER;
 +	if (in_flags & DRM_PVR_SUBMIT_JOB_FRAG_CMD_GET_VIS_RESULTS)
 +		out_flags |= ROGUE_FRAG_FLAGS_GET_VIS_RESULTS;
++	if (in_flags & DRM_PVR_SUBMIT_JOB_FRAG_CMD_DISABLE_PIXELMERGE)
++		out_flags |= ROGUE_FRAG_FLAGS_DISABLE_PIXELMERGE;
 +
 +	return out_flags;
 +}
@@ -927,8 +934,10 @@ index 000000000000..c53f3b1aff00
 +			dma_resv_usage_rw(job_data->job->type ==
 +					  DRM_PVR_JOB_TYPE_GEOMETRY);
 +
++		dma_resv_lock(obj->resv, NULL);
 +		err = drm_sched_job_add_resv_dependencies(&job_data->job->base,
 +							  obj->resv, usage);
++		dma_resv_unlock(obj->resv);
 +		if (err)
 +			return err;
 +	}
@@ -3469,10 +3478,10 @@ index 3c646e25accf..ca1dc5e66a6f 100644
  		       geom_reg_vdm_context_state_base_addr, 64),
 diff --git a/drivers/gpu/drm/imagination/pvr_sync.c b/drivers/gpu/drm/imagination/pvr_sync.c
 new file mode 100644
-index 000000000000..c2815b089051
+index 000000000000..e284edb20913
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_sync.c
-@@ -0,0 +1,287 @@
+@@ -0,0 +1,289 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
 +/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
@@ -3535,6 +3544,7 @@ index 000000000000..c2815b089051
 +pvr_sync_signal_array_add(struct xarray *array, struct drm_file *file, u32 handle, u64 point)
 +{
 +	struct pvr_sync_signal *sig_sync;
++	struct dma_fence *cur_fence;
 +	int err;
 +	u32 id;
 +
@@ -3563,7 +3573,8 @@ index 000000000000..c2815b089051
 +	 * perfectly fine to get a NULL fence here, it just means there's
 +	 * no fence attached to that point yet.
 +	 */
-+	drm_syncobj_find_fence(file, handle, point, 0, &sig_sync->fence);
++	if (!drm_syncobj_find_fence(file, handle, point, 0, &cur_fence))
++		sig_sync->fence = cur_fence;
 +
 +	err = xa_alloc(array, &id, sig_sync, xa_limit_32b, GFP_KERNEL);
 +	if (err)

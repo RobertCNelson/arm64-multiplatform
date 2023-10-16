@@ -1,6 +1,6 @@
-From 5f1efa08ee56ebf68fb765c4eea84ae181b384c3 Mon Sep 17 00:00:00 2001
+From f3ee5c3df6ad0358f6e494ee3ce1d3a1bab0ee3e Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:31 +0100
+Date: Tue, 10 Oct 2023 14:37:27 +0100
 Subject: [PATCH 09/20] drm/imagination: Add FWIF headers
 
 Changes since v5:
@@ -11,10 +11,11 @@ Changes since v4:
 - Add FW header device info
 
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
+Acked-by: Maxime Ripard <mripard@kernel.org>
 ---
  drivers/gpu/drm/imagination/pvr_rogue_fwif.h  | 2208 +++++++++++++++++
  .../drm/imagination/pvr_rogue_fwif_check.h    |  491 ++++
- .../drm/imagination/pvr_rogue_fwif_client.h   |  371 +++
+ .../drm/imagination/pvr_rogue_fwif_client.h   |  373 +++
  .../imagination/pvr_rogue_fwif_client_check.h |  133 +
  .../drm/imagination/pvr_rogue_fwif_common.h   |   60 +
  .../drm/imagination/pvr_rogue_fwif_dev_info.h |  113 +
@@ -22,7 +23,7 @@ Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
  .../drm/imagination/pvr_rogue_fwif_shared.h   |  258 ++
  .../imagination/pvr_rogue_fwif_shared_check.h |  108 +
  .../drm/imagination/pvr_rogue_fwif_stream.h   |   78 +
- 10 files changed, 3848 insertions(+)
+ 10 files changed, 3850 insertions(+)
  create mode 100644 drivers/gpu/drm/imagination/pvr_rogue_fwif.h
  create mode 100644 drivers/gpu/drm/imagination/pvr_rogue_fwif_check.h
  create mode 100644 drivers/gpu/drm/imagination/pvr_rogue_fwif_client.h
@@ -2747,10 +2748,10 @@ index 000000000000..eb8f1ffe7373
 +#endif /* PVR_ROGUE_FWIF_CHECK_H */
 diff --git a/drivers/gpu/drm/imagination/pvr_rogue_fwif_client.h b/drivers/gpu/drm/imagination/pvr_rogue_fwif_client.h
 new file mode 100644
-index 000000000000..abe166e02a73
+index 000000000000..8bf501371469
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_rogue_fwif_client.h
-@@ -0,0 +1,371 @@
+@@ -0,0 +1,373 @@
 +/* SPDX-License-Identifier: GPL-2.0 OR MIT */
 +/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
@@ -2816,6 +2817,8 @@ index 000000000000..abe166e02a73
 +#define ROGUE_FRAG_FLAGS_DEPTHBUFFER BIT_MASK(7)
 +/* Indicates whether a stencil buffer is present. */
 +#define ROGUE_FRAG_FLAGS_STENCILBUFFER BIT_MASK(8)
++/* Disable pixel merging for this render. */
++#define ROGUE_FRAG_FLAGS_DISABLE_PIXELMERGE BIT_MASK(15)
 +/* Indicates whether a scratch buffer is present. */
 +#define ROGUE_FRAG_FLAGS_SCRATCHBUFFER BIT_MASK(19)
 +/* Disallow compute overlapped with this render. */

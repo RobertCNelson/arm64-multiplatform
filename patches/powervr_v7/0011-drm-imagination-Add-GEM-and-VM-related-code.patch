@@ -1,10 +1,15 @@
-From db8cd45a3930bc8aa438b87cafea2c504b95008e Mon Sep 17 00:00:00 2001
+From 5baa824b0c5a90406dc9ca78de679755bfc2b51b Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:33 +0100
+Date: Tue, 10 Oct 2023 14:37:29 +0100
 Subject: [PATCH 11/20] drm/imagination: Add GEM and VM related code
 
 Add a GEM implementation based on drm_gem_shmem, and support code for the
 PowerVR GPU MMU. The GPU VA manager is used for address space management.
+
+Changes since v6:
+- Don't initialise kernel_vm_ctx when using MIPS firmware processor
+- Rename drm_gpuva_manager uses to drm_gpuvm
+- Sync GEM object to device on creation
 
 Changes since v5:
 - Use WRITE_ONCE() when writing to page tables
@@ -39,17 +44,18 @@ Co-developed-by: Donald Robson <donald.robson@imgtec.com>
 Signed-off-by: Donald Robson <donald.robson@imgtec.com>
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
 ---
+ drivers/gpu/drm/imagination/Kconfig      |    1 +
  drivers/gpu/drm/imagination/Makefile     |    5 +-
- drivers/gpu/drm/imagination/pvr_device.c |   23 +-
+ drivers/gpu/drm/imagination/pvr_device.c |   27 +-
  drivers/gpu/drm/imagination/pvr_device.h |   18 +
  drivers/gpu/drm/imagination/pvr_drv.c    |  301 ++-
- drivers/gpu/drm/imagination/pvr_gem.c    |  409 ++++
+ drivers/gpu/drm/imagination/pvr_gem.c    |  421 ++++
  drivers/gpu/drm/imagination/pvr_gem.h    |  184 ++
  drivers/gpu/drm/imagination/pvr_mmu.c    | 2528 ++++++++++++++++++++++
  drivers/gpu/drm/imagination/pvr_mmu.h    |  108 +
  drivers/gpu/drm/imagination/pvr_vm.c     |  947 ++++++++
  drivers/gpu/drm/imagination/pvr_vm.h     |   60 +
- 10 files changed, 4572 insertions(+), 11 deletions(-)
+ 11 files changed, 4589 insertions(+), 11 deletions(-)
  create mode 100644 drivers/gpu/drm/imagination/pvr_gem.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_gem.h
  create mode 100644 drivers/gpu/drm/imagination/pvr_mmu.c
@@ -57,6 +63,18 @@ Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
  create mode 100644 drivers/gpu/drm/imagination/pvr_vm.c
  create mode 100644 drivers/gpu/drm/imagination/pvr_vm.h
 
+diff --git a/drivers/gpu/drm/imagination/Kconfig b/drivers/gpu/drm/imagination/Kconfig
+index e9aaa5313485..3e167d5470b4 100644
+--- a/drivers/gpu/drm/imagination/Kconfig
++++ b/drivers/gpu/drm/imagination/Kconfig
+@@ -7,6 +7,7 @@ config DRM_POWERVR
+ 	depends on DRM
+ 	select DRM_GEM_SHMEM_HELPER
+ 	select DRM_SCHED
++	select DRM_GPUVM
+ 	select FW_LOADER
+ 	help
+ 	  Choose this option if you have a system that has an Imagination
 diff --git a/drivers/gpu/drm/imagination/Makefile b/drivers/gpu/drm/imagination/Makefile
 index 9e144ff2742b..8fcabc1bea36 100644
 --- a/drivers/gpu/drm/imagination/Makefile
@@ -73,7 +91,7 @@ index 9e144ff2742b..8fcabc1bea36 100644
  
  obj-$(CONFIG_DRM_POWERVR) += powervr.o
 diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/imagination/pvr_device.c
-index b1fae182c4f6..ef8f7a2ff1a9 100644
+index b1fae182c4f6..f71e400ea24e 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.c
 +++ b/drivers/gpu/drm/imagination/pvr_device.c
 @@ -6,6 +6,7 @@
@@ -84,7 +102,7 @@ index b1fae182c4f6..ef8f7a2ff1a9 100644
  
  #include <drm/drm_print.h>
  
-@@ -312,7 +313,26 @@ pvr_device_gpu_init(struct pvr_device *pvr_dev)
+@@ -312,7 +313,30 @@ pvr_device_gpu_init(struct pvr_device *pvr_dev)
  	else
  		return -EINVAL;
  
@@ -93,9 +111,11 @@ index b1fae182c4f6..ef8f7a2ff1a9 100644
 +	if (err)
 +		return err;
 +
-+	pvr_dev->kernel_vm_ctx = pvr_vm_create_context(pvr_dev, false);
-+	if (IS_ERR(pvr_dev->kernel_vm_ctx))
-+		return PTR_ERR(pvr_dev->kernel_vm_ctx);
++	if (pvr_dev->fw_dev.processor_type != PVR_FW_PROCESSOR_TYPE_MIPS) {
++		pvr_dev->kernel_vm_ctx = pvr_vm_create_context(pvr_dev, false);
++		if (IS_ERR(pvr_dev->kernel_vm_ctx))
++			return PTR_ERR(pvr_dev->kernel_vm_ctx);
++	}
 +
 +	return 0;
 +}
@@ -107,12 +127,14 @@ index b1fae182c4f6..ef8f7a2ff1a9 100644
 +static void
 +pvr_device_gpu_fini(struct pvr_device *pvr_dev)
 +{
-+	WARN_ON(!pvr_vm_context_put(pvr_dev->kernel_vm_ctx));
-+	pvr_dev->kernel_vm_ctx = NULL;
++	if (pvr_dev->fw_dev.processor_type != PVR_FW_PROCESSOR_TYPE_MIPS) {
++		WARN_ON(!pvr_vm_context_put(pvr_dev->kernel_vm_ctx));
++		pvr_dev->kernel_vm_ctx = NULL;
++	}
  }
  
  /**
-@@ -364,6 +384,7 @@ pvr_device_fini(struct pvr_device *pvr_dev)
+@@ -364,6 +388,7 @@ pvr_device_fini(struct pvr_device *pvr_dev)
  	 * Deinitialization stages are performed in reverse order compared to
  	 * the initialization stages in pvr_device_init().
  	 */
@@ -552,10 +574,10 @@ index ecdef9720eea..4b0c52118735 100644
  static int
 diff --git a/drivers/gpu/drm/imagination/pvr_gem.c b/drivers/gpu/drm/imagination/pvr_gem.c
 new file mode 100644
-index 000000000000..d1bd75fc5471
+index 000000000000..51d7a6fe3e58
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_gem.c
-@@ -0,0 +1,409 @@
+@@ -0,0 +1,421 @@
 +// SPDX-License-Identifier: GPL-2.0 OR MIT
 +/* Copyright (c) 2023 Imagination Technologies Ltd. */
 +
@@ -901,6 +923,8 @@ index 000000000000..d1bd75fc5471
 +{
 +	struct drm_gem_shmem_object *shmem_obj;
 +	struct pvr_gem_object *pvr_obj;
++	struct sg_table *sgt;
++	int err;
 +
 +	/* Verify @size and @flags before continuing. */
 +	if (size == 0 || !pvr_gem_object_flags_validate(flags))
@@ -915,7 +939,16 @@ index 000000000000..d1bd75fc5471
 +	pvr_obj = shmem_gem_to_pvr_gem(shmem_obj);
 +	pvr_obj->flags = flags;
 +
++	sgt = drm_gem_shmem_get_pages_sgt(shmem_obj);
++	if (IS_ERR(sgt)) {
++		err = PTR_ERR(sgt);
++		goto err_shmem_object_free;
++	}
++
 +	mutex_init(&pvr_obj->gpuva_lock);
++
++	dma_sync_sgtable_for_device(shmem_obj->base.dev->dev, sgt,
++				    DMA_BIDIRECTIONAL);
 +
 +	/*
 +	 * Do this last because pvr_gem_object_zero() requires a fully
@@ -924,6 +957,11 @@ index 000000000000..d1bd75fc5471
 +	pvr_gem_object_zero(pvr_obj);
 +
 +	return pvr_obj;
++
++err_shmem_object_free:
++	drm_gem_shmem_free(shmem_obj);
++
++	return ERR_PTR(err);
 +}
 +
 +/**
@@ -942,16 +980,12 @@ index 000000000000..d1bd75fc5471
 +		     dma_addr_t *dma_addr_out)
 +{
 +	struct drm_gem_shmem_object *shmem_obj = shmem_gem_from_pvr_gem(pvr_obj);
-+	struct sg_table *sgt;
 +	u32 accumulated_offset = 0;
 +	struct scatterlist *sgl;
 +	unsigned int sgt_idx;
 +
-+	sgt = drm_gem_shmem_get_pages_sgt(shmem_obj);
-+	if (IS_ERR(sgt))
-+		return PTR_ERR(sgt);
-+
-+	for_each_sgtable_dma_sg(sgt, sgl, sgt_idx) {
++	WARN_ON(!shmem_obj->sgt);
++	for_each_sgtable_dma_sg(shmem_obj->sgt, sgl, sgt_idx) {
 +		u32 new_offset = accumulated_offset + sg_dma_len(sgl);
 +
 +		if (offset >= accumulated_offset && offset < new_offset) {
@@ -3805,7 +3839,7 @@ index 000000000000..bf93c5ffc86a
 +
 diff --git a/drivers/gpu/drm/imagination/pvr_vm.c b/drivers/gpu/drm/imagination/pvr_vm.c
 new file mode 100644
-index 000000000000..9d8d3710acc9
+index 000000000000..ec5ad49d3bdd
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_vm.c
 @@ -0,0 +1,947 @@
@@ -3822,7 +3856,7 @@ index 000000000000..9d8d3710acc9
 +#include "pvr_rogue_heap_config.h"
 +
 +#include <drm/drm_gem.h>
-+#include <drm/drm_gpuva_mgr.h>
++#include <drm/drm_gpuvm.h>
 +
 +#include <linux/container_of.h>
 +#include <linux/err.h>
@@ -3846,7 +3880,7 @@ index 000000000000..9d8d3710acc9
 + *
 + * This binding is immutable for the life of the context.
 + * @mmu_ctx: The context for binding to physical memory.
-+ * @gpuva_mgr: GPUVA manager object associated with this context.
++ * @gpuvm_mgr: GPUVM object associated with this context.
 + * @lock: Global lock on this entire structure of page tables.
 + * @fw_mem_ctx_obj: Firmware object representing firmware memory context.
 + * @ref_count: Reference count of object.
@@ -3854,7 +3888,7 @@ index 000000000000..9d8d3710acc9
 +struct pvr_vm_context {
 +	struct pvr_device *pvr_dev;
 +	struct pvr_mmu_context *mmu_ctx;
-+	struct drm_gpuva_manager gpuva_mgr;
++	struct drm_gpuvm gpuvm_mgr;
 +	struct mutex lock;
 +	struct pvr_fw_object *fw_mem_ctx_obj;
 +	struct kref ref_count;
@@ -3977,7 +4011,7 @@ index 000000000000..9d8d3710acc9
 + * @op: gpuva op containing the remap details.
 + * @op_ctx: Operation context.
 + *
-+ * Context: Called by drm_gpuva_sm_map following a successful mapping while
++ * Context: Called by drm_gpuvm_sm_map following a successful mapping while
 + * @op_ctx.vm_ctx mutex is held.
 + *
 + * Return:
@@ -3999,7 +4033,7 @@ index 000000000000..9d8d3710acc9
 +	if (err)
 +		return err;
 +
-+	drm_gpuva_map(&ctx->vm_ctx->gpuva_mgr, &ctx->new_va->base, &op->map);
++	drm_gpuva_map(&ctx->vm_ctx->gpuvm_mgr, &ctx->new_va->base, &op->map);
 +	pvr_vm_gpuva_link(ctx->new_va);
 +	ctx->new_va = NULL;
 +
@@ -4017,7 +4051,7 @@ index 000000000000..9d8d3710acc9
 + * @op: gpuva op containing the unmap details.
 + * @op_ctx: Operation context.
 + *
-+ * Context: Called by drm_gpuva_sm_unmap following a successful unmapping while
++ * Context: Called by drm_gpuvm_sm_unmap following a successful unmapping while
 + * @op_ctx.vm_ctx mutex is held.
 + *
 + * Return:
@@ -4046,7 +4080,7 @@ index 000000000000..9d8d3710acc9
 + * @op: gpuva op containing the remap details.
 + * @op_ctx: Operation context.
 + *
-+ * Context: Called by either drm_gpuva_sm_map or drm_gpuva_sm_unmap when a
++ * Context: Called by either drm_gpuvm_sm_map or drm_gpuvm_sm_unmap when a
 + * mapping or unmapping operation causes a region to be split. The
 + * @op_ctx.vm_ctx mutex is held.
 + *
@@ -4139,7 +4173,7 @@ index 000000000000..9d8d3710acc9
 +	       (device_addr + size <= PVR_PAGE_TABLE_ADDR_SPACE_SIZE);
 +}
 +
-+static const struct drm_gpuva_fn_ops pvr_vm_gpuva_ops = {
++static const struct drm_gpuvm_ops pvr_vm_gpuva_ops = {
 +	.sm_step_map = pvr_vm_gpuva_map,
 +	.sm_step_remap = pvr_vm_gpuva_remap,
 +	.sm_step_unmap = pvr_vm_gpuva_unmap,
@@ -4192,9 +4226,9 @@ index 000000000000..9d8d3710acc9
 +	kref_init(&vm_ctx->ref_count);
 +	mutex_init(&vm_ctx->lock);
 +
-+	drm_gpuva_manager_init(&vm_ctx->gpuva_mgr,
-+			       is_userspace_context ? "PowerVR-user-VM" : "PowerVR-FW-VM",
-+			       0, 1ULL << device_addr_bits, 0, 0, &pvr_vm_gpuva_ops);
++	drm_gpuvm_init(&vm_ctx->gpuvm_mgr,
++		       is_userspace_context ? "PowerVR-user-VM" : "PowerVR-FW-VM",
++		       0, 1ULL << device_addr_bits, 0, 0, &pvr_vm_gpuva_ops);
 +
 +	vm_ctx->mmu_ctx = pvr_mmu_context_create(pvr_dev);
 +	err = PTR_ERR_OR_ZERO(&vm_ctx->mmu_ctx);
@@ -4233,10 +4267,10 @@ index 000000000000..9d8d3710acc9
 +	/* TODO: Destroy FW mem context */
 +	WARN_ON(vm_ctx->fw_mem_ctx_obj);
 +
-+	WARN_ON(pvr_vm_unmap(vm_ctx, vm_ctx->gpuva_mgr.mm_start,
-+			     vm_ctx->gpuva_mgr.mm_range));
++	WARN_ON(pvr_vm_unmap(vm_ctx, vm_ctx->gpuvm_mgr.mm_start,
++			     vm_ctx->gpuvm_mgr.mm_range));
 +
-+	drm_gpuva_manager_destroy(&vm_ctx->gpuva_mgr);
++	drm_gpuvm_destroy(&vm_ctx->gpuvm_mgr);
 +	pvr_mmu_context_destroy(vm_ctx->mmu_ctx);
 +	mutex_destroy(&vm_ctx->lock);
 +
@@ -4378,7 +4412,7 @@ index 000000000000..9d8d3710acc9
 +	op_ctx.pvr_obj = pvr_obj;
 +
 +	mutex_lock(&vm_ctx->lock);
-+	err = drm_gpuva_sm_map(&vm_ctx->gpuva_mgr, &op_ctx, device_addr, size,
++	err = drm_gpuvm_sm_map(&vm_ctx->gpuvm_mgr, &op_ctx, device_addr, size,
 +			       gem_from_pvr_gem(pvr_obj), pvr_obj_offset);
 +	mutex_unlock(&vm_ctx->lock);
 +
@@ -4447,7 +4481,7 @@ index 000000000000..9d8d3710acc9
 +	}
 +
 +	mutex_lock(&vm_ctx->lock);
-+	err = drm_gpuva_sm_unmap(&vm_ctx->gpuva_mgr, &op_ctx, device_addr, size);
++	err = drm_gpuvm_sm_unmap(&vm_ctx->gpuvm_mgr, &op_ctx, device_addr, size);
 +	mutex_unlock(&vm_ctx->lock);
 +
 +out:
@@ -4721,7 +4755,7 @@ index 000000000000..9d8d3710acc9
 +
 +	mutex_lock(&vm_ctx->lock);
 +
-+	va = drm_gpuva_find_first(&vm_ctx->gpuva_mgr, device_addr, 1);
++	va = drm_gpuva_find_first(&vm_ctx->gpuvm_mgr, device_addr, 1);
 +	if (!va)
 +		goto err_unlock;
 +

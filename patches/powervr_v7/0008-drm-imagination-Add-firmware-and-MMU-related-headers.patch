@@ -1,12 +1,13 @@
-From 62cc2d4d4e7d22fd857790c36ffbb89a69a9c2a4 Mon Sep 17 00:00:00 2001
+From eedf0781f972feda1eed530811a7ce57e87953ea Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Fri, 1 Sep 2023 15:05:48 +0100
+Date: Tue, 10 Oct 2023 14:37:26 +0100
 Subject: [PATCH 08/20] drm/imagination: Add firmware and MMU related headers
 
 Changes since v5:
 - Split up header commit due to size
 
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
+Acked-by: Maxime Ripard <mripard@kernel.org>
 ---
  .../drm/imagination/pvr_rogue_heap_config.h   | 113 ++++++
  drivers/gpu/drm/imagination/pvr_rogue_meta.h  | 356 ++++++++++++++++++

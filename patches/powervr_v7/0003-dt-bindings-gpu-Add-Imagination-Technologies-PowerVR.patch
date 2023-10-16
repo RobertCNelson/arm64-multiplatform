@@ -1,6 +1,6 @@
-From be6cc35211d0a813e4b5c1f805c2c361d406dec0 Mon Sep 17 00:00:00 2001
+From c05a0416b8072ccb6d91cde4d039d797e80fbd4b Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:25 +0100
+Date: Tue, 10 Oct 2023 14:37:21 +0100
 Subject: [PATCH 03/20] dt-bindings: gpu: Add Imagination Technologies
  PowerVR/IMG GPU
 
@@ -10,15 +10,18 @@ TI AM62 SoCs.
 Co-developed-by: Frank Binns <frank.binns@imgtec.com>
 Signed-off-by: Frank Binns <frank.binns@imgtec.com>
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
+Reviewed-by: Maxime Ripard <mripard@kernel.org>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
  .../devicetree/bindings/gpu/img,powervr.yaml  | 73 +++++++++++++++++++
- MAINTAINERS                                   |  7 ++
- 2 files changed, 80 insertions(+)
+ MAINTAINERS                                   |  6 ++
+ 2 files changed, 79 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/gpu/img,powervr.yaml
 
 diff --git a/Documentation/devicetree/bindings/gpu/img,powervr.yaml b/Documentation/devicetree/bindings/gpu/img,powervr.yaml
 new file mode 100644
-index 000000000000..51ee0f3d6e48
+index 000000000000..e81db87a1f46
 --- /dev/null
 +++ b/Documentation/devicetree/bindings/gpu/img,powervr.yaml
 @@ -0,0 +1,73 @@
@@ -32,7 +35,7 @@ index 000000000000..51ee0f3d6e48
 +title: Imagination Technologies PowerVR and IMG GPU
 +
 +maintainers:
-+  - Sarah Walker <sarah.walker@imgtec.com>
++  - Donald Robson <donald.robson@imgtec.com>
 +
 +properties:
 +  compatible:
@@ -87,7 +90,7 @@ index 000000000000..51ee0f3d6e48
 +    #include <dt-bindings/interrupt-controller/arm-gic.h>
 +    #include <dt-bindings/soc/ti,sci_pm_domain.h>
 +
-+    gpu: gpu@fd00000 {
++    gpu@fd00000 {
 +        compatible = "ti,am62-gpu", "img,img-axe";
 +        reg = <0x0fd00000 0x20000>;
 +        clocks = <&k3_clks 187 0>;
@@ -96,16 +99,15 @@ index 000000000000..51ee0f3d6e48
 +        power-domains = <&k3_pds 187 TI_SCI_PD_EXCLUSIVE>;
 +    };
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 5e2b31db06ce..1bfafad5dbd8 100644
+index 7a7bd8bd80e9..31111de6e160 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -10231,6 +10231,13 @@ IMGTEC IR DECODER DRIVER
+@@ -10238,6 +10238,12 @@ IMGTEC IR DECODER DRIVER
  S:	Orphan
  F:	drivers/media/rc/img-ir/
  
 +IMGTEC POWERVR DRM DRIVER
 +M:	Frank Binns <frank.binns@imgtec.com>
-+M:	Sarah Walker <sarah.walker@imgtec.com>
 +M:	Donald Robson <donald.robson@imgtec.com>
 +S:	Supported
 +F:	Documentation/devicetree/bindings/gpu/img,powervr.yaml

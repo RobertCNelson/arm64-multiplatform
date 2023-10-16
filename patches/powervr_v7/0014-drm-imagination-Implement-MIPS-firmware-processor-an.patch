@@ -1,12 +1,15 @@
-From 51f5549efa6c42337fb52cf69b71f4e673b73af9 Mon Sep 17 00:00:00 2001
+From d5345e0c0a3203b2ce1627eacb9b56650cd8159a Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:36 +0100
+Date: Tue, 10 Oct 2023 14:37:32 +0100
 Subject: [PATCH 14/20] drm/imagination: Implement MIPS firmware processor and
  MMU support
 
 Add support for the MIPS firmware processor, used in the Series AXE GPU.
 The MIPS firmware processor uses a separate MMU to the rest of the GPU, so
 this patch adds support for that as well.
+
+Changes since v6:
+- Fix integer overflow in VM map error path
 
 Changes since v5:
 - Use alloc_page() when allocating MIPS pagetable
@@ -50,7 +53,7 @@ index 5b02440841be..0a6532d30c00 100644
  
  obj-$(CONFIG_DRM_POWERVR) += powervr.o
 diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/imagination/pvr_device.c
-index ad198ed432fe..bc7333444388 100644
+index 6055cf6054f7..aac5e62d6cbe 100644
 --- a/drivers/gpu/drm/imagination/pvr_device.c
 +++ b/drivers/gpu/drm/imagination/pvr_device.c
 @@ -50,16 +50,19 @@ pvr_device_reg_init(struct pvr_device *pvr_dev)
@@ -89,10 +92,10 @@ index b5de9574a116..cbcfc5d4b845 100644
  	 * @regs: Device control registers.
  	 *
 diff --git a/drivers/gpu/drm/imagination/pvr_fw.c b/drivers/gpu/drm/imagination/pvr_fw.c
-index 449984c0f233..0799c70f1a0c 100644
+index 4ea663be4596..d3edcb74f29d 100644
 --- a/drivers/gpu/drm/imagination/pvr_fw.c
 +++ b/drivers/gpu/drm/imagination/pvr_fw.c
-@@ -914,6 +914,8 @@ pvr_fw_init(struct pvr_device *pvr_dev)
+@@ -933,6 +933,8 @@ pvr_fw_init(struct pvr_device *pvr_dev)
  
  	if (fw_dev->processor_type == PVR_FW_PROCESSOR_TYPE_META)
  		fw_dev->defs = &pvr_fw_defs_meta;
@@ -415,7 +418,7 @@ index 000000000000..676b2d279796
 +#endif /* PVR_FW_MIPS_H */
 diff --git a/drivers/gpu/drm/imagination/pvr_vm_mips.c b/drivers/gpu/drm/imagination/pvr_vm_mips.c
 new file mode 100644
-index 000000000000..157197a5ee2c
+index 000000000000..8f7730e0e4fa
 --- /dev/null
 +++ b/drivers/gpu/drm/imagination/pvr_vm_mips.c
 @@ -0,0 +1,236 @@
@@ -576,7 +579,7 @@ index 000000000000..157197a5ee2c
 +	u32 pte_flags;
 +	u32 start_pfn;
 +	u32 end_pfn;
-+	u32 pfn;
++	s32 pfn;
 +	int err;
 +
 +	if (check_add_overflow(start, size - 1, &end))

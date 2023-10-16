@@ -1,12 +1,13 @@
-From b65c1d6304d37ee03205e2624e57bf90fbfe4847 Mon Sep 17 00:00:00 2001
+From 8daea05823bccd61032a0838ccfdc9d018b5fcc7 Mon Sep 17 00:00:00 2001
 From: Sarah Walker <sarah.walker@imgtec.com>
-Date: Wed, 6 Sep 2023 10:55:29 +0100
+Date: Tue, 10 Oct 2023 14:37:25 +0100
 Subject: [PATCH 07/20] drm/imagination: Add GPU register headers
 
 Changes since v5:
 - Split up header commit due to size
 
 Signed-off-by: Sarah Walker <sarah.walker@imgtec.com>
+Reviewed-by: Maxime Ripard <mripard@kernel.org>
 ---
  .../gpu/drm/imagination/pvr_rogue_cr_defs.h   | 6193 +++++++++++++++++
  .../imagination/pvr_rogue_cr_defs_client.h    |  159 +
