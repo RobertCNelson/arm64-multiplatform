@@ -304,9 +304,8 @@ drivers () {
 	#https://gitlab.freedesktop.org/frankbinns/powervr/-/tree/powervr-next
 	#git clone -b powervr-next https://gitlab.freedesktop.org/frankbinns/powervr.git --reference ~/linux-src/ --depth=100
 	dir 'powervr_v7'
-	#https://github.com/Ayush1325/linux/commits/gb-beagleplay
-	dir 'gb-beagleplay'
 	dir 'fixes'
+	dir 'greybus_beagleplay_v9'
 }
 
 ###

@@ -1,6 +1,6 @@
-From 17b72e305a3a5ff11ea60ccfeabc25fd43a44543 Mon Sep 17 00:00:00 2001
+From d7ddd941eff855b1966ba0a8a102e041c9e39d97 Mon Sep 17 00:00:00 2001
 From: Ayush Singh <ayushdevel1325@gmail.com>
-Date: Fri, 6 Oct 2023 09:40:32 +0530
+Date: Tue, 17 Oct 2023 15:41:13 +0530
 Subject: [PATCH 2/2] greybus: Add BeaglePlay Linux Driver
 
 Add the Greybus host driver for BeaglePlay board by BeagleBoard.org.
@@ -31,10 +31,10 @@ Signed-off-by: Ayush Singh <ayushdevel1325@gmail.com>
  create mode 100644 drivers/greybus/gb-beagleplay.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index f04c5920b1b0..e3477f77170d 100644
+index a6c6033532c4..138bc6ce8739 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -8974,6 +8974,7 @@ M:	Ayush Singh <ayushdevel1325@gmail.com>
+@@ -8993,6 +8993,7 @@ M:	Ayush Singh <ayushdevel1325@gmail.com>
  L:	greybus-dev@lists.linaro.org (moderated for non-subscribers)
  S:	Maintained
  F:	Documentation/devicetree/bindings/net/ti,cc1352p7.yaml

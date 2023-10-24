@@ -1,6 +1,6 @@
-From d0695e5de2e735adb82dd92bbb916c862dd30cfd Mon Sep 17 00:00:00 2001
+From db896eb61f6d326787015160455ec2d026347c98 Mon Sep 17 00:00:00 2001
 From: Ayush Singh <ayushdevel1325@gmail.com>
-Date: Fri, 6 Oct 2023 09:40:31 +0530
+Date: Tue, 17 Oct 2023 15:41:12 +0530
 Subject: [PATCH 1/2] dt-bindings: net: Add ti,cc1352p7
 
 Add DT bindings for Texas Instruments Simplelink CC1352P7 wireless MCU
@@ -11,6 +11,8 @@ for handling 6LoWPAN communication with beagleconnect freedom nodes as
 well as their discovery.
 
 Signed-off-by: Ayush Singh <ayushdevel1325@gmail.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Reviewed-by: Nishanth Menon <nm@ti.com>
 ---
  .../devicetree/bindings/net/ti,cc1352p7.yaml  | 51 +++++++++++++++++++
  MAINTAINERS                                   |  6 +++
@@ -19,7 +21,7 @@ Signed-off-by: Ayush Singh <ayushdevel1325@gmail.com>
 
 diff --git a/Documentation/devicetree/bindings/net/ti,cc1352p7.yaml b/Documentation/devicetree/bindings/net/ti,cc1352p7.yaml
 new file mode 100644
-index 000000000000..742763e04543
+index 000000000000..3dde10de4630
 --- /dev/null
 +++ b/Documentation/devicetree/bindings/net/ti,cc1352p7.yaml
 @@ -0,0 +1,51 @@
@@ -32,7 +34,7 @@ index 000000000000..742763e04543
 +title: Texas Instruments Simplelink CC1352P7 wireless MCU
 +
 +description:
-+  The cc1352p7 mcu can be connected via SPI or UART.
++  The CC1352P7 MCU can be connected via SPI or UART.
 +
 +maintainers:
 +  - Ayush Singh <ayushdevel1325@gmail.com>
@@ -43,7 +45,7 @@ index 000000000000..742763e04543
 +
 +  clocks:
 +    items:
-+      - description: main system (mcu and peripherals) clock
++      - description: high-frequency main system (MCU and peripherals) clock
 +      - description: low-frequency system clock
 +
 +  clock-names:
@@ -75,10 +77,10 @@ index 000000000000..742763e04543
 +      };
 +    };
 diff --git a/MAINTAINERS b/MAINTAINERS
-index b2275bdb48a5..f04c5920b1b0 100644
+index 05f431642b5a..d0c8a77962d3 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -8969,6 +8969,12 @@ F:	drivers/staging/greybus/sdio.c
+@@ -8846,6 +8846,12 @@ F:	drivers/staging/greybus/sdio.c
  F:	drivers/staging/greybus/spi.c
  F:	drivers/staging/greybus/spilib.c
  
