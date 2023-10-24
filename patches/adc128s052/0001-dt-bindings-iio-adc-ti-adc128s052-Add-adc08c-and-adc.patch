@@ -1,0 +1,49 @@
+From 3cd705483ebbb39086651cd44b6649c242fe6fd9 Mon Sep 17 00:00:00 2001
+From: Sukrut Bellary <sukrut.bellary@linux.com>
+Date: Mon, 16 Oct 2023 06:38:10 -0700
+Subject: [PATCH 1/3] dt-bindings: iio: adc: ti,adc128s052: Add adc08c and
+ adc10c family
+
+The adcxx4s communicates with a host processor via an SPI/Microwire Bus
+interface. The device family responds with 12bit data, of which the LSB
+bits are 0 for the lower resolution devices. I have been able to test
+adc102s051, hence adding just the missing ones in that family.
+
+Lets reuse the binding to support the family of devices with name
+ADC<bb><c>S<sss>, where
+* bb is the resolution in number of bits (8, 10, 12)
+* c is the number of channels (1, 2, 4, 8)
+* sss is the maximum conversion speed (021 for 200 kSPS, 051 for 500 kSPS
+  and 101 for 1 MSPS)
+
+Complete datasheets are available at TI's website here:
+  https://www.ti.com/lit/gpn/adc<bb><c>s<sss>.pdf
+
+Handling of 8, 10 and 12 bits converters are the same, the
+unavailable bits are 0 in LSB
+
+Signed-off-by: Sukrut Bellary <sukrut.bellary@linux.com>
+---
+ .../devicetree/bindings/iio/adc/ti,adc128s052.yaml          | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/iio/adc/ti,adc128s052.yaml b/Documentation/devicetree/bindings/iio/adc/ti,adc128s052.yaml
+index 775eee972b12..392b4a3e867c 100644
+--- a/Documentation/devicetree/bindings/iio/adc/ti,adc128s052.yaml
++++ b/Documentation/devicetree/bindings/iio/adc/ti,adc128s052.yaml
+@@ -16,6 +16,12 @@ description: |
+ properties:
+   compatible:
+     enum:
++      - ti,adc082s021
++      - ti,adc082s051
++      - ti,adc082s101
++      - ti,adc102s021
++      - ti,adc102s051
++      - ti,adc102s101
+       - ti,adc122s021
+       - ti,adc122s051
+       - ti,adc122s101
+-- 
+2.39.2
+

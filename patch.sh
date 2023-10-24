@@ -306,6 +306,8 @@ drivers () {
 	dir 'powervr_v7'
 	dir 'fixes'
 	dir 'greybus_beagleplay_v9'
+	#https://github.com/sukrutb/linux/commits/beaglePlay_adc102s051_support
+	dir 'adc128s052'
 }
 
 ###
