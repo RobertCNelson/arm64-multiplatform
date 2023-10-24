@@ -292,6 +292,9 @@ drivers () {
 	#dir 'RPi'
 	dir 'soc/ti/pcie'
 	dir 'boris'
+	#git revert --no-edit -s fa8391ad68c16716e2c06ada397e99ceed2fb647
+	#exit 2
+	dir 'sched_pre'
 	dir 'sched'
 
 	#git revert --no-edit cdf4100eaa1f4107fcf7c95b5eccca96cca6c777 -s
@@ -314,7 +317,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.5.7"
+		backport_tag="v6.5.8"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
