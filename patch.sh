@@ -231,7 +231,7 @@ local_patch () {
 #external_git
 #rt
 wireless_regdb
-beagleboard_dtbs
+#beagleboard_dtbs
 #local_patch
 
 pre_backports () {
@@ -294,20 +294,20 @@ drivers () {
 	dir 'boris'
 	#git revert --no-edit -s fa8391ad68c16716e2c06ada397e99ceed2fb647
 	#exit 2
-	dir 'sched_pre'
-	dir 'sched'
+	#dir 'sched_pre'
+	#dir 'sched'
 
 	#git revert --no-edit cdf4100eaa1f4107fcf7c95b5eccca96cca6c777 -s
 	#exit 2
-	dir 'powervr_pre'
+	#dir 'powervr_pre'
 
 	#https://gitlab.freedesktop.org/frankbinns/powervr/-/tree/powervr-next
 	#git clone -b powervr-next https://gitlab.freedesktop.org/frankbinns/powervr.git --reference ~/linux-src/ --depth=100
-	dir 'powervr_v7'
-	dir 'fixes'
-	dir 'greybus_beagleplay_v9'
+	#dir 'powervr_v7'
+	#dir 'fixes'
+	#dir 'greybus_beagleplay_v9'
 	#https://github.com/sukrutb/linux/commits/beaglePlay_adc102s051_support
-	dir 'adc128s052'
+	#dir 'adc128s052'
 }
 
 ###
