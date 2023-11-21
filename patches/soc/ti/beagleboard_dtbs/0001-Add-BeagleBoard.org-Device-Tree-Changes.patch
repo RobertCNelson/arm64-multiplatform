@@ -1,6 +1,6 @@
-From d78dcb75b94402cb286cab95b3b7e02ca93eb3d1 Mon Sep 17 00:00:00 2001
+From e89933f2bea6f3e709b2f9072bff1cc7534c0ed4 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Wed, 1 Nov 2023 14:23:10 -0500
+Date: Tue, 21 Nov 2023 17:20:41 -0600
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.6.x
