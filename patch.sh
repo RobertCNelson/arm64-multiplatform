@@ -292,9 +292,6 @@ drivers () {
 	#dir 'RPi'
 	dir 'soc/ti/pcie'
 	dir 'boris'
-	#dir 'powervr'
-	#https://github.com/Ayush1325/linux/commits/gb-beagleplay
-	dir 'gb-beagleplay'
 }
 
 ###
