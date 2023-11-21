@@ -4,9 +4,9 @@ ARCH=$(uname -m)
 
 config="defconfig"
 
-build_prefix="-arm64-k3-r"
+build_prefix="-rt-arm64-k3-r"
 branch_prefix="v"
-branch_postfix=".x-arm64-k3"
+branch_postfix=".x-rt-arm64-k3"
 
 #https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/changes.rst?h=v6.6-rc1
 #arm
