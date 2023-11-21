@@ -1,6 +1,6 @@
-From 2e9e7d45427721f253b34485be236d1edecf81f2 Mon Sep 17 00:00:00 2001
+From be1fc1d2a46a3d8baf6749ba7a3259dd7bcfb827 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 15 Sep 2023 17:31:56 -0500
+Date: Tue, 21 Nov 2023 12:49:23 -0600
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.1.x
@@ -9,15 +9,15 @@ https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/4ab496d
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm64/boot/dts/ti/Makefile               |    2 +
- arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  168 +++
- arch/arm64/boot/dts/ti/k3-am62-mcu.dtsi       |   49 +
+ arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  175 ++-
+ arch/arm64/boot/dts/ti/k3-am62-mcu.dtsi       |   47 +
  arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi    |    4 +-
  .../arm64/boot/dts/ti/k3-am625-beagleplay.dts |  764 ++++++++++++
  arch/arm64/boot/dts/ti/k3-am625-sk.dts        |   90 +-
- arch/arm64/boot/dts/ti/k3-am625.dtsi          |   51 +
+ arch/arm64/boot/dts/ti/k3-am625.dtsi          |   53 +-
  .../boot/dts/ti/k3-j721e-beagleboneai64.dts   | 1055 +++++++++++++++++
  .../dts/ti/k3-j721e-common-proc-board.dts     |  143 +--
- arch/arm64/boot/dts/ti/k3-j721e-main.dtsi     |  124 +-
+ arch/arm64/boot/dts/ti/k3-j721e-main.dtsi     |  125 +-
  .../boot/dts/ti/k3-j721e-mcu-wakeup.dtsi      |   11 +-
  arch/arm64/boot/dts/ti/k3-j721e-sk.dts        |  205 ++--
  arch/arm64/boot/dts/ti/k3-j721e-som-p0.dtsi   |   33 +-
@@ -26,7 +26,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  include/dt-bindings/pinctrl/k3.h              |    3 +
  include/dt-bindings/pinctrl/omap.h            |    4 +-
  include/uapi/linux/input-event-codes.h        |    3 +
- 18 files changed, 2658 insertions(+), 357 deletions(-)
+ 18 files changed, 2660 insertions(+), 363 deletions(-)
  create mode 100644 arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
  create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
  create mode 100644 arch/arm64/boot/dts/ti/k3-pinctrl.h
@@ -43,7 +43,7 @@ index 4555a5be2257..c73cee2e5093 100644
 +dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64.dtb
 +dtb-$(CONFIG_ARCH_K3) += k3-am625-beagleplay.dtb
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
-index 03660476364f..7dcfeaadd8e3 100644
+index eb8690a6be16..7dcfeaadd8e3 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
 @@ -192,6 +192,102 @@ main_pmx0: pinctrl@f4000 {
@@ -237,31 +237,52 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  
  	main_spi0: spi@20100000 {
-@@ -307,6 +414,7 @@ main_spi0: spi@20100000 {
+@@ -306,7 +413,7 @@ main_spi0: spi@20100000 {
+ 		#address-cells = <1>;
  		#size-cells = <0>;
  		power-domains = <&k3_pds 141 TI_SCI_PD_EXCLUSIVE>;
- 		clocks = <&k3_clks 172 0>;
-+		status = "disabled";
+-		clocks = <&k3_clks 141 0>;
++		clocks = <&k3_clks 172 0>;
+ 		status = "disabled";
  	};
  
- 	main_spi1: spi@20110000 {
-@@ -317,6 +425,7 @@ main_spi1: spi@20110000 {
+@@ -317,7 +424,7 @@ main_spi1: spi@20110000 {
+ 		#address-cells = <1>;
  		#size-cells = <0>;
  		power-domains = <&k3_pds 142 TI_SCI_PD_EXCLUSIVE>;
- 		clocks = <&k3_clks 173 0>;
-+		status = "disabled";
+-		clocks = <&k3_clks 142 0>;
++		clocks = <&k3_clks 173 0>;
+ 		status = "disabled";
  	};
  
- 	main_spi2: spi@20120000 {
-@@ -327,6 +436,7 @@ main_spi2: spi@20120000 {
+@@ -328,7 +435,7 @@ main_spi2: spi@20120000 {
+ 		#address-cells = <1>;
  		#size-cells = <0>;
  		power-domains = <&k3_pds 143 TI_SCI_PD_EXCLUSIVE>;
- 		clocks = <&k3_clks 174 0>;
-+		status = "disabled";
+-		clocks = <&k3_clks 143 0>;
++		clocks = <&k3_clks 174 0>;
+ 		status = "disabled";
  	};
  
- 	main_gpio_intr: interrupt-controller@a00000 {
-@@ -393,6 +503,7 @@ sdhci0: mmc@fa10000 {
+@@ -354,7 +461,7 @@ main_gpio0: gpio@600000 {
+ 			     <193>, <194>, <195>;
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
+-		ti,ngpio = <92>;
++		ti,ngpio = <87>;
+ 		ti,davinci-gpio-unbanked = <0>;
+ 		power-domains = <&k3_pds 77 TI_SCI_PD_EXCLUSIVE>;
+ 		clocks = <&k3_clks 77 0>;
+@@ -371,7 +478,7 @@ main_gpio1: gpio@601000 {
+ 			     <183>, <184>, <185>;
+ 		interrupt-controller;
+ 		#interrupt-cells = <2>;
+-		ti,ngpio = <52>;
++		ti,ngpio = <88>;
+ 		ti,davinci-gpio-unbanked = <0>;
+ 		power-domains = <&k3_pds 78 TI_SCI_PD_EXCLUSIVE>;
+ 		clocks = <&k3_clks 78 0>;
+@@ -396,6 +503,7 @@ sdhci0: mmc@fa10000 {
  		ti,otap-del-sel-mmc-hs = <0x0>;
  		ti,otap-del-sel-ddr52 = <0x9>;
  		ti,otap-del-sel-hs200 = <0x6>;
@@ -269,7 +290,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  
  	sdhci1: mmc@fa00000 {
-@@ -416,6 +527,7 @@ sdhci1: mmc@fa00000 {
+@@ -419,6 +527,7 @@ sdhci1: mmc@fa00000 {
  		ti,itap-del-sel-sdr25 = <0x0>;
  		ti,clkbuf-sel = <0x7>;
  		bus-width = <4>;
@@ -277,7 +298,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  
  	sdhci2: mmc@fa20000 {
-@@ -438,6 +550,53 @@ sdhci2: mmc@fa20000 {
+@@ -441,6 +550,53 @@ sdhci2: mmc@fa20000 {
  		ti,itap-del-sel-sdr12 = <0x0>;
  		ti,itap-del-sel-sdr25 = <0x0>;
  		ti,clkbuf-sel = <0x7>;
@@ -331,7 +352,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  
  	fss: bus@fc00000 {
-@@ -462,6 +621,7 @@ ospi0: spi@fc40000 {
+@@ -465,6 +621,7 @@ ospi0: spi@fc40000 {
  			power-domains = <&k3_pds 75 TI_SCI_PD_EXCLUSIVE>;
  			#address-cells = <1>;
  			#size-cells = <0>;
@@ -339,7 +360,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  		};
  	};
  
-@@ -520,6 +680,7 @@ cpsw3g_mdio: mdio@f00 {
+@@ -523,6 +680,7 @@ cpsw3g_mdio: mdio@f00 {
  			clocks = <&k3_clks 13 0>;
  			clock-names = "fck";
  			bus_freq = <1000000>;
@@ -347,7 +368,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  		};
  
  		cpts@3d000 {
-@@ -557,6 +718,7 @@ ecap0: pwm@23100000 {
+@@ -560,6 +718,7 @@ ecap0: pwm@23100000 {
  		power-domains = <&k3_pds 51 TI_SCI_PD_EXCLUSIVE>;
  		clocks = <&k3_clks 51 0>;
  		clock-names = "fck";
@@ -355,7 +376,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  
  	ecap1: pwm@23110000 {
-@@ -566,6 +728,7 @@ ecap1: pwm@23110000 {
+@@ -569,6 +728,7 @@ ecap1: pwm@23110000 {
  		power-domains = <&k3_pds 52 TI_SCI_PD_EXCLUSIVE>;
  		clocks = <&k3_clks 52 0>;
  		clock-names = "fck";
@@ -363,7 +384,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  
  	ecap2: pwm@23120000 {
-@@ -575,6 +738,7 @@ ecap2: pwm@23120000 {
+@@ -578,6 +738,7 @@ ecap2: pwm@23120000 {
  		power-domains = <&k3_pds 53 TI_SCI_PD_EXCLUSIVE>;
  		clocks = <&k3_clks 53 0>;
  		clock-names = "fck";
@@ -371,7 +392,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  
  	main_mcan0: can@20701000 {
-@@ -589,6 +753,7 @@ main_mcan0: can@20701000 {
+@@ -592,6 +753,7 @@ main_mcan0: can@20701000 {
  			     <GIC_SPI 156 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -379,7 +400,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  
  	epwm0: pwm@23000000 {
-@@ -598,6 +763,7 @@ epwm0: pwm@23000000 {
+@@ -601,6 +763,7 @@ epwm0: pwm@23000000 {
  		power-domains = <&k3_pds 86 TI_SCI_PD_EXCLUSIVE>;
  		clocks = <&epwm_tbclk 0>, <&k3_clks 86 0>;
  		clock-names = "tbclk", "fck";
@@ -387,7 +408,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  
  	epwm1: pwm@23010000 {
-@@ -607,6 +773,7 @@ epwm1: pwm@23010000 {
+@@ -610,6 +773,7 @@ epwm1: pwm@23010000 {
  		power-domains = <&k3_pds 87 TI_SCI_PD_EXCLUSIVE>;
  		clocks = <&epwm_tbclk 1>, <&k3_clks 87 0>;
  		clock-names = "tbclk", "fck";
@@ -395,7 +416,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  
  	epwm2: pwm@23020000 {
-@@ -616,5 +783,6 @@ epwm2: pwm@23020000 {
+@@ -619,5 +783,6 @@ epwm2: pwm@23020000 {
  		power-domains = <&k3_pds 88 TI_SCI_PD_EXCLUSIVE>;
  		clocks = <&epwm_tbclk 2>, <&k3_clks 88 0>;
  		clock-names = "tbclk", "fck";
@@ -403,7 +424,7 @@ index 03660476364f..7dcfeaadd8e3 100644
  	};
  };
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-mcu.dtsi b/arch/arm64/boot/dts/ti/k3-am62-mcu.dtsi
-index f56c803560f2..a427231527c3 100644
+index df2d8f36a31b..a427231527c3 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62-mcu.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-am62-mcu.dtsi
 @@ -14,6 +14,51 @@ mcu_pmx0: pinctrl@4084000 {
@@ -474,22 +495,6 @@ index f56c803560f2..a427231527c3 100644
  	};
  
  	mcu_spi0: spi@4b00000 {
-@@ -42,6 +89,7 @@ mcu_spi0: spi@4b00000 {
- 		#size-cells = <0>;
- 		power-domains = <&k3_pds 147 TI_SCI_PD_EXCLUSIVE>;
- 		clocks = <&k3_clks 147 0>;
-+		status = "disabled";
- 	};
- 
- 	mcu_spi1: spi@4b10000 {
-@@ -52,6 +100,7 @@ mcu_spi1: spi@4b10000 {
- 		#size-cells = <0>;
- 		power-domains = <&k3_pds 148 TI_SCI_PD_EXCLUSIVE>;
- 		clocks = <&k3_clks 148 0>;
-+		status = "disabled";
- 	};
- 
- 	mcu_gpio_intr: interrupt-controller@4210000 {
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi
 index 4090134676cf..38dced6b4fef 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi
@@ -1448,7 +1453,7 @@ index 93a5f0817efc..4f179b146cab 100644
 -	status = "disabled";
 -};
 diff --git a/arch/arm64/boot/dts/ti/k3-am625.dtsi b/arch/arm64/boot/dts/ti/k3-am625.dtsi
-index 887f31c23fef..cea2cc7de5dd 100644
+index 31b37abbb8d5..cea2cc7de5dd 100644
 --- a/arch/arm64/boot/dts/ti/k3-am625.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-am625.dtsi
 @@ -48,6 +48,8 @@ cpu0: cpu@0 {
@@ -1478,7 +1483,7 @@ index 887f31c23fef..cea2cc7de5dd 100644
  		};
  
  		cpu3: cpu@3 {
-@@ -90,6 +96,51 @@ cpu3: cpu@3 {
+@@ -90,13 +96,58 @@ cpu3: cpu@3 {
  			d-cache-line-size = <64>;
  			d-cache-sets = <128>;
  			next-level-cache = <&L2_0>;
@@ -1530,6 +1535,14 @@ index 887f31c23fef..cea2cc7de5dd 100644
  		};
  	};
  
+ 	L2_0: l2-cache0 {
+ 		compatible = "cache";
+ 		cache-level = <2>;
+-		cache-size = <0x80000>;
++		cache-size = <0x40000>;
+ 		cache-line-size = <64>;
+ 		cache-sets = <512>;
+ 	};
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
 new file mode 100644
 index 000000000000..37c24b077b6a
@@ -2830,7 +2843,7 @@ index b1691ac3442d..7db0603125aa 100644
 -	status = "disabled";
 -};
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi
-index 603ddda5127f..c935622f0102 100644
+index e9b36c419bec..c935622f0102 100644
 --- a/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi
 @@ -66,7 +66,73 @@ usb_serdes_mux: mux-controller@4000 {
@@ -3092,7 +3105,15 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_gpio0: gpio@600000 {
-@@ -1218,6 +1305,7 @@ main_i2c0: i2c@2000000 {
+@@ -1093,6 +1180,7 @@ main_sdhci0: mmc@4f80000 {
+ 		ti,itap-del-sel-mmc-hs = <0xa>;
+ 		ti,itap-del-sel-ddr52 = <0x3>;
+ 		ti,trm-icp = <0x8>;
++		ti,strobe-sel = <0x77>;
+ 		dma-coherent;
+ 	};
+ 
+@@ -1217,6 +1305,7 @@ main_i2c0: i2c@2000000 {
  		clock-names = "fck";
  		clocks = <&k3_clks 187 0>;
  		power-domains = <&k3_pds 187 TI_SCI_PD_SHARED>;
@@ -3100,7 +3121,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_i2c1: i2c@2010000 {
-@@ -1229,6 +1317,7 @@ main_i2c1: i2c@2010000 {
+@@ -1228,6 +1317,7 @@ main_i2c1: i2c@2010000 {
  		clock-names = "fck";
  		clocks = <&k3_clks 188 0>;
  		power-domains = <&k3_pds 188 TI_SCI_PD_EXCLUSIVE>;
@@ -3108,7 +3129,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_i2c2: i2c@2020000 {
-@@ -1240,6 +1329,7 @@ main_i2c2: i2c@2020000 {
+@@ -1239,6 +1329,7 @@ main_i2c2: i2c@2020000 {
  		clock-names = "fck";
  		clocks = <&k3_clks 189 0>;
  		power-domains = <&k3_pds 189 TI_SCI_PD_EXCLUSIVE>;
@@ -3116,7 +3137,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_i2c3: i2c@2030000 {
-@@ -1251,6 +1341,7 @@ main_i2c3: i2c@2030000 {
+@@ -1250,6 +1341,7 @@ main_i2c3: i2c@2030000 {
  		clock-names = "fck";
  		clocks = <&k3_clks 190 0>;
  		power-domains = <&k3_pds 190 TI_SCI_PD_EXCLUSIVE>;
@@ -3124,7 +3145,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_i2c4: i2c@2040000 {
-@@ -1262,6 +1353,7 @@ main_i2c4: i2c@2040000 {
+@@ -1261,6 +1353,7 @@ main_i2c4: i2c@2040000 {
  		clock-names = "fck";
  		clocks = <&k3_clks 191 0>;
  		power-domains = <&k3_pds 191 TI_SCI_PD_EXCLUSIVE>;
@@ -3132,7 +3153,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_i2c5: i2c@2050000 {
-@@ -1273,6 +1365,7 @@ main_i2c5: i2c@2050000 {
+@@ -1272,6 +1365,7 @@ main_i2c5: i2c@2050000 {
  		clock-names = "fck";
  		clocks = <&k3_clks 192 0>;
  		power-domains = <&k3_pds 192 TI_SCI_PD_EXCLUSIVE>;
@@ -3140,7 +3161,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_i2c6: i2c@2060000 {
-@@ -1284,6 +1377,7 @@ main_i2c6: i2c@2060000 {
+@@ -1283,6 +1377,7 @@ main_i2c6: i2c@2060000 {
  		clock-names = "fck";
  		clocks = <&k3_clks 193 0>;
  		power-domains = <&k3_pds 193 TI_SCI_PD_EXCLUSIVE>;
@@ -3148,7 +3169,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	ufs_wrapper: ufs-wrapper@4e80000 {
-@@ -1407,6 +1501,7 @@ mcasp0: mcasp@2b00000 {
+@@ -1406,6 +1501,7 @@ mcasp0: mcasp@2b00000 {
  		clocks = <&k3_clks 174 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 174 TI_SCI_PD_EXCLUSIVE>;
@@ -3156,7 +3177,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp1: mcasp@2b10000 {
-@@ -1424,6 +1519,7 @@ mcasp1: mcasp@2b10000 {
+@@ -1423,6 +1519,7 @@ mcasp1: mcasp@2b10000 {
  		clocks = <&k3_clks 175 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 175 TI_SCI_PD_EXCLUSIVE>;
@@ -3164,7 +3185,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp2: mcasp@2b20000 {
-@@ -1441,6 +1537,7 @@ mcasp2: mcasp@2b20000 {
+@@ -1440,6 +1537,7 @@ mcasp2: mcasp@2b20000 {
  		clocks = <&k3_clks 176 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 176 TI_SCI_PD_EXCLUSIVE>;
@@ -3172,7 +3193,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp3: mcasp@2b30000 {
-@@ -1458,6 +1555,7 @@ mcasp3: mcasp@2b30000 {
+@@ -1457,6 +1555,7 @@ mcasp3: mcasp@2b30000 {
  		clocks = <&k3_clks 177 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 177 TI_SCI_PD_EXCLUSIVE>;
@@ -3180,7 +3201,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp4: mcasp@2b40000 {
-@@ -1475,6 +1573,7 @@ mcasp4: mcasp@2b40000 {
+@@ -1474,6 +1573,7 @@ mcasp4: mcasp@2b40000 {
  		clocks = <&k3_clks 178 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 178 TI_SCI_PD_EXCLUSIVE>;
@@ -3188,7 +3209,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp5: mcasp@2b50000 {
-@@ -1492,6 +1591,7 @@ mcasp5: mcasp@2b50000 {
+@@ -1491,6 +1591,7 @@ mcasp5: mcasp@2b50000 {
  		clocks = <&k3_clks 179 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 179 TI_SCI_PD_EXCLUSIVE>;
@@ -3196,7 +3217,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp6: mcasp@2b60000 {
-@@ -1509,6 +1609,7 @@ mcasp6: mcasp@2b60000 {
+@@ -1508,6 +1609,7 @@ mcasp6: mcasp@2b60000 {
  		clocks = <&k3_clks 180 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 180 TI_SCI_PD_EXCLUSIVE>;
@@ -3204,7 +3225,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp7: mcasp@2b70000 {
-@@ -1526,6 +1627,7 @@ mcasp7: mcasp@2b70000 {
+@@ -1525,6 +1627,7 @@ mcasp7: mcasp@2b70000 {
  		clocks = <&k3_clks 181 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 181 TI_SCI_PD_EXCLUSIVE>;
@@ -3212,7 +3233,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp8: mcasp@2b80000 {
-@@ -1543,6 +1645,7 @@ mcasp8: mcasp@2b80000 {
+@@ -1542,6 +1645,7 @@ mcasp8: mcasp@2b80000 {
  		clocks = <&k3_clks 182 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 182 TI_SCI_PD_EXCLUSIVE>;
@@ -3220,7 +3241,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp9: mcasp@2b90000 {
-@@ -1560,6 +1663,7 @@ mcasp9: mcasp@2b90000 {
+@@ -1559,6 +1663,7 @@ mcasp9: mcasp@2b90000 {
  		clocks = <&k3_clks 183 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 183 TI_SCI_PD_EXCLUSIVE>;
@@ -3228,7 +3249,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp10: mcasp@2ba0000 {
-@@ -1577,6 +1681,7 @@ mcasp10: mcasp@2ba0000 {
+@@ -1576,6 +1681,7 @@ mcasp10: mcasp@2ba0000 {
  		clocks = <&k3_clks 184 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 184 TI_SCI_PD_EXCLUSIVE>;
@@ -3236,7 +3257,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	mcasp11: mcasp@2bb0000 {
-@@ -1594,6 +1699,7 @@ mcasp11: mcasp@2bb0000 {
+@@ -1593,6 +1699,7 @@ mcasp11: mcasp@2bb0000 {
  		clocks = <&k3_clks 185 1>;
  		clock-names = "fck";
  		power-domains = <&k3_pds 185 TI_SCI_PD_EXCLUSIVE>;
@@ -3244,7 +3265,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	watchdog0: watchdog@2200000 {
-@@ -2026,6 +2132,7 @@ main_mcan0: can@2701000 {
+@@ -2025,6 +2132,7 @@ main_mcan0: can@2701000 {
  			     <GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3252,7 +3273,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan1: can@2711000 {
-@@ -2040,6 +2147,7 @@ main_mcan1: can@2711000 {
+@@ -2039,6 +2147,7 @@ main_mcan1: can@2711000 {
  			     <GIC_SPI 128 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3260,7 +3281,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan2: can@2721000 {
-@@ -2054,6 +2162,7 @@ main_mcan2: can@2721000 {
+@@ -2053,6 +2162,7 @@ main_mcan2: can@2721000 {
  			     <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3268,7 +3289,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan3: can@2731000 {
-@@ -2068,6 +2177,7 @@ main_mcan3: can@2731000 {
+@@ -2067,6 +2177,7 @@ main_mcan3: can@2731000 {
  			     <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3276,7 +3297,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan4: can@2741000 {
-@@ -2082,6 +2192,7 @@ main_mcan4: can@2741000 {
+@@ -2081,6 +2192,7 @@ main_mcan4: can@2741000 {
  			     <GIC_SPI 137 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3284,7 +3305,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan5: can@2751000 {
-@@ -2096,6 +2207,7 @@ main_mcan5: can@2751000 {
+@@ -2095,6 +2207,7 @@ main_mcan5: can@2751000 {
  			     <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3292,7 +3313,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan6: can@2761000 {
-@@ -2110,6 +2222,7 @@ main_mcan6: can@2761000 {
+@@ -2109,6 +2222,7 @@ main_mcan6: can@2761000 {
  			     <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3300,7 +3321,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan7: can@2771000 {
-@@ -2124,6 +2237,7 @@ main_mcan7: can@2771000 {
+@@ -2123,6 +2237,7 @@ main_mcan7: can@2771000 {
  			     <GIC_SPI 146 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3308,7 +3329,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan8: can@2781000 {
-@@ -2138,6 +2252,7 @@ main_mcan8: can@2781000 {
+@@ -2137,6 +2252,7 @@ main_mcan8: can@2781000 {
  			     <GIC_SPI 577 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3316,7 +3337,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan9: can@2791000 {
-@@ -2152,6 +2267,7 @@ main_mcan9: can@2791000 {
+@@ -2151,6 +2267,7 @@ main_mcan9: can@2791000 {
  			     <GIC_SPI 580 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3324,7 +3345,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan10: can@27a1000 {
-@@ -2166,6 +2282,7 @@ main_mcan10: can@27a1000 {
+@@ -2165,6 +2282,7 @@ main_mcan10: can@27a1000 {
  			     <GIC_SPI 583 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3332,7 +3353,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan11: can@27b1000 {
-@@ -2180,6 +2297,7 @@ main_mcan11: can@27b1000 {
+@@ -2179,6 +2297,7 @@ main_mcan11: can@27b1000 {
  			     <GIC_SPI 586 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3340,7 +3361,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan12: can@27c1000 {
-@@ -2194,6 +2312,7 @@ main_mcan12: can@27c1000 {
+@@ -2193,6 +2312,7 @@ main_mcan12: can@27c1000 {
  			     <GIC_SPI 589 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
@@ -3348,7 +3369,7 @@ index 603ddda5127f..c935622f0102 100644
  	};
  
  	main_mcan13: can@27d1000 {
-@@ -2208,5 +2327,6 @@ main_mcan13: can@27d1000 {
+@@ -2207,5 +2327,6 @@ main_mcan13: can@27d1000 {
  			     <GIC_SPI 592 IRQ_TYPE_LEVEL_HIGH>;
  		interrupt-names = "int0", "int1";
  		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;

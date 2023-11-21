@@ -238,7 +238,7 @@ local_patch () {
 #external_git
 #rt
 wireless_regdb
-beagleboard_dtbs
+#beagleboard_dtbs
 #local_patch
 
 pre_backports () {
@@ -276,7 +276,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.162"
+	backport_tag="v5.10.201"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -308,7 +308,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.1.4"
+		backport_tag="v6.3.13"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
