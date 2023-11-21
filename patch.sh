@@ -270,7 +270,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.194"
+	backport_tag="v5.10.201"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -293,7 +293,7 @@ drivers () {
 	#dir 'RPi'
 	dir 'soc/ti/pcie'
 	dir 'boris'
-	dir 'gb-beagleplay'
+	#dir 'gb-beagleplay'
 }
 
 ###

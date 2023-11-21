@@ -1,28 +1,28 @@
-From bdc773f59deea5abf920c650678c7d61231a412b Mon Sep 17 00:00:00 2001
+From 267ed0acab79994c883045ceb09a4bd20cde90bb Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Thu, 7 Sep 2023 21:23:58 -0500
+Date: Tue, 21 Nov 2023 15:01:52 -0600
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.3.x
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/61693ff04386e94e963fd006ff7696be959d3864
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/feb46b23451598c0fe18117acdfb000da245e030
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
- .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 758 ++++++++++++++++++
+ .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 764 ++++++++++++++++++
  .../arm64/boot/dts/ti/k3-am62x-sk-common.dtsi | 351 ++++++++
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |  53 ++
  include/dt-bindings/pinctrl/omap.h            |   8 +-
- 4 files changed, 1168 insertions(+), 2 deletions(-)
+ 4 files changed, 1174 insertions(+), 2 deletions(-)
  create mode 100644 arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
  create mode 100644 arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi
  create mode 100644 arch/arm64/boot/dts/ti/k3-pinctrl.h
 
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 new file mode 100644
-index 000000000000..cb46c38ce2cc
+index 000000000000..2d552c2d0479
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
-@@ -0,0 +1,758 @@
+@@ -0,0 +1,764 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * https://beagleplay.org/
@@ -39,7 +39,7 @@ index 000000000000..cb46c38ce2cc
 +#include "k3-am625.dtsi"
 +
 +/ {
-+	compatible =  "beagle,am625-beagleplay", "ti,am625";
++	compatible = "beagle,am625-beagleplay", "ti,am625";
 +	model = "BeagleBoard.org BeaglePlay";
 +
 +	aliases {
@@ -68,6 +68,8 @@ index 000000000000..cb46c38ce2cc
 +
 +	chosen {
 +		stdout-path = "serial2:115200n8";
++		base_dtb = "k3-am625-beagleplay.dts";
++		base_dtb_timestamp = __TIMESTAMP__;
 +	};
 +
 +	memory@80000000 {
@@ -688,6 +690,7 @@ index 000000000000..cb46c38ce2cc
 +	pinctrl-0 = <&grove_pins_default>;
 +	clock-frequency = <100000>;
 +	status = "okay";
++	symlink = "play/grove/i2c";
 +};
 +
 +&main_i2c2 {
@@ -702,6 +705,7 @@ index 000000000000..cb46c38ce2cc
 +	pinctrl-0 = <&mikrobus_i2c_pins_default>;
 +	clock-frequency = <400000>;
 +	status = "okay";
++	symlink = "play/mikrobus/i2c";
 +};
 +
 +&main_spi2 {
@@ -774,12 +778,14 @@ index 000000000000..cb46c38ce2cc
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&mikrobus_uart_pins_default>;
 +	status = "okay";
++	symlink = "play/mikrobus/uart";
 +};
 +
 +&main_uart6 {
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&wifi_debug_uart_pins_default>;
 +	status = "okay";
++	symlink = "play/cc1352/uart";
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi b/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi
 new file mode 100644
