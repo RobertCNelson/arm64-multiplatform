@@ -11,6 +11,7 @@ build:
     - docker-amd64
   stage: build
   script:
+    - sed -i -e 's:gcc_13_aarch64:gcc_13_aarch64:g' version.sh
     - . version.sh && echo $BRANCH
     - mkdir -p /root/.cache/ccache/ || true
     - ccache -s
@@ -29,4 +30,3 @@ build:
     name: "$CI_PROJECT_NAME-v6.6.x-arm64-k3-$CI_JOB_ID"
     paths:
       - "deploy/linux-image-*.deb"
-

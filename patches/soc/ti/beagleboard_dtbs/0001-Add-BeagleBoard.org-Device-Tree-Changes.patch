@@ -1,6 +1,6 @@
-From d78dcb75b94402cb286cab95b3b7e02ca93eb3d1 Mon Sep 17 00:00:00 2001
+From d4f4a988340f9c6214e33a49e38f9db2b972eff5 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Wed, 1 Nov 2023 14:23:10 -0500
+Date: Tue, 21 Nov 2023 17:05:23 -0600
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.6.x
@@ -8,10 +8,10 @@ https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.6.x
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/cd088547d3ce223679ed7967a36e49e2411e6f17
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
- arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  9 +++++++
- .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 27 +++++++++++++++++--
- .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |  8 ++++++
- 3 files changed, 42 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  9 ++++++
+ .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 29 +++++++++++++++++--
+ .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |  8 +++++
+ 3 files changed, 43 insertions(+), 3 deletions(-)
 
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
 index 284b90c94da8..df5e6a944016 100644
@@ -32,7 +32,7 @@ index 284b90c94da8..df5e6a944016 100644
 +	};
  };
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
-index 7cfdf562b53b..30361f0a44d9 100644
+index 2de74428a8bd..30361f0a44d9 100644
 --- a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 @@ -43,6 +43,8 @@ aliases {
@@ -44,6 +44,15 @@ index 7cfdf562b53b..30361f0a44d9 100644
  	};
  
  	memory@80000000 {
+@@ -58,7 +60,7 @@ reserved-memory {
+ 
+ 		ramoops: ramoops@9ca00000 {
+ 			compatible = "ramoops";
+-			reg = <0x00 0x9ca00000 0x00 0x00100000>;
++			reg = <0x00 0x9c700000 0x00 0x00100000>;
+ 			record-size = <0x8000>;
+ 			console-size = <0x8000>;
+ 			ftrace-size = <0x00>;
 @@ -149,6 +151,7 @@ leds {
  		compatible = "gpio-leds";
  

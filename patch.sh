@@ -269,7 +269,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.199"
+	backport_tag="v5.10.201"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -287,9 +287,6 @@ backports () {
 }
 
 drivers () {
-	#https://github.com/raspberrypi/linux/branches
-	#exit 2
-	#dir 'RPi'
 	dir 'soc/ti/pcie'
 	dir 'boris'
 	#git revert --no-edit -s fa8391ad68c16716e2c06ada397e99ceed2fb647
@@ -304,7 +301,6 @@ drivers () {
 	#https://gitlab.freedesktop.org/frankbinns/powervr/-/tree/powervr-next
 	#git clone -b powervr-next https://gitlab.freedesktop.org/frankbinns/powervr.git --reference ~/linux-src/ --depth=100
 	dir 'powervr_v7'
-	dir 'fixes'
 	dir 'greybus_beagleplay_v9'
 	#https://github.com/sukrutb/linux/commits/beaglePlay_adc102s051_support
 	dir 'adc128s052'
@@ -318,7 +314,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.5.9"
+		backport_tag="v6.6.2"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
