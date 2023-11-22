@@ -1,7 +1,7 @@
 image: robertcnelson/debian-bookworm-slim-ti-linux-kernel-dev:latest
 
 cache:
-  key: "$CI_PROJECT_NAME-v6.6.x-arm64-k3"
+  key: "$CI_PROJECT_NAME-v6.7.x-arm64-k3"
   paths:
     - dl/*.tar.xz
     - ccache.tar.gz
@@ -11,6 +11,7 @@ build:
     - docker-amd64
   stage: build
   script:
+    - sed -i -e 's:gcc_13_aarch64:gcc_13_aarch64:g' version.sh
     - . version.sh && echo $BRANCH
     - mkdir -p /root/.cache/ccache/ || true
     - ccache -s
@@ -26,7 +27,6 @@ build:
     - tar -cf ccache.tar.gz /root/.cache/ccache/
   artifacts:
     expire_in: 28 days
-    name: "$CI_PROJECT_NAME-v6.6.x-arm64-k3-$CI_JOB_ID"
+    name: "$CI_PROJECT_NAME-v6.7.x-arm64-k3-$CI_JOB_ID"
     paths:
       - "deploy/linux-image-*.deb"
-
