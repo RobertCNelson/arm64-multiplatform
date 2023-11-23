@@ -1,4 +1,4 @@
-From db896eb61f6d326787015160455ec2d026347c98 Mon Sep 17 00:00:00 2001
+From a54ddc3f58ffed6573d948aeac5945b65b639d85 Mon Sep 17 00:00:00 2001
 From: Ayush Singh <ayushdevel1325@gmail.com>
 Date: Tue, 17 Oct 2023 15:41:12 +0530
 Subject: [PATCH 1/2] dt-bindings: net: Add ti,cc1352p7
@@ -13,6 +13,8 @@ well as their discovery.
 Signed-off-by: Ayush Singh <ayushdevel1325@gmail.com>
 Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Reviewed-by: Nishanth Menon <nm@ti.com>
+Link: https://lore.kernel.org/r/20231017101116.178041-2-ayushdevel1325@gmail.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
  .../devicetree/bindings/net/ti,cc1352p7.yaml  | 51 +++++++++++++++++++
  MAINTAINERS                                   |  6 +++
@@ -77,10 +79,10 @@ index 000000000000..3dde10de4630
 +      };
 +    };
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 05f431642b5a..d0c8a77962d3 100644
+index dd5de540ec0b..96f881f1c5f9 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -8846,6 +8846,12 @@ F:	drivers/staging/greybus/sdio.c
+@@ -8988,6 +8988,12 @@ F:	drivers/staging/greybus/sdio.c
  F:	drivers/staging/greybus/spi.c
  F:	drivers/staging/greybus/spilib.c
  

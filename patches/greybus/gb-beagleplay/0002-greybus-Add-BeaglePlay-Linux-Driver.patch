@@ -1,4 +1,4 @@
-From d7ddd941eff855b1966ba0a8a102e041c9e39d97 Mon Sep 17 00:00:00 2001
+From 0f1c735eb21bbd302ae332beec4f2394783684c0 Mon Sep 17 00:00:00 2001
 From: Ayush Singh <ayushdevel1325@gmail.com>
 Date: Tue, 17 Oct 2023 15:41:13 +0530
 Subject: [PATCH 2/2] greybus: Add BeaglePlay Linux Driver
@@ -22,6 +22,8 @@ This driver is responsible for the following:
 - Stop SVC (CC1352) on driver load.
 
 Signed-off-by: Ayush Singh <ayushdevel1325@gmail.com>
+Link: https://lore.kernel.org/r/20231017101116.178041-3-ayushdevel1325@gmail.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
  MAINTAINERS                     |   1 +
  drivers/greybus/Kconfig         |  10 +
@@ -31,7 +33,7 @@ Signed-off-by: Ayush Singh <ayushdevel1325@gmail.com>
  create mode 100644 drivers/greybus/gb-beagleplay.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index a6c6033532c4..138bc6ce8739 100644
+index 96f881f1c5f9..4ad3719f1488 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
 @@ -8993,6 +8993,7 @@ M:	Ayush Singh <ayushdevel1325@gmail.com>
