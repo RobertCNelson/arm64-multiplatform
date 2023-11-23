@@ -1,23 +1,23 @@
-From d78dcb75b94402cb286cab95b3b7e02ca93eb3d1 Mon Sep 17 00:00:00 2001
+From 4417d24a8dd92f191fde462f34e3aa4c20457470 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Wed, 1 Nov 2023 14:23:10 -0500
+Date: Wed, 22 Nov 2023 19:07:16 -0600
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.6.x
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.7.x
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/cd088547d3ce223679ed7967a36e49e2411e6f17
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/0ab34fe5298004c46cf57161e846fa2ee1513874
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
- arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  9 +++++++
- .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 27 +++++++++++++++++--
- .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |  8 ++++++
- 3 files changed, 42 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  9 ++++++++
+ .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 21 +++++++++++++++++--
+ .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |  8 +++++++
+ 3 files changed, 36 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
-index 284b90c94da8..df5e6a944016 100644
+index e5c64c86d1d5..4338fd8ab2d7 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
-@@ -955,4 +955,13 @@ mcasp2: audio-controller@2b20000 {
+@@ -965,4 +965,13 @@ mcasp2: audio-controller@2b20000 {
  		power-domains = <&k3_pds 192 TI_SCI_PD_EXCLUSIVE>;
  		status = "disabled";
  	};
@@ -32,7 +32,7 @@ index 284b90c94da8..df5e6a944016 100644
 +	};
  };
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
-index 7cfdf562b53b..30361f0a44d9 100644
+index 9a6bd0a3c94f..8c85b5d1c010 100644
 --- a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 @@ -43,6 +43,8 @@ aliases {
@@ -44,18 +44,18 @@ index 7cfdf562b53b..30361f0a44d9 100644
  	};
  
  	memory@80000000 {
-@@ -149,6 +151,7 @@ leds {
- 		compatible = "gpio-leds";
+@@ -156,6 +158,7 @@ leds {
  
  		led-0 {
+ 			bootph-all;
 +			label = "beaglebone:green:usr0";
  			gpios = <&main_gpio0 3 GPIO_ACTIVE_HIGH>;
  			linux,default-trigger = "heartbeat";
  			function = LED_FUNCTION_HEARTBEAT;
-@@ -156,24 +159,31 @@ led-0 {
- 		};
+@@ -164,27 +167,34 @@ led-0 {
  
  		led-1 {
+ 			bootph-all;
 +			label = "beaglebone:green:usr1";
  			gpios = <&main_gpio0 4 GPIO_ACTIVE_HIGH>;
 -			linux,default-trigger = "disk-activity";
@@ -65,6 +65,7 @@ index 7cfdf562b53b..30361f0a44d9 100644
  		};
  
  		led-2 {
+ 			bootph-all;
 +			label = "beaglebone:green:usr2";
  			gpios = <&main_gpio0 5 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "cpu";
@@ -72,6 +73,7 @@ index 7cfdf562b53b..30361f0a44d9 100644
  		};
  
  		led-3 {
+ 			bootph-all;
 +			label = "beaglebone:green:usr3";
  			gpios = <&main_gpio0 6 GPIO_ACTIVE_HIGH>;
 -			function = LED_FUNCTION_LAN;
@@ -80,13 +82,14 @@ index 7cfdf562b53b..30361f0a44d9 100644
  		};
  
  		led-4 {
+ 			bootph-all;
 +			label = "beaglebone:green:usr4";
  			gpios = <&main_gpio0 9 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "phy0tx";
  			function = LED_FUNCTION_WLAN;
  		};
  	};
-@@ -544,6 +554,7 @@ &wkup_i2c0 {
+@@ -563,6 +573,7 @@ &wkup_i2c0 {
  	pinctrl-0 = <&i2c_csi_pins_default>;
  	clock-frequency = <400000>;
  	/* Enable with overlay for camera sensor */
@@ -94,7 +97,7 @@ index 7cfdf562b53b..30361f0a44d9 100644
  };
  
  &mcu_i2c0 {
-@@ -551,6 +562,7 @@ &mcu_i2c0 {
+@@ -570,6 +581,7 @@ &mcu_i2c0 {
  	pinctrl-0 = <&i2c_qwiic_pins_default>;
  	clock-frequency = <100000>;
  	status = "okay";
@@ -102,7 +105,7 @@ index 7cfdf562b53b..30361f0a44d9 100644
  };
  
  &usbss0 {
-@@ -742,6 +754,7 @@ &main_i2c1 {
+@@ -765,6 +777,7 @@ &main_i2c1 {
  	pinctrl-0 = <&grove_pins_default>;
  	clock-frequency = <100000>;
  	status = "okay";
@@ -110,7 +113,7 @@ index 7cfdf562b53b..30361f0a44d9 100644
  };
  
  &main_i2c2 {
-@@ -792,12 +805,14 @@ &main_i2c3 {
+@@ -815,12 +828,14 @@ &main_i2c3 {
  	pinctrl-0 = <&mikrobus_i2c_pins_default>;
  	clock-frequency = <400000>;
  	status = "okay";
@@ -125,7 +128,7 @@ index 7cfdf562b53b..30361f0a44d9 100644
  };
  
  &sdhci0 {
-@@ -864,12 +879,20 @@ &main_uart5 {
+@@ -890,12 +905,14 @@ &main_uart5 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&mikrobus_uart_pins_default>;
  	status = "okay";
@@ -137,15 +140,9 @@ index 7cfdf562b53b..30361f0a44d9 100644
  	pinctrl-0 = <&wifi_debug_uart_pins_default>;
  	status = "okay";
 +	symlink = "play/cc1352/uart";
-+
-+	mcu {
-+		compatible = "ti,cc1352p7";
-+		reset-gpios = <&main_gpio0 72 GPIO_ACTIVE_LOW>;
-+		vdds-supply = <&vdd_3v3>;
-+	};
- };
  
- &dss {
+ 	mcu {
+ 		compatible = "ti,cc1352p7";
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
 index 2f954729f353..301cd529413d 100644
 --- a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
