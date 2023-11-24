@@ -208,10 +208,11 @@ beagleboard_dtbs () {
 		rm -rf arch/arm/boot/dts/ti/omap/overlays/ || true
 		rm -rf arch/arm64/boot/dts/ti/overlays/ || true
 
-		mkdir -p arch/arm/boot/dts/ti/omap/overlays/
-		mkdir -p arch/arm64/boot/dts/ti/overlays/
-		cp -vr ../${work_dir}/src/arm/ti/omap/* arch/arm/boot/dts/ti/omap/
-		cp -vr ../${work_dir}/src/arm64/ti/* arch/arm64/boot/dts/ti/
+		cp -v ../${work_dir}/src/arm/ti/omap/*.dts arch/arm/boot/dts/ti/omap/
+		cp -v ../${work_dir}/src/arm/ti/omap/*.dtsi arch/arm/boot/dts/ti/omap/
+		cp -v ../${work_dir}/src/arm64/ti/*.dts arch/arm64/boot/dts/ti/
+		cp -v ../${work_dir}/src/arm64/ti/*.dtsi arch/arm64/boot/dts/ti/
+		cp -v ../${work_dir}/src/arm64/ti/*.h arch/arm64/boot/dts/ti/
 		cp -vr ../${work_dir}/include/dt-bindings/* ./include/dt-bindings/
 
 		${git_bin} add -f arch/arm/boot/dts/
@@ -247,6 +248,17 @@ wireless_regdb
 beagleboard_dtbs
 #local_patch
 
+pre_backports_next () {
+	echo "dir: backports/${subsystem}"
+
+	cd ~/linux-next/
+	${git_bin} fetch --tags
+	if [ ! "x${backport_tag_next}" = "x" ] ; then
+		${git_bin} checkout ${backport_tag_next} -f
+	fi
+	cd -
+}
+
 pre_backports () {
 	echo "dir: backports/${subsystem}"
 
@@ -255,15 +267,30 @@ pre_backports () {
 	${git_bin} pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git master --tags
 	${git_bin} pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master --tags
 	if [ ! "x${backport_tag}" = "x" ] ; then
-		${git_bin} checkout ${backport_tag} -b tmp
+		${git_bin} checkout ${backport_tag} -f
 	fi
 	cd -
+}
+
+post_backports_next () {
+	if [ ! "x${backport_tag_next}" = "x" ] ; then
+		cd ~/linux-next/
+		${git_bin} checkout master -f
+		cd -
+	fi
+
+	${git_bin} add .
+	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag_next}" -s
+	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
+		mkdir -p ../patches/backports/${subsystem}/
+	fi
+	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
 }
 
 post_backports () {
 	if [ ! "x${backport_tag}" = "x" ] ; then
 		cd ~/linux-src/
-		${git_bin} checkout master -f ; ${git_bin} branch -D tmp
+		${git_bin} checkout master -f
 		cd -
 	fi
 
@@ -297,11 +324,29 @@ backports () {
 		patch_backports
 		dir 'drivers/ti/uio'
 	fi
+
+	backport_tag_next="next-20231123"
+
+	subsystem="gpu"
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		pre_backports_next
+
+		rsync -av ~/linux-next/drivers/gpu/* ./drivers/gpu/ --delete
+		rsync -av ~/linux-next/include/drm/* ./include/drm/ --delete
+		rsync -av ~/linux-next/include/uapi/drm/* ./include/uapi/drm/ --delete
+
+		post_backports_next
+		exit 2
+	else
+		patch_backports
+	fi
 }
 
 drivers () {
 	dir 'soc/ti/pcie'
 	dir 'boris'
+	dir 'drivers/imagination'
 }
 
 ###
