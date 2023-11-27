@@ -347,6 +347,7 @@ drivers () {
 	dir 'soc/ti/pcie'
 	dir 'boris'
 	#dir 'drivers/imagination'
+	${git} "${DIR}/patches/drivers/imagination/0001-sizes.h-Add-entries-between-SZ_32G-and-SZ_64T.patch"
 }
 
 ###
