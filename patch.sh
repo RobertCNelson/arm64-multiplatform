@@ -335,6 +335,7 @@ backports () {
 		rsync -av ~/linux-next/drivers/gpu/* ./drivers/gpu/ --delete
 		rsync -av ~/linux-next/include/drm/* ./include/drm/ --delete
 		rsync -av ~/linux-next/include/uapi/drm/* ./include/uapi/drm/ --delete
+		cp -v ~/linux-next/include/linux/eventfd.h ./include/linux/eventfd.h
 
 		post_backports_next
 		exit 2

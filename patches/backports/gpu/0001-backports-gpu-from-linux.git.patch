@@ -1,6 +1,6 @@
-From 5d18ef54e921d96f8763e0025ca4ab49d4b1a5c9 Mon Sep 17 00:00:00 2001
+From 0f4d6a57f9926f0af14650a594d80cf76b3235db Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 27 Nov 2023 12:32:39 -0600
+Date: Mon, 27 Nov 2023 13:23:49 -0600
 Subject: [PATCH] backports: gpu: from: linux.git
 
 Reference: next-20231127
@@ -447,6 +447,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  include/drm/drm_mipi_dbi.h                    |    4 +-
  include/drm/drm_print.h                       |    2 +-
  include/drm/gpu_scheduler.h                   |   50 +-
+ include/linux/eventfd.h                       |   17 +-
  include/uapi/drm/drm.h                        |   30 +-
  include/uapi/drm/drm_mode.h                   |   19 +
  include/uapi/drm/ivpu_accel.h                 |    2 +-
@@ -455,7 +456,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  include/uapi/drm/qaic_accel.h                 |    5 +-
  include/uapi/drm/v3d_drm.h                    |    5 +
  include/uapi/drm/virtgpu_drm.h                |    2 +
- 449 files changed, 44506 insertions(+), 6515 deletions(-)
+ 450 files changed, 44513 insertions(+), 6525 deletions(-)
  create mode 100644 drivers/gpu/drm/amd/amdgpu/amdgpu_seq64.c
  create mode 100644 drivers/gpu/drm/amd/amdgpu/amdgpu_seq64.h
  delete mode 100644 drivers/gpu/drm/amd/display/dc/dce100/Makefile
@@ -63244,6 +63245,48 @@ index d2fb81e34174..9a50348bd5c0 100644
  void drm_sched_stop(struct drm_gpu_scheduler *sched, struct drm_sched_job *bad);
  void drm_sched_start(struct drm_gpu_scheduler *sched, bool full_recovery);
  void drm_sched_resubmit_jobs(struct drm_gpu_scheduler *sched);
+diff --git a/include/linux/eventfd.h b/include/linux/eventfd.h
+index b9d83652c097..e32bee4345fb 100644
+--- a/include/linux/eventfd.h
++++ b/include/linux/eventfd.h
+@@ -35,8 +35,7 @@ void eventfd_ctx_put(struct eventfd_ctx *ctx);
+ struct file *eventfd_fget(int fd);
+ struct eventfd_ctx *eventfd_ctx_fdget(int fd);
+ struct eventfd_ctx *eventfd_ctx_fileget(struct file *file);
+-__u64 eventfd_signal(struct eventfd_ctx *ctx, __u64 n);
+-__u64 eventfd_signal_mask(struct eventfd_ctx *ctx, __u64 n, __poll_t mask);
++void eventfd_signal_mask(struct eventfd_ctx *ctx, __poll_t mask);
+ int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx, wait_queue_entry_t *wait,
+ 				  __u64 *cnt);
+ void eventfd_ctx_do_read(struct eventfd_ctx *ctx, __u64 *cnt);
+@@ -58,15 +57,8 @@ static inline struct eventfd_ctx *eventfd_ctx_fdget(int fd)
+ 	return ERR_PTR(-ENOSYS);
+ }
+ 
+-static inline int eventfd_signal(struct eventfd_ctx *ctx, __u64 n)
++static inline void eventfd_signal_mask(struct eventfd_ctx *ctx, __poll_t mask)
+ {
+-	return -ENOSYS;
+-}
+-
+-static inline int eventfd_signal_mask(struct eventfd_ctx *ctx, __u64 n,
+-				      unsigned mask)
+-{
+-	return -ENOSYS;
+ }
+ 
+ static inline void eventfd_ctx_put(struct eventfd_ctx *ctx)
+@@ -92,5 +84,10 @@ static inline void eventfd_ctx_do_read(struct eventfd_ctx *ctx, __u64 *cnt)
+ 
+ #endif
+ 
++static inline void eventfd_signal(struct eventfd_ctx *ctx)
++{
++	eventfd_signal_mask(ctx, 0);
++}
++
+ #endif /* _LINUX_EVENTFD_H */
+ 
 diff --git a/include/uapi/drm/drm.h b/include/uapi/drm/drm.h
 index de723566c5ae..796de831f4a0 100644
 --- a/include/uapi/drm/drm.h
