@@ -325,7 +325,7 @@ backports () {
 		dir 'drivers/ti/uio'
 	fi
 
-	backport_tag_next="next-20231123"
+	backport_tag_next="next-20231127"
 
 	subsystem="gpu"
 	#regenerate="enable"
@@ -346,7 +346,7 @@ backports () {
 drivers () {
 	dir 'soc/ti/pcie'
 	dir 'boris'
-	dir 'drivers/imagination'
+	#dir 'drivers/imagination'
 }
 
 ###
