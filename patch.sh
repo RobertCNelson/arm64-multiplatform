@@ -339,8 +339,8 @@ backports () {
 
 		post_backports_next
 		exit 2
-	else
-		patch_backports
+	#else
+	#	patch_backports
 	fi
 }
 
@@ -348,7 +348,7 @@ drivers () {
 	dir 'soc/ti/pcie'
 	dir 'boris'
 	#dir 'drivers/imagination'
-	${git} "${DIR}/patches/drivers/imagination/0001-sizes.h-Add-entries-between-SZ_32G-and-SZ_64T.patch"
+	#${git} "${DIR}/patches/drivers/imagination/0001-sizes.h-Add-entries-between-SZ_32G-and-SZ_64T.patch"
 }
 
 ###
