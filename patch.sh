@@ -309,7 +309,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.201"
+	backport_tag="v5.10.202"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -325,7 +325,7 @@ backports () {
 		dir 'drivers/ti/uio'
 	fi
 
-	backport_tag_next="next-20231127"
+	backport_tag_next="next-20231204"
 
 	subsystem="gpu"
 	#regenerate="enable"
@@ -335,12 +335,12 @@ backports () {
 		rsync -av ~/linux-next/drivers/gpu/* ./drivers/gpu/ --delete
 		rsync -av ~/linux-next/include/drm/* ./include/drm/ --delete
 		rsync -av ~/linux-next/include/uapi/drm/* ./include/uapi/drm/ --delete
-		cp -v ~/linux-next/include/linux/eventfd.h ./include/linux/eventfd.h
+		#cp -v ~/linux-next/include/linux/eventfd.h ./include/linux/eventfd.h
 
 		post_backports_next
 		exit 2
-	#else
-	#	patch_backports
+	else
+		patch_backports
 	fi
 }
 
@@ -359,7 +359,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.6.2"
+		backport_tag="v6.6.4"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
