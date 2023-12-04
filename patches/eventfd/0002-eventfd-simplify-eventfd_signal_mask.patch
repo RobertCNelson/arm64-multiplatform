@@ -1,0 +1,101 @@
+From 2cbfc60ffb546f40190984d52c197b084a375e91 Mon Sep 17 00:00:00 2001
+From: Christian Brauner <brauner@kernel.org>
+Date: Wed, 22 Nov 2023 13:48:24 +0100
+Subject: [PATCH 2/3] eventfd: simplify eventfd_signal_mask()
+
+The eventfd_signal_mask() helper was introduced for io_uring and similar
+to eventfd_signal() it always passed 1 for @n. So don't bother with that
+argument at all.
+
+Link: https://lore.kernel.org/r/20231122-vfs-eventfd-signal-v2-3-bd549b14ce0c@kernel.org
+Reviewed-by: Jan Kara <jack@suse.cz>
+Reviewed-by: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Christian Brauner <brauner@kernel.org>
+---
+ fs/eventfd.c            | 7 ++++---
+ include/linux/eventfd.h | 5 ++---
+ io_uring/io_uring.c     | 4 ++--
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/fs/eventfd.c b/fs/eventfd.c
+index d2f7d2d8a351..41109ba6bbe0 100644
+--- a/fs/eventfd.c
++++ b/fs/eventfd.c
+@@ -43,9 +43,10 @@ struct eventfd_ctx {
+ 	int id;
+ };
+ 
+-__u64 eventfd_signal_mask(struct eventfd_ctx *ctx, __u64 n, __poll_t mask)
++__u64 eventfd_signal_mask(struct eventfd_ctx *ctx, __poll_t mask)
+ {
+ 	unsigned long flags;
++	__u64 n = 1;
+ 
+ 	/*
+ 	 * Deadlock or stack overflow issues can happen if we recurse here
+@@ -68,7 +69,7 @@ __u64 eventfd_signal_mask(struct eventfd_ctx *ctx, __u64 n, __poll_t mask)
+ 	current->in_eventfd = 0;
+ 	spin_unlock_irqrestore(&ctx->wqh.lock, flags);
+ 
+-	return n;
++	return n == 1;
+ }
+ 
+ /**
+@@ -84,7 +85,7 @@ __u64 eventfd_signal_mask(struct eventfd_ctx *ctx, __u64 n, __poll_t mask)
+  */
+ __u64 eventfd_signal(struct eventfd_ctx *ctx)
+ {
+-	return eventfd_signal_mask(ctx, 1, 0);
++	return eventfd_signal_mask(ctx, 0);
+ }
+ EXPORT_SYMBOL_GPL(eventfd_signal);
+ 
+diff --git a/include/linux/eventfd.h b/include/linux/eventfd.h
+index 562089431551..971943ecb2a6 100644
+--- a/include/linux/eventfd.h
++++ b/include/linux/eventfd.h
+@@ -36,7 +36,7 @@ struct file *eventfd_fget(int fd);
+ struct eventfd_ctx *eventfd_ctx_fdget(int fd);
+ struct eventfd_ctx *eventfd_ctx_fileget(struct file *file);
+ __u64 eventfd_signal(struct eventfd_ctx *ctx);
+-__u64 eventfd_signal_mask(struct eventfd_ctx *ctx, __u64 n, __poll_t mask);
++__u64 eventfd_signal_mask(struct eventfd_ctx *ctx, __poll_t mask);
+ int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx, wait_queue_entry_t *wait,
+ 				  __u64 *cnt);
+ void eventfd_ctx_do_read(struct eventfd_ctx *ctx, __u64 *cnt);
+@@ -63,8 +63,7 @@ static inline int eventfd_signal(struct eventfd_ctx *ctx)
+ 	return -ENOSYS;
+ }
+ 
+-static inline int eventfd_signal_mask(struct eventfd_ctx *ctx, __u64 n,
+-				      unsigned mask)
++static inline int eventfd_signal_mask(struct eventfd_ctx *ctx, __poll_t mask)
+ {
+ 	return -ENOSYS;
+ }
+diff --git a/io_uring/io_uring.c b/io_uring/io_uring.c
+index aba5657d287e..19067b2b1cbf 100644
+--- a/io_uring/io_uring.c
++++ b/io_uring/io_uring.c
+@@ -559,7 +559,7 @@ static void io_eventfd_ops(struct rcu_head *rcu)
+ 	int ops = atomic_xchg(&ev_fd->ops, 0);
+ 
+ 	if (ops & BIT(IO_EVENTFD_OP_SIGNAL_BIT))
+-		eventfd_signal_mask(ev_fd->cq_ev_fd, 1, EPOLL_URING_WAKE);
++		eventfd_signal_mask(ev_fd->cq_ev_fd, EPOLL_URING_WAKE);
+ 
+ 	/* IO_EVENTFD_OP_FREE_BIT may not be set here depending on callback
+ 	 * ordering in a race but if references are 0 we know we have to free
+@@ -595,7 +595,7 @@ static void io_eventfd_signal(struct io_ring_ctx *ctx)
+ 		goto out;
+ 
+ 	if (likely(eventfd_signal_allowed())) {
+-		eventfd_signal_mask(ev_fd->cq_ev_fd, 1, EPOLL_URING_WAKE);
++		eventfd_signal_mask(ev_fd->cq_ev_fd, EPOLL_URING_WAKE);
+ 	} else {
+ 		atomic_inc(&ev_fd->refs);
+ 		if (!atomic_fetch_or(BIT(IO_EVENTFD_OP_SIGNAL_BIT), &ev_fd->ops))
+-- 
+2.39.2
+

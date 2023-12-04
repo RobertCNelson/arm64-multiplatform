@@ -325,6 +325,8 @@ backports () {
 		dir 'drivers/ti/uio'
 	fi
 
+	dir 'eventfd'
+
 	backport_tag_next="next-20231204"
 
 	subsystem="gpu"
