@@ -334,10 +334,12 @@ backports () {
 	if [ "x${regenerate}" = "xenable" ] ; then
 		pre_backports_next
 
-		rsync -av ~/linux-next/drivers/gpu/* ./drivers/gpu/ --delete
 		rsync -av ~/linux-next/include/drm/* ./include/drm/ --delete
+		rsync -av ~/linux-next/include/sound/* ./include/sound/ --delete
 		rsync -av ~/linux-next/include/uapi/drm/* ./include/uapi/drm/ --delete
-		#cp -v ~/linux-next/include/linux/eventfd.h ./include/linux/eventfd.h
+		rsync -av ~/linux-next/include/uapi/sound/* ./include/uapi/sound/ --delete
+		rsync -av ~/linux-next/drivers/gpu/* ./drivers/gpu/ --delete
+		rsync -av ~/linux-next/sound/* ./sound/ --delete
 
 		post_backports_next
 		exit 2
