@@ -1,22 +1,24 @@
-From 9552548030ec9c81c6481477573b6b54eb9f7ed9 Mon Sep 17 00:00:00 2001
+From 0a1a5ed563b8f701e87cd7abb3db9022bd69f3ba Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Wed, 22 Nov 2023 19:36:36 -0600
+Date: Tue, 5 Dec 2023 17:59:51 -0600
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.6.x
 
-https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/9366bfb7ea06d8ac5f32a320eac4cdbb36e636ca
+https://git.beagleboard.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/1e6aa4f100825c5c0bd466e5048d0e732133ec3f
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  .../boot/dts/ti/omap/am335x-pocketbeagle.dts  |  57 +-
+ .../boot/dts/ti/omap/am5729-beagleboneai.dts  |   2 +-
+ arch/arm/boot/dts/ti/omap/dra7.dtsi           |   2 +-
  arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  21 +-
  arch/arm64/boot/dts/ti/k3-am62-mcu.dtsi       |   2 +
  arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi    |   2 +
  arch/arm64/boot/dts/ti/k3-am62.dtsi           |   3 +
- .../arm64/boot/dts/ti/k3-am625-beagleplay.dts |  53 +-
+ .../arm64/boot/dts/ti/k3-am625-beagleplay.dts |  56 +-
  arch/arm64/boot/dts/ti/k3-am625-sk.dts        |  27 +
- .../arm64/boot/dts/ti/k3-am62x-sk-common.dtsi |  16 +
- arch/arm64/boot/dts/ti/k3-am69-sk.dts         | 536 ++++++++++++++++++
+ .../arm64/boot/dts/ti/k3-am62x-sk-common.dtsi |  25 +
+ arch/arm64/boot/dts/ti/k3-am69-sk.dts         | 538 +++++++++++++++++-
  .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |   8 +
  arch/arm64/boot/dts/ti/k3-j721e-main.dtsi     |   2 +-
  .../boot/dts/ti/k3-j721e-mcu-wakeup.dtsi      |   9 +-
@@ -24,7 +26,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/k3-j784s4-main.dtsi    | 497 ++++++++++++++++
  .../boot/dts/ti/k3-j784s4-mcu-wakeup.dtsi     |  40 ++
  arch/arm64/boot/dts/ti/k3-serdes.h            |   2 +-
- 16 files changed, 1377 insertions(+), 15 deletions(-)
+ 18 files changed, 1391 insertions(+), 19 deletions(-)
 
 diff --git a/arch/arm/boot/dts/ti/omap/am335x-pocketbeagle.dts b/arch/arm/boot/dts/ti/omap/am335x-pocketbeagle.dts
 index 5dfe4d4bab93..78ce860e59b3 100644
@@ -155,6 +157,32 @@ index 5dfe4d4bab93..78ce860e59b3 100644
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&pru1_pins>;
 +};
+diff --git a/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts b/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts
+index 9a234dc1431d..c8e55642f9c6 100644
+--- a/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts
++++ b/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts
+@@ -197,7 +197,7 @@ brcmf_pwrseq: brcmf_pwrseq {
+ 	extcon_usb1: extcon_usb1 {
+ 		compatible = "linux,extcon-usb-gpio";
+ 		ti,enable-id-detection;
+-		id-gpio = <&gpio3 13 GPIO_ACTIVE_HIGH>;
++		id-gpios = <&gpio3 13 GPIO_ACTIVE_HIGH>;
+ 	};
+ };
+ 
+diff --git a/arch/arm/boot/dts/ti/omap/dra7.dtsi b/arch/arm/boot/dts/ti/omap/dra7.dtsi
+index 3f3e52e3b375..6509c742fb58 100644
+--- a/arch/arm/boot/dts/ti/omap/dra7.dtsi
++++ b/arch/arm/boot/dts/ti/omap/dra7.dtsi
+@@ -147,7 +147,7 @@ ocp: ocp {
+ 
+ 		l3-noc@44000000 {
+ 			compatible = "ti,dra7-l3-noc";
+-			reg = <0x44000000 0x1000>,
++			reg = <0x44000000 0x1000000>,
+ 			      <0x45000000 0x1000>;
+ 			interrupts-extended = <&crossbar_mpu GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>,
+ 					      <&wakeupgen GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>;
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
 index 284b90c94da8..4338fd8ab2d7 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62-main.dtsi
@@ -319,7 +347,7 @@ index 11f14eef2d44..f1e15206e1ce 100644
  			#address-cells = <2>;
  			#size-cells = <2>;
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
-index 2de74428a8bd..8c85b5d1c010 100644
+index 2de74428a8bd..25d97e3fab99 100644
 --- a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 @@ -43,9 +43,12 @@ aliases {
@@ -351,7 +379,17 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		compatible = "regulator-fixed";
  		regulator-name = "vdd_3v3";
  		regulator-min-microvolt = <3300000>;
-@@ -118,6 +123,7 @@ wlan_en: regulator-3 {
+@@ -109,7 +114,8 @@ wlan_en: regulator-3 {
+ 		regulator-min-microvolt = <1800000>;
+ 		regulator-max-microvolt = <1800000>;
+ 		enable-active-high;
+-		regulator-always-on;
++		/* regulator-always-on; */
++		regulator-off-in-suspend;
+ 		vin-supply = <&vdd_3v3>;
+ 		gpio = <&main_gpio0 38 GPIO_ACTIVE_HIGH>;
+ 		pinctrl-names = "default";
+@@ -118,6 +124,7 @@ wlan_en: regulator-3 {
  
  	vdd_3v3_sd: regulator-4 {
  		/* output of TPS22918DBVR-U21 */
@@ -359,7 +397,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		pinctrl-names = "default";
  		pinctrl-0 = <&vdd_3v3_sd_pins_default>;
  
-@@ -132,6 +138,7 @@ vdd_3v3_sd: regulator-4 {
+@@ -132,6 +139,7 @@ vdd_3v3_sd: regulator-4 {
  	};
  
  	vdd_sd_dv: regulator-5 {
@@ -367,7 +405,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		compatible = "regulator-gpio";
  		regulator-name = "sd_hs200_switch";
  		pinctrl-names = "default";
-@@ -146,9 +153,12 @@ vdd_sd_dv: regulator-5 {
+@@ -146,9 +154,12 @@ vdd_sd_dv: regulator-5 {
  	};
  
  	leds {
@@ -380,7 +418,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  			gpios = <&main_gpio0 3 GPIO_ACTIVE_HIGH>;
  			linux,default-trigger = "heartbeat";
  			function = LED_FUNCTION_HEARTBEAT;
-@@ -156,24 +166,35 @@ led-0 {
+@@ -156,24 +167,35 @@ led-0 {
  		};
  
  		led-1 {
@@ -418,7 +456,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  			function = LED_FUNCTION_WLAN;
  		};
  	};
-@@ -245,6 +266,7 @@ cpsw3g_phy1: ethernet-phy@1 {
+@@ -245,6 +267,7 @@ cpsw3g_phy1: ethernet-phy@1 {
  
  &main_pmx0 {
  	gpio0_pins_default: gpio0-default-pins {
@@ -426,7 +464,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		pinctrl-single,pins = <
  			AM62X_IOPAD(0x0004, PIN_INPUT, 7) /* (G25) OSPI0_LBCLKO.GPIO0_1 */
  			AM62X_IOPAD(0x0008, PIN_INPUT, 7) /* (J24) OSPI0_DQS.GPIO0_2 */
-@@ -264,6 +286,7 @@ AM62X_IOPAD(0x00ac, PIN_INPUT, 7) /* (L21) GPMC0_CSn1.GPIO0_42 */
+@@ -264,6 +287,7 @@ AM62X_IOPAD(0x00ac, PIN_INPUT, 7) /* (L21) GPMC0_CSn1.GPIO0_42 */
  	};
  
  	vdd_sd_dv_pins_default: vdd-sd-default-pins {
@@ -434,7 +472,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		pinctrl-single,pins = <
  			AM62X_IOPAD(0x0244, PIN_OUTPUT, 7) /* (C17) MMC1_SDWP.GPIO1_49 */
  		>;
-@@ -283,6 +306,7 @@ AM62X_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A17) I2C1_SDA */
+@@ -283,6 +307,7 @@ AM62X_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A17) I2C1_SDA */
  	};
  
  	local_i2c_pins_default: local-i2c-default-pins {
@@ -442,7 +480,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		pinctrl-single,pins = <
  			AM62X_IOPAD(0x01e0, PIN_INPUT_PULLUP, 0) /* (B16) I2C0_SCL */
  			AM62X_IOPAD(0x01e4, PIN_INPUT_PULLUP, 0) /* (A16) I2C0_SDA */
-@@ -321,6 +345,7 @@ AM62X_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AD19) RGMII1_TX_CTL */
+@@ -321,6 +346,7 @@ AM62X_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AD19) RGMII1_TX_CTL */
  	};
  
  	emmc_pins_default: emmc-default-pins {
@@ -450,7 +488,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		pinctrl-single,pins = <
  			AM62X_IOPAD(0x0220, PIN_INPUT, 0) /* (Y3) MMC0_CMD */
  			AM62X_IOPAD(0x0218, PIN_INPUT, 0) /* (AB1) MMC0_CLK */
-@@ -336,12 +361,14 @@ AM62X_IOPAD(0x01f8, PIN_INPUT, 0) /* (AC2) MMC0_DAT7 */
+@@ -336,12 +362,14 @@ AM62X_IOPAD(0x01f8, PIN_INPUT, 0) /* (AC2) MMC0_DAT7 */
  	};
  
  	vdd_3v3_sd_pins_default: vdd-3v3-sd-default-pins {
@@ -465,7 +503,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		pinctrl-single,pins = <
  			AM62X_IOPAD(0x023c, PIN_INPUT, 0) /* (A21) MMC1_CMD */
  			AM62X_IOPAD(0x0234, PIN_INPUT, 0) /* (B22) MMC1_CLK */
-@@ -418,6 +445,7 @@ AM62X_IOPAD(0x0198, PIN_INPUT, 1) /* (A19) MCASP0_AXR2.SPI2_D1 */
+@@ -418,6 +446,7 @@ AM62X_IOPAD(0x0198, PIN_INPUT, 1) /* (A19) MCASP0_AXR2.SPI2_D1 */
  	};
  
  	mikrobus_gpio_pins_default: mikrobus-gpio-default-pins {
@@ -473,7 +511,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		pinctrl-single,pins = <
  			AM62X_IOPAD(0x019c, PIN_INPUT, 7) /* (B18) MCASP0_AXR1.GPIO1_9 */
  			AM62X_IOPAD(0x01a0, PIN_INPUT, 7) /* (E18) MCASP0_AXR0.GPIO1_10 */
-@@ -426,6 +454,7 @@ AM62X_IOPAD(0x01a8, PIN_INPUT, 7) /* (D20) MCASP0_AFSX.GPIO1_12 */
+@@ -426,6 +455,7 @@ AM62X_IOPAD(0x01a8, PIN_INPUT, 7) /* (D20) MCASP0_AFSX.GPIO1_12 */
  	};
  
  	console_pins_default: console-default-pins {
@@ -481,7 +519,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		pinctrl-single,pins = <
  			AM62X_IOPAD(0x01c8, PIN_INPUT, 0) /* (D14) UART0_RXD */
  			AM62X_IOPAD(0x01cc, PIN_OUTPUT, 0) /* (E14) UART0_TXD */
-@@ -544,6 +573,7 @@ &wkup_i2c0 {
+@@ -544,6 +574,7 @@ &wkup_i2c0 {
  	pinctrl-0 = <&i2c_csi_pins_default>;
  	clock-frequency = <400000>;
  	/* Enable with overlay for camera sensor */
@@ -489,7 +527,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  };
  
  &mcu_i2c0 {
-@@ -551,6 +581,7 @@ &mcu_i2c0 {
+@@ -551,6 +582,7 @@ &mcu_i2c0 {
  	pinctrl-0 = <&i2c_qwiic_pins_default>;
  	clock-frequency = <100000>;
  	status = "okay";
@@ -497,7 +535,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  };
  
  &usbss0 {
-@@ -597,6 +628,7 @@ &cpsw3g_mdio {
+@@ -597,6 +629,7 @@ &cpsw3g_mdio {
  };
  
  &main_gpio0 {
@@ -505,7 +543,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  	pinctrl-names = "default";
  	pinctrl-0 = <&gpio0_pins_default>;
  	gpio-line-names = "BL_EN_3V3", "SPE_PO_EN", "RTC_INT",	/* 0-2 */
-@@ -616,6 +648,7 @@ &main_gpio0 {
+@@ -616,6 +649,7 @@ &main_gpio0 {
  };
  
  &main_gpio1 {
@@ -513,7 +551,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  	pinctrl-names = "default";
  	pinctrl-0 = <&mikrobus_gpio_pins_default>;
  	gpio-line-names = "", "", "", "", "",			/* 0-4 */
-@@ -633,6 +666,7 @@ &main_gpio1 {
+@@ -633,6 +667,7 @@ &main_gpio1 {
  };
  
  &main_i2c0 {
@@ -521,7 +559,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  	pinctrl-names = "default";
  	pinctrl-0 = <&local_i2c_pins_default>;
  	clock-frequency = <400000>;
-@@ -651,6 +685,7 @@ rtc: rtc@68 {
+@@ -651,6 +686,7 @@ rtc: rtc@68 {
  	};
  
  	tps65219: pmic@30 {
@@ -529,7 +567,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  		compatible = "ti,tps65219";
  		reg = <0x30>;
  		buck1-supply = <&vsys_5v0>;
-@@ -742,6 +777,7 @@ &main_i2c1 {
+@@ -742,6 +778,7 @@ &main_i2c1 {
  	pinctrl-0 = <&grove_pins_default>;
  	clock-frequency = <100000>;
  	status = "okay";
@@ -537,7 +575,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  };
  
  &main_i2c2 {
-@@ -792,15 +828,18 @@ &main_i2c3 {
+@@ -792,15 +829,18 @@ &main_i2c3 {
  	pinctrl-0 = <&mikrobus_i2c_pins_default>;
  	clock-frequency = <400000>;
  	status = "okay";
@@ -556,7 +594,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  	pinctrl-names = "default";
  	pinctrl-0 = <&emmc_pins_default>;
  	ti,driver-strength-ohm = <50>;
-@@ -810,6 +849,7 @@ &sdhci0 {
+@@ -810,6 +850,7 @@ &sdhci0 {
  
  &sdhci1 {
  	/* SD/MMC */
@@ -564,7 +602,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  	pinctrl-names = "default";
  	pinctrl-0 = <&sd_pins_default>;
  
-@@ -850,6 +890,7 @@ wlcore: wlcore@2 {
+@@ -850,6 +891,7 @@ wlcore: wlcore@2 {
  };
  
  &main_uart0 {
@@ -572,7 +610,7 @@ index 2de74428a8bd..8c85b5d1c010 100644
  	pinctrl-names = "default";
  	pinctrl-0 = <&console_pins_default>;
  	status = "okay";
-@@ -864,12 +905,20 @@ &main_uart5 {
+@@ -864,12 +906,20 @@ &main_uart5 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&mikrobus_uart_pins_default>;
  	status = "okay";
@@ -722,7 +760,7 @@ index 7c98c1b855d1..b18092497c9a 100644
  				reg = <0x3fc0000 0x40000>;
  			};
 diff --git a/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi b/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi
-index 677ff8de4b6e..19f57ead4ebd 100644
+index 677ff8de4b6e..3b9729316739 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi
 @@ -28,6 +28,7 @@ chosen {
@@ -846,8 +884,21 @@ index 677ff8de4b6e..19f57ead4ebd 100644
  		reg = <0>;
  		ti,rx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
  		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+@@ -501,3 +517,12 @@ dpi1_out: endpoint {
+ 		};
+ 	};
+ };
++
++/* mcu_gpio0 and mcu_gpio_intr are reserved for mcu firmware usage */
++&mcu_gpio0 {
++	status = "reserved";
++};
++
++&mcu_gpio_intr {
++	status = "reserved";
++};
 diff --git a/arch/arm64/boot/dts/ti/k3-am69-sk.dts b/arch/arm64/boot/dts/ti/k3-am69-sk.dts
-index 06993709111e..9868c7049bfb 100644
+index 06993709111e..d6a7ae086244 100644
 --- a/arch/arm64/boot/dts/ti/k3-am69-sk.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am69-sk.dts
 @@ -47,6 +47,150 @@ secure_ddr: optee@9e800000 {
@@ -1249,6 +1300,15 @@ index 06993709111e..9868c7049bfb 100644
  &wkup_uart0 {
  	/* Firmware usage */
  	status = "reserved";
+@@ -307,7 +671,7 @@ exp1: gpio@21 {
+ 		reg = <0x21>;
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+-		gpio-line-names	= "BOARDID_EEPROM_WP", "CAN_STB", "GPIO_uSD_PWR_EN",
++		gpio-line-names = "BOARDID_EEPROM_WP", "CAN_STB", "GPIO_uSD_PWR_EN",
+ 				"IO_EXP_MCU_RGMII_RST#", "IO_EXP_PCIe0_4L_PERST#",
+ 				"IO_EXP_PCIe1_M.2_RTSz", "IO_EXP_PCIe3_M.2_RTSz",
+ 				"PM_INA_BUS_EN", "ENET1_EXP_PWRDN", "EXP1_ENET_RSTz",
 @@ -362,3 +726,175 @@ &mcu_cpsw_port1 {
  	phy-mode = "rgmii-rxid";
  	phy-handle = <&mcu_phy0>;

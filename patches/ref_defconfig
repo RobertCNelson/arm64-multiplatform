@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.6.2 Kernel Configuration
+# Linux/arm64 6.6.4 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 13.2.0"
 CONFIG_CC_IS_GCC=y
@@ -9328,8 +9328,6 @@ CONFIG_PHY_QCOM_USB_HS_28NM=m
 CONFIG_PHY_QCOM_USB_SS=m
 # CONFIG_PHY_QCOM_IPQ806X_USB is not set
 CONFIG_PHY_QCOM_SGMII_ETH=m
-# CONFIG_PHY_RTK_RTD_USB2PHY is not set
-# CONFIG_PHY_RTK_RTD_USB3PHY is not set
 CONFIG_PHY_R8A779F0_ETHERNET_SERDES=y
 # CONFIG_PHY_RCAR_GEN2 is not set
 CONFIG_PHY_RCAR_GEN3_PCIE=y
