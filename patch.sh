@@ -309,7 +309,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.202"
+	backport_tag="v5.10.203"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -327,7 +327,7 @@ backports () {
 
 	dir 'eventfd'
 
-	backport_tag_next="next-20231204"
+	backport_tag_next="next-20231211"
 
 	subsystem="gpu"
 	#regenerate="enable"
@@ -363,7 +363,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.6.4"
+		backport_tag="v6.6.6"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
