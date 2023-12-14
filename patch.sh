@@ -245,7 +245,7 @@ local_patch () {
 #external_git
 #rt
 wireless_regdb
-beagleboard_dtbs
+#beagleboard_dtbs
 #local_patch
 
 pre_backports_next () {
@@ -355,9 +355,14 @@ drivers () {
 	${git} "${DIR}/patches/drivers/imagination/0001-sizes.h-Add-entries-between-SZ_32G-and-SZ_64T.patch"
 }
 
+mainline () {
+	dir 'mainline'
+}
+
 ###
-backports
-drivers
+#backports
+#drivers
+mainline
 
 packaging () {
 	echo "Update: package scripts"
