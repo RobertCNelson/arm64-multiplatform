@@ -170,11 +170,11 @@ wireless_regdb () {
 }
 
 cleanup_dts_builds () {
-	rm -rf arch/arm64/boot/dts/ti/modules.order || true
-	rm -rf arch/arm64/boot/dts/ti/.*cmd || true
-	rm -rf arch/arm64/boot/dts/ti/.*tmp || true
-	rm -rf arch/arm64/boot/dts/ti/*dtb || true
-	rm -rf arch/arm64/boot/dts/ti/*dtbo || true
+	rm -rf arch/arm/boot/dts/ti/omap/*.orig || true
+}
+
+dtb_makefile_append () {
+	sed -i -e 's:am335x-boneblack.dtb \\:am335x-boneblack.dtb \\\n\t'$device' \\:g' arch/arm/boot/dts/ti/omap/Makefile
 }
 
 beagleboard_dtbs () {
@@ -205,6 +205,9 @@ beagleboard_dtbs () {
 		cp -v ../${work_dir}/src/arm64/ti/*.dtsi arch/arm64/boot/dts/ti/
 		cp -v ../${work_dir}/src/arm64/ti/*.h arch/arm64/boot/dts/ti/
 		cp -vr ../${work_dir}/include/dt-bindings/* ./include/dt-bindings/
+
+		mkdir -p arch/arm/boot/dts/ti/omap/overlays/
+		cp -vr ../${work_dir}/src/arm/overlays/* arch/arm/boot/dts/ti/omap/overlays/
 
 		${git_bin} add -f arch/arm/boot/dts/
 		${git_bin} add -f arch/arm64/boot/dts/
