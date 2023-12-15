@@ -245,7 +245,7 @@ local_patch () {
 #external_git
 #rt
 wireless_regdb
-#beagleboard_dtbs
+beagleboard_dtbs
 #local_patch
 
 pre_backports_next () {
@@ -309,7 +309,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.203"
+	backport_tag="v5.10.204"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -327,7 +327,7 @@ backports () {
 
 	dir 'eventfd'
 
-	backport_tag_next="next-20231211"
+	backport_tag_next="next-20231214"
 
 	subsystem="gpu"
 	#regenerate="enable"
@@ -340,6 +340,7 @@ backports () {
 		rsync -av ~/linux-next/include/uapi/sound/* ./include/uapi/sound/ --delete
 		rsync -av ~/linux-next/drivers/gpu/* ./drivers/gpu/ --delete
 		rsync -av ~/linux-next/sound/* ./sound/ --delete
+		cp -v ~/linux-next/include/linux/sizes.h ./include/linux/sizes.h
 
 		post_backports_next
 		exit 2
@@ -352,7 +353,6 @@ drivers () {
 	dir 'soc/ti/pcie'
 	dir 'boris'
 	#dir 'drivers/imagination'
-	${git} "${DIR}/patches/drivers/imagination/0001-sizes.h-Add-entries-between-SZ_32G-and-SZ_64T.patch"
 }
 
 mainline () {
@@ -360,15 +360,15 @@ mainline () {
 }
 
 ###
-#backports
-#drivers
-mainline
+backports
+drivers
+#mainline
 
 packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.6.6"
+		backport_tag="v6.6.7"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
