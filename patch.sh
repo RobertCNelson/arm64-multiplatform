@@ -248,6 +248,17 @@ wireless_regdb
 beagleboard_dtbs
 #local_patch
 
+pre_backports_next () {
+	echo "dir: backports/${subsystem}"
+
+	cd ~/linux-next/
+	${git_bin} fetch --tags
+	if [ ! "x${backport_tag_next}" = "x" ] ; then
+		${git_bin} checkout ${backport_tag_next} -f
+	fi
+	cd -
+}
+
 pre_backports () {
 	echo "dir: backports/${subsystem}"
 
@@ -259,6 +270,21 @@ pre_backports () {
 		${git_bin} checkout ${backport_tag} -f
 	fi
 	cd -
+}
+
+post_backports_next () {
+	if [ ! "x${backport_tag_next}" = "x" ] ; then
+		cd ~/linux-next/
+		${git_bin} checkout master -f
+		cd -
+	fi
+
+	${git_bin} add .
+	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag_next}" -s
+	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
+		mkdir -p ../patches/backports/${subsystem}/
+	fi
+	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
 }
 
 post_backports () {
@@ -283,7 +309,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.202"
+	backport_tag="v5.10.204"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -307,16 +333,16 @@ drivers () {
 	dir 'boris'
 	#git revert --no-edit -s fa8391ad68c16716e2c06ada397e99ceed2fb647
 	#exit 2
-	dir 'sched_pre'
-	dir 'sched'
+	#dir 'sched_pre'
+	#dir 'sched'
 
 	#git revert --no-edit cdf4100eaa1f4107fcf7c95b5eccca96cca6c777 -s
 	#exit 2
-	dir 'powervr_pre'
+	#dir 'powervr_pre'
 
 	#https://gitlab.freedesktop.org/frankbinns/powervr/-/tree/powervr-next
 	#git clone -b powervr-next https://gitlab.freedesktop.org/frankbinns/powervr.git --reference ~/linux-src/ --depth=100
-	dir 'powervr_v7'
+	#dir 'powervr_v7'
 	#https://github.com/sukrutb/linux/commits/beaglePlay_adc102s051_support
 	#dir 'adc128s052'
 }
@@ -329,7 +355,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.6.4"
+		backport_tag="v6.6.7"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
