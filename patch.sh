@@ -182,8 +182,12 @@ cleanup_dts_builds () {
 	rm -rf arch/arm64/boot/dts/ti/*dtbo || true
 }
 
-dtb_makefile_append () {
-	sed -i -e 's:am335x-boneblack.dtb \\:am335x-boneblack.dtb \\\n\t'$device' \\:g' arch/arm/boot/dts/ti/omap/Makefile
+arm_dtb_makefile_append () {
+	sed -i -e 's:am335x-boneblack.dtb \\:am335x-boneblack.dtb \\\n\t'$device' \\:g' arch/arm/boot/dts/Makefile
+}
+
+k3_dtb_makefile_append () {
+	echo "dtb-\$(CONFIG_ARCH_K3) += $device" >> arch/arm64/boot/dts/ti/Makefile
 }
 
 beagleboard_dtbs () {
@@ -204,7 +208,7 @@ beagleboard_dtbs () {
 
 		cd ./KERNEL/
 
-		cleanup_dts_builds
+		#cleanup_dts_builds
 		rm -rf arch/arm/boot/dts/ti/omap/overlays/ || true
 		rm -rf arch/arm64/boot/dts/ti/overlays/ || true
 
@@ -327,7 +331,7 @@ backports () {
 
 	dir 'eventfd'
 
-	backport_tag_next="next-20231214"
+	backport_tag_next="next-20231218"
 
 	subsystem="gpu"
 	#regenerate="enable"
