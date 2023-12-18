@@ -329,7 +329,7 @@ backports () {
 		dir 'drivers/ti/uio'
 	fi
 
-	dir 'eventfd'
+#	dir 'eventfd'
 
 	backport_tag_next="next-20231218"
 
