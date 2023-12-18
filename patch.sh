@@ -348,7 +348,7 @@ backports () {
 
 		post_backports_next
 		exit 2
-	else
+	#else
 		patch_backports
 	fi
 }
