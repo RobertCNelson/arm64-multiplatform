@@ -329,9 +329,9 @@ backports () {
 		dir 'drivers/ti/uio'
 	fi
 
-#	dir 'eventfd'
+	dir 'eventfd'
 
-	backport_tag_next="next-20231218"
+	backport_tag_next="next-20231219"
 
 	subsystem="gpu"
 	#regenerate="enable"
@@ -348,7 +348,7 @@ backports () {
 
 		post_backports_next
 		exit 2
-	#else
+	else
 		patch_backports
 	fi
 }
