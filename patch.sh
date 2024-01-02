@@ -313,7 +313,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.204"
+	backport_tag="v5.10.205"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -331,7 +331,7 @@ backports () {
 
 	dir 'eventfd'
 
-	backport_tag_next="next-20231219"
+	backport_tag_next="next-20240102"
 
 	subsystem="gpu"
 	#regenerate="enable"
@@ -356,7 +356,6 @@ backports () {
 drivers () {
 	dir 'soc/ti/pcie'
 	dir 'boris'
-	#dir 'drivers/imagination'
 }
 
 mainline () {
