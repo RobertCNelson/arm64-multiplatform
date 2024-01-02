@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #
-abi="6.6"
-kernel="6.6.4-1~exp1"
+abi="6.6.8"
+kernel="6.6.8-1"
 #
 
 debian_site="http://ftp.us.debian.org/debian/pool/main/l/linux"
@@ -17,7 +17,7 @@ dl_deb () {
 
 	if [ -f ./dl/linux-image-${abi}-${image}${unsigned}_${kernel}_${dpkg_arch}.deb ] ; then
 		dpkg -x ./dl/linux-image-${abi}-${image}${unsigned}_${kernel}_${dpkg_arch}.deb ./dl/tmp/
-		cp -v ./dl/tmp/boot/config-${abi}-${image} ./debian-${image}
+		cp -v ./dl/tmp/boot/config-${abi}-${image} ./debian
 		rm -rf ./dl/tmp/ || true
 	fi
 }
