@@ -283,17 +283,6 @@ wireless_regdb
 beagleboard_dtbs
 #local_patch
 
-pre_backports_next () {
-	echo "dir: backports/${subsystem}"
-
-	cd ~/linux-next/
-	${git_bin} fetch --tags
-	if [ ! "x${backport_tag_next}" = "x" ] ; then
-		${git_bin} checkout ${backport_tag_next} -f
-	fi
-	cd -
-}
-
 pre_backports () {
 	echo "dir: backports/${subsystem}"
 
@@ -302,24 +291,10 @@ pre_backports () {
 	${git_bin} pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git master --tags
 	${git_bin} pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master --tags
 	if [ ! "x${backport_tag}" = "x" ] ; then
+		echo "${git_bin} checkout ${backport_tag} -f"
 		${git_bin} checkout ${backport_tag} -f
 	fi
 	cd -
-}
-
-post_backports_next () {
-	if [ ! "x${backport_tag_next}" = "x" ] ; then
-		cd ~/linux-next/
-		${git_bin} checkout master -f
-		cd -
-	fi
-
-	${git_bin} add .
-	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag_next}" -s
-	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
-		mkdir -p ../patches/backports/${subsystem}/
-	fi
-	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
 }
 
 post_backports () {
@@ -329,7 +304,6 @@ post_backports () {
 		cd -
 	fi
 
-	rm -f arch/arm/boot/dts/overlays/*.dtbo || true
 	${git_bin} add .
 	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag}" -s
 	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
@@ -344,6 +318,7 @@ pre_rpibackports () {
 	cd ~/linux-rpi/
 	${git_bin} fetch --tags
 	if [ ! "x${backport_tag}" = "x" ] ; then
+		echo "${git_bin} checkout ${backport_tag} -f"
 		${git_bin} checkout ${backport_tag} -f
 	fi
 	cd -
@@ -388,22 +363,23 @@ backports () {
 
 	dir 'eventfd'
 
-	backport_tag_next="next-20240109"
+	backport_tag="master"
+	#052d534373b7ed33712a63d5e17b2b6cdbce84fd
 
 	subsystem="gpu"
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
-		pre_backports_next
+		pre_backports
 
-		rsync -av ~/linux-next/include/drm/* ./include/drm/ --delete
-		rsync -av ~/linux-next/include/sound/* ./include/sound/ --delete
-		rsync -av ~/linux-next/include/uapi/drm/* ./include/uapi/drm/ --delete
-		rsync -av ~/linux-next/include/uapi/sound/* ./include/uapi/sound/ --delete
-		rsync -av ~/linux-next/drivers/gpu/* ./drivers/gpu/ --delete
-		rsync -av ~/linux-next/sound/* ./sound/ --delete
-		cp -v ~/linux-next/include/linux/sizes.h ./include/linux/sizes.h
+		rsync -av ~/linux-src/include/drm/* ./include/drm/ --delete
+		rsync -av ~/linux-src/include/sound/* ./include/sound/ --delete
+		rsync -av ~/linux-src/include/uapi/drm/* ./include/uapi/drm/ --delete
+		rsync -av ~/linux-src/include/uapi/sound/* ./include/uapi/sound/ --delete
+		rsync -av ~/linux-src/drivers/gpu/* ./drivers/gpu/ --delete
+		rsync -av ~/linux-src/sound/* ./sound/ --delete
+		cp -v ~/linux-src/include/linux/sizes.h ./include/linux/sizes.h
 
-		post_backports_next
+		post_backports
 		exit 2
 	else
 		patch_backports
