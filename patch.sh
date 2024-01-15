@@ -386,8 +386,6 @@ backports () {
 		dir 'drivers/ti/uio'
 	fi
 
-	dir 'greybus/gb-beagleplay'
-
 	backport_tag="rpi-6.6.y"
 
 	subsystem="edt-ft5x06"
@@ -402,6 +400,8 @@ backports () {
 	else
 		patch_backports
 	fi
+
+	dir 'greybus/gb-beagleplay'
 }
 
 drivers () {
@@ -431,7 +431,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.6.10"
+		backport_tag="v6.6.11"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
