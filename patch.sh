@@ -208,7 +208,7 @@ k3_dtb_makefile_append () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.7.x"
+	branch="v6.8.x"
 	https_repo="https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -240,6 +240,9 @@ beagleboard_dtbs () {
 		device="AM335X-PRU-UIO-00A0" ; arm_dtbo_makefile_append
 		device="AM57XX-PRU-UIO-00A0" ; arm_dtbo_makefile_append
 		device="BB-ADC-00A0" ; arm_dtbo_makefile_append
+		device="BB-BBBW-WL1835-00A0" ; arm_dtbo_makefile_append
+		device="BB-BBGG-WL1835-00A0" ; arm_dtbo_makefile_append
+		device="BB-BBGW-WL1835-00A0" ; arm_dtbo_makefile_append
 
 		device="BB-BONE-eMMC1-01-00A0" ; arm_dtbo_makefile_append
 
@@ -345,7 +348,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.206"
+	backport_tag="v5.10.208"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -359,30 +362,6 @@ backports () {
 	else
 		patch_backports
 		dir 'drivers/ti/uio'
-	fi
-
-	dir 'eventfd'
-
-	backport_tag="master"
-	#052d534373b7ed33712a63d5e17b2b6cdbce84fd
-
-	subsystem="gpu"
-	#regenerate="enable"
-	if [ "x${regenerate}" = "xenable" ] ; then
-		pre_backports
-
-		rsync -av ~/linux-src/include/drm/* ./include/drm/ --delete
-		rsync -av ~/linux-src/include/sound/* ./include/sound/ --delete
-		rsync -av ~/linux-src/include/uapi/drm/* ./include/uapi/drm/ --delete
-		rsync -av ~/linux-src/include/uapi/sound/* ./include/uapi/sound/ --delete
-		rsync -av ~/linux-src/drivers/gpu/* ./drivers/gpu/ --delete
-		rsync -av ~/linux-src/sound/* ./sound/ --delete
-		cp -v ~/linux-src/include/linux/sizes.h ./include/linux/sizes.h
-
-		post_backports
-		exit 2
-	else
-		patch_backports
 	fi
 
 	backport_tag="rpi-6.7.y"
@@ -419,7 +398,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.7"
+		backport_tag="v6.7.1"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
