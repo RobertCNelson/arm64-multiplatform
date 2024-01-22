@@ -240,6 +240,9 @@ beagleboard_dtbs () {
 		device="AM335X-PRU-UIO-00A0" ; arm_dtbo_makefile_append
 		device="AM57XX-PRU-UIO-00A0" ; arm_dtbo_makefile_append
 		device="BB-ADC-00A0" ; arm_dtbo_makefile_append
+		device="BB-BBBW-WL1835-00A0" ; arm_dtbo_makefile_append
+		device="BB-BBGG-WL1835-00A0" ; arm_dtbo_makefile_append
+		device="BB-BBGW-WL1835-00A0" ; arm_dtbo_makefile_append
 
 		device="BB-BONE-eMMC1-01-00A0" ; arm_dtbo_makefile_append
 
@@ -345,7 +348,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.206"
+	backport_tag="v5.10.208"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -363,8 +366,7 @@ backports () {
 
 	dir 'eventfd'
 
-	backport_tag="master"
-	#052d534373b7ed33712a63d5e17b2b6cdbce84fd
+	backport_tag="v6.8-rc1"
 
 	subsystem="gpu"
 	#regenerate="enable"
@@ -419,7 +421,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.7"
+		backport_tag="v6.7.1"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
