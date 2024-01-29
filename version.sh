@@ -8,7 +8,7 @@ build_prefix="-arm64-k3-r"
 branch_prefix="v"
 branch_postfix=".x-arm64-k3"
 
-#https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/changes.rst?h=v6.7-rc1
+#https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/changes.rst?h=v6.8-rc1
 #arm
 #KERNEL_ARCH=arm
 #DEBARCH=armhf
@@ -44,10 +44,10 @@ toolchain="gcc_13_aarch64"
 
 #Kernel
 KERNEL_REL=6.8
-KERNEL_TAG=${KERNEL_REL}-rc1
-kernel_rt="-rt6"
+KERNEL_TAG=${KERNEL_REL}-rc2
+kernel_rt="-rc1-rt2"
 #Kernel Build
-BUILD=${build_prefix}1
+BUILD=${build_prefix}1.1
 
 #v6.X-rcX + upto SHA
 #prev_KERNEL_SHA=""
