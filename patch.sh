@@ -240,6 +240,9 @@ beagleboard_dtbs () {
 		device="AM335X-PRU-UIO-00A0" ; arm_dtbo_makefile_append
 		device="AM57XX-PRU-UIO-00A0" ; arm_dtbo_makefile_append
 		device="BB-ADC-00A0" ; arm_dtbo_makefile_append
+		device="BB-BBBW-WL1835-00A0" ; arm_dtbo_makefile_append
+		device="BB-BBGG-WL1835-00A0" ; arm_dtbo_makefile_append
+		device="BB-BBGW-WL1835-00A0" ; arm_dtbo_makefile_append
 
 		device="BB-BONE-eMMC1-01-00A0" ; arm_dtbo_makefile_append
 
@@ -283,17 +286,6 @@ wireless_regdb
 beagleboard_dtbs
 #local_patch
 
-pre_backports_next () {
-	echo "dir: backports/${subsystem}"
-
-	cd ~/linux-next/
-	${git_bin} fetch --tags
-	if [ ! "x${backport_tag_next}" = "x" ] ; then
-		${git_bin} checkout ${backport_tag_next} -f
-	fi
-	cd -
-}
-
 pre_backports () {
 	echo "dir: backports/${subsystem}"
 
@@ -302,24 +294,10 @@ pre_backports () {
 	${git_bin} pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git master --tags
 	${git_bin} pull --no-edit https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master --tags
 	if [ ! "x${backport_tag}" = "x" ] ; then
+		echo "${git_bin} checkout ${backport_tag} -f"
 		${git_bin} checkout ${backport_tag} -f
 	fi
 	cd -
-}
-
-post_backports_next () {
-	if [ ! "x${backport_tag_next}" = "x" ] ; then
-		cd ~/linux-next/
-		${git_bin} checkout master -f
-		cd -
-	fi
-
-	${git_bin} add .
-	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag_next}" -s
-	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
-		mkdir -p ../patches/backports/${subsystem}/
-	fi
-	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
 }
 
 post_backports () {
@@ -329,7 +307,6 @@ post_backports () {
 		cd -
 	fi
 
-	rm -f arch/arm/boot/dts/overlays/*.dtbo || true
 	${git_bin} add .
 	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag}" -s
 	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
@@ -344,6 +321,7 @@ pre_rpibackports () {
 	cd ~/linux-rpi/
 	${git_bin} fetch --tags
 	if [ ! "x${backport_tag}" = "x" ] ; then
+		echo "${git_bin} checkout ${backport_tag} -f"
 		${git_bin} checkout ${backport_tag} -f
 	fi
 	cd -
@@ -370,7 +348,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.206"
+	backport_tag="v5.10.209"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -431,7 +409,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.6.11"
+		backport_tag="v6.6.17"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
