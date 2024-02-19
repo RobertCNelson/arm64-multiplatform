@@ -366,7 +366,7 @@ backports () {
 
 	dir 'eventfd'
 
-	backport_tag="v6.8-rc3"
+	backport_tag="v6.8-rc5"
 
 	subsystem="gpu"
 	#regenerate="enable"
@@ -416,7 +416,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.7.4"
+		backport_tag="v6.7.5"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
