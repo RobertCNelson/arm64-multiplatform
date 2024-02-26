@@ -190,4 +190,18 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 #temp, with drm backport
 ./scripts/config --disable CONFIG_SND_USB_CAIAQ
 
+./scripts/config  --enable CONFIG_USB_CDNS_SUPPORT
+./scripts/config  --enable CONFIG_USB_CDNS3
+./scripts/config  --enable CONFIG_USB_CDNS3_TI
+./scripts/config  --enable CONFIG_USB_ONBOARD_HUB
+
+./scripts/config --module CONFIG_VIDEO_WAVE_VPU
+./scripts/config --module CONFIG_VIDEO_CADENCE_CSI2RX
+./scripts/config --module CONFIG_VIDEO_CADENCE_CSI2TX
+./scripts/config --module CONFIG_VIDEO_OV2312
+./scripts/config --module CONFIG_VIDEO_OV5640
+./scripts/config --module CONFIG_VIDEO_OV5645
+./scripts/config --module CONFIG_VIDEO_IMX219
+./scripts/config --module CONFIG_VIDEO_IMX390
+
 cd ${DIR}/

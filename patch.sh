@@ -348,7 +348,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.209"
+	backport_tag="v5.10.210"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -366,7 +366,7 @@ backports () {
 
 	dir 'eventfd'
 
-	backport_tag="v6.8-rc5"
+	backport_tag="v6.8-rc6"
 
 	subsystem="gpu"
 	#regenerate="enable"
@@ -404,8 +404,8 @@ backports () {
 }
 
 drivers () {
-	dir 'soc/ti/pcie'
 	dir 'boris'
+	dir 'soc/ti/pcie'
 }
 
 ###
@@ -416,7 +416,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.7.5"
+		backport_tag="v6.7.6"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
