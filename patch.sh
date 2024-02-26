@@ -286,17 +286,6 @@ wireless_regdb
 beagleboard_dtbs
 #local_patch
 
-pre_backports_next () {
-	echo "dir: backports/${subsystem}"
-
-	cd ~/linux-next/
-	${git_bin} fetch --tags
-	if [ ! "x${backport_tag_next}" = "x" ] ; then
-		${git_bin} checkout ${backport_tag_next} -f
-	fi
-	cd -
-}
-
 pre_backports () {
 	echo "dir: backports/${subsystem}"
 
@@ -359,7 +348,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.209"
+	backport_tag="v5.10.210"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -420,7 +409,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.6.17"
+		backport_tag="v6.6.18"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
