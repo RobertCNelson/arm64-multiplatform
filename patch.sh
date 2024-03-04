@@ -348,7 +348,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.210"
+	backport_tag="v5.10.211"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -366,7 +366,7 @@ backports () {
 
 	dir 'eventfd'
 
-	backport_tag="v6.8-rc6"
+	backport_tag="v6.8-rc7"
 
 	subsystem="gpu"
 	#regenerate="enable"
@@ -416,7 +416,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.7.6"
+		backport_tag="v6.7.8"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
