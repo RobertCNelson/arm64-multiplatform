@@ -194,6 +194,8 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 
 ./scripts/config --module CONFIG_VIDEO_WAVE_VPU
 ./scripts/config --module CONFIG_VIDEO_CADENCE_CSI2RX
+./scripts/config --module CONFIG_VIDEO_TI_J721E_CSI2RX
+./scripts/config --module CONFIG_PHY_CADENCE_DPHY_RX
 ./scripts/config --module CONFIG_VIDEO_CADENCE_CSI2TX
 ./scripts/config --module CONFIG_VIDEO_OV2312
 ./scripts/config --module CONFIG_VIDEO_OV5640
