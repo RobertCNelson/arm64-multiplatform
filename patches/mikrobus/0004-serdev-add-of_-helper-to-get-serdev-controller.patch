@@ -1,0 +1,75 @@
+From c886e55fc0b15a73509562e0ba4a5cf1192a473b Mon Sep 17 00:00:00 2001
+From: Vaishnav M A <vaishnav@beagleboard.org>
+Date: Sun, 18 Oct 2020 06:28:30 +0530
+Subject: [PATCH 4/6] serdev: add of_ helper to get serdev controller
+
+add of_find_serdev_controller_by_node to obtain a
+serdev_controller from the device_node, which
+can help if the serdev_device is not described
+over device tree and instantiation of the device
+happens from a different driver, for the same purpose
+an option to not delete an empty serdev controller
+is added.
+
+Signed-off-by: Vaishnav M A <vaishnav@beagleboard.org>
+Signed-off-by: Ayush Singh <ayushdevel1325@gmail.com>
+---
+ drivers/tty/serdev/core.c | 19 +++++++++++++++++++
+ include/linux/serdev.h    |  4 ++++
+ 2 files changed, 23 insertions(+)
+
+diff --git a/drivers/tty/serdev/core.c b/drivers/tty/serdev/core.c
+index 613cb356b918..5b5b3f2b2e42 100644
+--- a/drivers/tty/serdev/core.c
++++ b/drivers/tty/serdev/core.c
+@@ -555,6 +555,19 @@ static int of_serdev_register_devices(struct serdev_controller *ctrl)
+ 	return 0;
+ }
+ 
++#if defined(CONFIG_OF)
++struct serdev_controller *of_find_serdev_controller_by_node(struct device_node *node)
++{
++	struct device *dev = bus_find_device_by_of_node(&serdev_bus_type, node);
++
++	if (!dev)
++		return NULL;
++
++	return (dev->type == &serdev_ctrl_type) ? to_serdev_controller(dev) : NULL;
++}
++EXPORT_SYMBOL_GPL(of_find_serdev_controller_by_node);
++#endif
++
+ #ifdef CONFIG_ACPI
+ 
+ #define SERDEV_ACPI_MAX_SCAN_DEPTH 32
+@@ -785,6 +798,12 @@ int serdev_controller_add(struct serdev_controller *ctrl)
+ 
+ 	pm_runtime_enable(&ctrl->dev);
+ 
++	/* provide option to not delete a serdev controller without devices
++	 * if property is present
++	 */
++	if (device_property_present(&ctrl->dev, "force-empty-serdev-controller"))
++		return 0;
++
+ 	ret_of = of_serdev_register_devices(ctrl);
+ 	ret_acpi = acpi_serdev_register_devices(ctrl);
+ 	if (ret_of && ret_acpi) {
+diff --git a/include/linux/serdev.h b/include/linux/serdev.h
+index ff78efc1f60d..287d7b9bc10a 100644
+--- a/include/linux/serdev.h
++++ b/include/linux/serdev.h
+@@ -117,6 +117,10 @@ static inline struct serdev_controller *to_serdev_controller(struct device *d)
+ 	return container_of(d, struct serdev_controller, dev);
+ }
+ 
++#if defined(CONFIG_OF)
++struct serdev_controller *of_find_serdev_controller_by_node(struct device_node *node);
++#endif
++
+ static inline void *serdev_device_get_drvdata(const struct serdev_device *serdev)
+ {
+ 	return dev_get_drvdata(&serdev->dev);
+-- 
+2.39.2
+

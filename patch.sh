@@ -383,6 +383,7 @@ backports () {
 drivers () {
 	dir 'soc/ti/pcie'
 	dir 'boris'
+	dir 'mikrobus'
 }
 
 ###
