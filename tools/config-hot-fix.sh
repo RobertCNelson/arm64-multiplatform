@@ -194,11 +194,18 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 
 ./scripts/config --module CONFIG_VIDEO_WAVE_VPU
 ./scripts/config --module CONFIG_VIDEO_CADENCE_CSI2RX
+./scripts/config --module CONFIG_VIDEO_TI_J721E_CSI2RX
+./scripts/config --module CONFIG_PHY_CADENCE_DPHY_RX
 ./scripts/config --module CONFIG_VIDEO_CADENCE_CSI2TX
 ./scripts/config --module CONFIG_VIDEO_OV2312
 ./scripts/config --module CONFIG_VIDEO_OV5640
 ./scripts/config --module CONFIG_VIDEO_OV5645
 ./scripts/config --module CONFIG_VIDEO_IMX219
 ./scripts/config --module CONFIG_VIDEO_IMX390
+
+#enable MIKROBUS
+./scripts/config --enable CONFIG_SPI_OMAP24XX
+./scripts/config --enable CONFIG_W1
+./scripts/config --enable CONFIG_MIKROBUS
 
 cd ${DIR}/
