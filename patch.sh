@@ -130,7 +130,7 @@ rt () {
 }
 
 wireless_regdb () {
-	#https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/
+	#https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
 		cd ../
@@ -138,7 +138,7 @@ wireless_regdb () {
 			rm -rf ./wireless-regdb || true
 		fi
 
-		${git_bin} clone https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git --depth=1
+		${git_bin} clone https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git --depth=1
 		cd ./wireless-regdb
 			wireless_regdb_hash=$(git rev-parse HEAD)
 		cd -
@@ -149,10 +149,10 @@ wireless_regdb () {
 		cp -v ../wireless-regdb/regulatory.db ./firmware/
 		cp -v ../wireless-regdb/regulatory.db.p7s ./firmware/
 		${git_bin} add -f ./firmware/regulatory.*
-		${git_bin} commit -a -m 'Add wireless-regdb regulatory database file' -m "https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/commit/?id=${wireless_regdb_hash}" -s
+		${git_bin} commit -a -m 'Add wireless-regdb regulatory database file' -m "https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/commit/?id=${wireless_regdb_hash}" -s
 
 		${git_bin} format-patch -1 -o ../patches/external/wireless_regdb/
-		echo "WIRELESS_REGDB: https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/commit/?id=${wireless_regdb_hash}" > ../patches/external/git/WIRELESS_REGDB
+		echo "WIRELESS_REGDB: https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/commit/?id=${wireless_regdb_hash}" > ../patches/external/git/WIRELESS_REGDB
 
 		rm -rf ../wireless-regdb/ || true
 
@@ -348,7 +348,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.211"
+	backport_tag="v5.10.212"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -383,8 +383,10 @@ backports () {
 }
 
 drivers () {
-	dir 'soc/ti/pcie'
 	dir 'boris'
+	dir 'soc/ti/pcie'
+	dir 'mikrobus'
+
 	#git revert --no-edit -s fa8391ad68c16716e2c06ada397e99ceed2fb647
 	#exit 2
 	#dir 'sched_pre'
@@ -397,8 +399,6 @@ drivers () {
 	#https://gitlab.freedesktop.org/frankbinns/powervr/-/tree/powervr-next
 	#git clone -b powervr-next https://gitlab.freedesktop.org/frankbinns/powervr.git --reference ~/linux-src/ --depth=100
 	#dir 'powervr_v7'
-	#https://github.com/sukrutb/linux/commits/beaglePlay_adc102s051_support
-	#dir 'adc128s052'
 }
 
 ###
