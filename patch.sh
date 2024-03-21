@@ -143,7 +143,6 @@ wpanusb () {
 	dir 'external/wpanusb'
 }
 
-
 rt_cleanup () {
 	echo "rt: needs fixup"
 	exit 2
