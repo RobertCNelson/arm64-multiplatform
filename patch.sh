@@ -364,7 +364,7 @@ wpanusb
 #bcfserial
 #rt
 wireless_regdb
-beagleboard_dtbs
+#beagleboard_dtbs
 #local_patch
 
 pre_backports () {
@@ -464,12 +464,12 @@ backports () {
 drivers () {
 	dir 'soc/ti/pcie'
 	dir 'boris'
-	dir 'mikrobus'
+#	dir 'mikrobus'
 	dir 'drivers/sdhci-omap'
 }
 
 ###
-backports
+#backports
 drivers
 
 packaging () {
