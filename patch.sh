@@ -287,7 +287,7 @@ k3_dtb_makefile_append () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.8.x"
+	branch="v6.9.x"
 	https_repo="https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -364,7 +364,7 @@ wpanusb
 #bcfserial
 #rt
 wireless_regdb
-#beagleboard_dtbs
+beagleboard_dtbs
 #local_patch
 
 pre_backports () {
@@ -469,7 +469,7 @@ drivers () {
 }
 
 ###
-#backports
+backports
 drivers
 
 packaging () {
