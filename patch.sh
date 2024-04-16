@@ -111,7 +111,7 @@ wpanusb () {
 			rm -rf ./wpanusb || true
 		fi
 
-		${git_bin} clone https://openbeagle.org/beagleconnect/linux/wpanusb --depth=1
+		${git_bin} clone https://openbeagle.org/beagleconnect/linux/wpanusb.git --depth=1
 		cd ./wpanusb
 			wpanusb_hash=$(git rev-parse HEAD)
 		cd -
@@ -282,10 +282,6 @@ arm_dtbo_makefile_append () {
 	cp -v ../${work_dir}/src/arm/overlays/${device}.dts arch/arm/boot/dts/ti/omap/${device}.dtso
 }
 
-k3_dtb_makefile_append () {
-	echo "dtb-\$(CONFIG_ARCH_K3) += $device" >> arch/arm64/boot/dts/ti/Makefile
-}
-
 beagleboard_dtbs () {
 	branch="v6.7.x"
 	https_repo="https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees.git"
@@ -429,7 +425,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.213"
+	backport_tag="v5.10.215"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -447,7 +443,7 @@ backports () {
 
 	dir 'eventfd'
 
-	backport_tag="v6.8.1"
+	backport_tag="v6.8.6"
 
 	subsystem="gpu"
 	#regenerate="enable"
