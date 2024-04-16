@@ -421,7 +421,6 @@ backports () {
 
 drivers () {
 	dir 'boris'
-	dir 'drivers/sdhci-omap'
 	dir 'soc/ti/pcie'
 	dir 'mikrobus'
 
