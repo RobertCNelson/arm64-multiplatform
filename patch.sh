@@ -111,7 +111,7 @@ wpanusb () {
 			rm -rf ./wpanusb || true
 		fi
 
-		${git_bin} clone https://openbeagle.org/beagleconnect/linux/wpanusb --depth=1
+		${git_bin} clone https://openbeagle.org/beagleconnect/linux/wpanusb.git --depth=1
 		cd ./wpanusb
 			wpanusb_hash=$(git rev-parse HEAD)
 		cd -
@@ -241,10 +241,6 @@ arm_dtb_makefile_append () {
 arm_dtbo_makefile_append () {
 	sed -i -e 's:am335x-boneblack.dtb \\:am335x-boneblack.dtb \\\n\t'$device'.dtbo \\:g' arch/arm/boot/dts/ti/omap/Makefile
 	cp -v ../${work_dir}/src/arm/overlays/${device}.dts arch/arm/boot/dts/ti/omap/${device}.dtso
-}
-
-k3_dtb_makefile_append () {
-	echo "dtb-\$(CONFIG_ARCH_K3) += $device" >> arch/arm64/boot/dts/ti/Makefile
 }
 
 beagleboard_dtbs () {
@@ -389,7 +385,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.213"
+	backport_tag="v5.10.215"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -437,10 +433,6 @@ drivers () {
 	#git revert --no-edit cdf4100eaa1f4107fcf7c95b5eccca96cca6c777 -s
 	#exit 2
 	#dir 'powervr_pre'
-
-	#https://gitlab.freedesktop.org/frankbinns/powervr/-/tree/powervr-next
-	#git clone -b powervr-next https://gitlab.freedesktop.org/frankbinns/powervr.git --reference ~/linux-src/ --depth=100
-	#dir 'powervr_v7'
 }
 
 ###
