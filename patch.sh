@@ -385,14 +385,12 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="v5.10.215"
-
 	subsystem="uio"
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
-		pre_backports
+		unset backport_tag
 
-		cp -v ~/linux-src/drivers/uio/uio_pruss.c ./drivers/uio/
+		cp -v ../patches/drivers/ti/uio/uio_pruss.c ./drivers/uio/
 
 		post_backports
 		exit 2
@@ -421,6 +419,7 @@ backports () {
 
 drivers () {
 	dir 'boris'
+	dir 'mmc'
 	dir 'soc/ti/pcie'
 	dir 'mikrobus'
 
@@ -428,10 +427,6 @@ drivers () {
 	#exit 2
 	#dir 'sched_pre'
 	#dir 'sched'
-
-	#git revert --no-edit cdf4100eaa1f4107fcf7c95b5eccca96cca6c777 -s
-	#exit 2
-	#dir 'powervr_pre'
 }
 
 ###
@@ -442,7 +437,7 @@ packaging () {
 	echo "Update: package scripts"
 	#do_backport="enable"
 	if [ "x${do_backport}" = "xenable" ] ; then
-		backport_tag="v6.6.22"
+		backport_tag="v6.6.25"
 
 		subsystem="bindeb-pkg"
 		#regenerate="enable"
