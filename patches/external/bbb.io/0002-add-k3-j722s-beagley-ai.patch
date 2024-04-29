@@ -1,7 +1,7 @@
 From 7f8b75cfbe67d19f8bb7daf52284633a0380c2bf Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Mon, 15 Apr 2024 13:33:05 -0500
-Subject: [PATCH 2/2] add k3-j722s-beagley-ai
+Subject: [PATCH 2/2] add k3-am67a-beagley-ai
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
@@ -16,7 +16,7 @@ index 9a722c2473fb..432767fa7a69 100644
  dtb-$(CONFIG_ARCH_K3) += k3-j721s2-evm-pcie1-ep.dtbo
  
  # Boards with J722s SoC
-+dtb-$(CONFIG_ARCH_K3) += k3-j722s-beagley-ai.dtb
++dtb-$(CONFIG_ARCH_K3) += k3-am67a-beagley-ai.dtb
  dtb-$(CONFIG_ARCH_K3) += k3-j722s-evm.dtb
  
  # Boards with J784s4 SoC
@@ -24,7 +24,7 @@ index 9a722c2473fb..432767fa7a69 100644
  DTC_FLAGS_k3-j721e-common-proc-board += -@
  DTC_FLAGS_k3-j721e-sk += -@
  DTC_FLAGS_k3-j721s2-common-proc-board += -@
-+DTC_FLAGS_k3-j722s-beagley-ai += -@
++DTC_FLAGS_k3-am67a-beagley-ai += -@
 -- 
 2.39.2
 

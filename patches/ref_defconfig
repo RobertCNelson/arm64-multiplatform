@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.9.0-rc5 Kernel Configuration
+# Linux/arm64 6.9.0-rc6 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 13.2.0"
 CONFIG_CC_IS_GCC=y
@@ -715,6 +715,7 @@ CONFIG_KVM_GENERIC_MMU_NOTIFIER=y
 CONFIG_VIRTUALIZATION=y
 CONFIG_KVM=y
 # CONFIG_NVHE_EL2_DEBUG is not set
+CONFIG_CPU_MITIGATIONS=y
 
 #
 # General architecture-dependent options
@@ -9896,6 +9897,7 @@ CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
 # CONFIG_FAT_DEFAULT_UTF8 is not set
 # CONFIG_EXFAT_FS is not set
 # CONFIG_NTFS3_FS is not set
+# CONFIG_NTFS_FS is not set
 # end of DOS/FAT/EXFAT/NT Filesystems
 
 #

@@ -100,7 +100,6 @@ copy_mainline_driver () {
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
 		cp -v ./drivers/mmc/core/quirks.h ../patches/mainline/mmc/
-		cp -v ./drivers/gpu/drm/bridge/ite-it66121.c ../patches/mainline/it66121/
 	fi
 }
 
