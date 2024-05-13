@@ -100,6 +100,7 @@ copy_mainline_driver () {
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
 		cp -v ./drivers/mmc/core/quirks.h ../patches/mainline/mmc/
+		exit 2
 	fi
 }
 
@@ -144,8 +145,6 @@ wpanusb () {
 		wdir="external/wpanusb"
 		number=1
 		cleanup
-
-		exit 2
 	fi
 	dir 'external/wpanusb'
 }
@@ -183,8 +182,6 @@ bcfserial () {
 		wdir="external/bcfserial"
 		number=1
 		cleanup
-
-		exit 2
 	fi
 	dir 'external/bcfserial'
 }
@@ -398,6 +395,7 @@ post_backports () {
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
 	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
+	exit 2
 }
 
 pre_rpibackports () {
@@ -425,6 +423,7 @@ post_rpibackports () {
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
 	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
+	exit 2
 }
 
 patch_backports () {
@@ -441,7 +440,6 @@ backports () {
 		cp -v ../patches/drivers/ti/uio/uio_pruss.c ./drivers/uio/
 
 		post_backports
-		exit 2
 	else
 		patch_backports
 		dir 'drivers/ti/uio'
@@ -457,7 +455,6 @@ backports () {
 		cp -v ~/linux-rpi/drivers/input/touchscreen/edt-ft5x06.c ./drivers/input/touchscreen/
 
 		post_rpibackports
-		exit 2
 	else
 		patch_backports
 	fi
