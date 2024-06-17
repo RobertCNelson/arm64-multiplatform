@@ -250,7 +250,7 @@ arm_dtbo_makefile_append () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.9.x"
+	branch="v6.10.x"
 	https_repo="https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -394,19 +394,6 @@ patch_backports () {
 }
 
 backports () {
-	subsystem="uio"
-	#regenerate="enable"
-	if [ "x${regenerate}" = "xenable" ] ; then
-		unset backport_tag
-
-		cp -v ../patches/drivers/ti/uio/uio_pruss.c ./drivers/uio/
-
-		post_backports
-	else
-		patch_backports
-		dir 'drivers/ti/uio'
-	fi
-
 	backport_tag="rpi-6.9.y"
 
 	subsystem="edt-ft5x06"
@@ -429,7 +416,7 @@ drivers () {
 }
 
 ###
-backports
+#backports
 drivers
 
 echo "patch.sh ran successfully"
