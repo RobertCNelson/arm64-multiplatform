@@ -137,6 +137,8 @@ wpanusb () {
 		wdir="external/wpanusb"
 		number=1
 		cleanup
+
+		exit 2
 	fi
 	dir 'external/wpanusb'
 }
