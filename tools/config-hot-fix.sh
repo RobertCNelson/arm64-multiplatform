@@ -215,7 +215,11 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_FUNCTION_TRACER
 ./scripts/config --enable CONFIG_DYNAMIC_FTRACE
 
-#xz backdoor https://lwn.net/Articles/967180/
-./scripts/config --enable CONFIG_MODULE_COMPRESS_ZSTD
+./scripts/config --disable CONFIG_MODULE_COMPRESS_ZSTD
+./scripts/config --enable CONFIG_MODULE_COMPRESS_XZ
+./scripts/config --enable CONFIG_GPIO_AGGREGATOR
+
+#configure CONFIG_EXTRA_FIRMWARE
+./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s cadence/mhdp8546.bin"
 
 cd ${DIR}/
