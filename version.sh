@@ -20,6 +20,7 @@ branch_postfix=".x-rt-arm64-k3"
 #toolchain="gcc_11_arm"
 #toolchain="gcc_12_arm"
 #toolchain="gcc_13_arm"
+#toolchain="gcc_14_arm"
 #arm64
 KERNEL_ARCH=arm64
 DEBARCH=arm64
@@ -31,6 +32,7 @@ DEBARCH=arm64
 #toolchain="gcc_11_aarch64"
 #toolchain="gcc_12_aarch64"
 toolchain="gcc_13_aarch64"
+#toolchain="gcc_14_aarch64"
 #riscv64
 #KERNEL_ARCH=riscv
 #DEBARCH=riscv64
@@ -41,13 +43,14 @@ toolchain="gcc_13_aarch64"
 #toolchain="gcc_11_riscv64"
 #toolchain="gcc_12_riscv64"
 #toolchain="gcc_13_riscv64"
+#toolchain="gcc_14_riscv64"
 
 #Kernel
 KERNEL_REL=6.6
-KERNEL_TAG=${KERNEL_REL}.25
-kernel_rt=".25-rt29"
+KERNEL_TAG=${KERNEL_REL}.36
+kernel_rt=".36-rt35"
 #Kernel Build
-BUILD=${build_prefix}25
+BUILD=${build_prefix}25.1
 
 #v6.X-rcX + upto SHA
 #prev_KERNEL_SHA=""
