@@ -1,0 +1,70 @@
+From dde5210202d450eb23cf094271f3061e5a6bd524 Mon Sep 17 00:00:00 2001
+From: Andrew Davis <afd@ti.com>
+Date: Tue, 2 Jul 2024 11:44:03 -0500
+Subject: [PATCH 3/3] arm64: dts: ti: grove: Add Grove Sunlight Sensor overlay
+
+Add DT overlay for the Grove Sunlight Sensor[0].
+
+[0] https://wiki.seeedstudio.com/Grove-Sunlight_Sensor/
+
+Signed-off-by: Andrew Davis <afd@ti.com>
+---
+ arch/arm64/boot/dts/ti/Makefile               |  3 ++
+ .../boot/dts/ti/grove-sunlight-sensor.dtso    | 31 +++++++++++++++++++
+ 2 files changed, 34 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/ti/grove-sunlight-sensor.dtso
+
+diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
+index 6a3902947b0f..7ebc373909e7 100644
+--- a/arch/arm64/boot/dts/ti/Makefile
++++ b/arch/arm64/boot/dts/ti/Makefile
+@@ -8,6 +8,9 @@
+ # Entries are grouped as per SoC present on the board. Groups are sorted
+ # alphabetically.
+ 
++# This needs a better directory location
++dtb-$(CONFIG_OF_OVERLAY) += grove-sunlight-sensor.dtbo
++
+ # Boards with AM62x SoC
+ dtb-$(CONFIG_ARCH_K3) += k3-am625-beagleplay.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am625-beagleplay-csi2-ov5640.dtbo
+diff --git a/arch/arm64/boot/dts/ti/grove-sunlight-sensor.dtso b/arch/arm64/boot/dts/ti/grove-sunlight-sensor.dtso
+new file mode 100644
+index 000000000000..ab2f102e1f8a
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/grove-sunlight-sensor.dtso
+@@ -0,0 +1,31 @@
++// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
++/**
++ * Grove - Sunlight Sensor v1.0
++ *
++ * https://wiki.seeedstudio.com/Grove-Sunlight_Sensor/
++ *
++ * Copyright (C) 2024 Texas Instruments Incorporated - http://www.ti.com/
++ */
++
++/dts-v1/;
++/plugin/;
++
++&GROVE_CONNECTOR {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&GROVE_PIN1_MUX_I2C_SCL>,
++	            <&GROVE_PIN2_MUX_I2C_SDA>;
++};
++
++&GROVE_PIN1_I2C {
++	status = "okay";
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	clock-frequency = <100000>;
++
++	si1145@60 {
++		compatible = "si,si1145";
++		reg = <0x60>;
++	};
++};
+-- 
+2.39.2
+

@@ -215,6 +215,12 @@ wireless_regdb () {
 	dir 'external/wireless_regdb'
 }
 
+mainline_patches () {
+	#exit 2
+	dir 'rfc/beagleplay-connector'
+	#exit 2
+}
+
 cleanup_dts_builds () {
 	rm -rf arch/arm/boot/dts/modules.order || true
 	rm -rf arch/arm/boot/dts/.*cmd || true
@@ -261,7 +267,7 @@ k3_dtbo_makefile_append () {
 
 k3_makefile_patch_cleanup_overlays () {
 	cat arch/arm64/boot/dts/ti/Makefile | grep -v 'DTC_FLAGS_k3' | grep -v '# Enable' > arch/arm64/boot/dts/ti/Makefile.bak
-	cat arch/arm64/boot/dts/ti/Makefile | grep 'DTC_FLAGS_k3' | grep -v '# Enable' > arch/arm64/boot/dts/ti/Makefile.dtc
+	cat arch/arm64/boot/dts/ti/Makefile | grep 'DTC_FLAGS_k3' > arch/arm64/boot/dts/ti/Makefile.dtc
 	rm arch/arm64/boot/dts/ti/Makefile
 	mv arch/arm64/boot/dts/ti/Makefile.bak arch/arm64/boot/dts/ti/Makefile
 	echo "" >> arch/arm64/boot/dts/ti/Makefile
@@ -357,6 +363,7 @@ copy_mainline_driver
 wpanusb
 #rt
 wireless_regdb
+mainline_patches
 beagleboard_dtbs
 #local_patch
 
@@ -440,10 +447,12 @@ backports () {
 }
 
 drivers () {
-	dir 'soc/ti/pcie'
-	dir 'boris'
-#	dir 'mikrobus'
-	dir 'firmware/patch'
+	dir 'branding/boris'
+
+	dir 'drivers/pcie'
+
+	dir 'external/cadence'
+	dir 'external/gasket'
 }
 
 ###

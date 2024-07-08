@@ -1,0 +1,108 @@
+From ccfc46aabc20526fbe8f6169b2a191c5ecb3bc71 Mon Sep 17 00:00:00 2001
+From: Andrew Davis <afd@ti.com>
+Date: Tue, 2 Jul 2024 11:44:02 -0500
+Subject: [PATCH 2/3] arm64: dts: ti: k3-am625-beagleplay: Add Grove connector
+ adapter overlays
+
+The second connector is only an example and will be removed.
+
+Signed-off-by: Andrew Davis <afd@ti.com>
+---
+ arch/arm64/boot/dts/ti/Makefile               |  2 +
+ .../k3-am625-beagleplay-grove-connector0.dtso | 41 +++++++++++++++++++
+ .../k3-am625-beagleplay-grove-connector1.dtso | 22 ++++++++++
+ 3 files changed, 65 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am625-beagleplay-grove-connector0.dtso
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am625-beagleplay-grove-connector1.dtso
+
+diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
+index 2c327cc320cf..c843d039346e 100644
+--- a/arch/arm64/boot/dts/ti/Makefile
++++ b/arch/arm64/boot/dts/ti/Makefile
+@@ -12,6 +12,8 @@
+ dtb-$(CONFIG_ARCH_K3) += k3-am625-beagleplay.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am625-beagleplay-csi2-ov5640.dtbo
+ dtb-$(CONFIG_ARCH_K3) += k3-am625-beagleplay-csi2-tevi-ov5640.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-am625-beagleplay-grove-connector0.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-am625-beagleplay-grove-connector1.dtbo
+ dtb-$(CONFIG_ARCH_K3) += k3-am625-phyboard-lyra-rdk.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am625-sk.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am625-verdin-nonwifi-dahlia.dtb
+diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay-grove-connector0.dtso b/arch/arm64/boot/dts/ti/k3-am625-beagleplay-grove-connector0.dtso
+new file mode 100644
+index 000000000000..897d77a6de90
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay-grove-connector0.dtso
+@@ -0,0 +1,41 @@
++// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
++/**
++ * Gasket Overlay for BeaglePlay Grove Connector 0
++ *
++ * Copyright (C) 2024 Texas Instruments Incorporated - http://www.ti.com/
++ */
++
++/dts-v1/;
++/plugin/;
++
++&{/} {
++	__symbols__ {
++		GROVE_CONNECTOR = "/grove-connector0";
++
++		/* Grove connector 0 Pin1 options */
++		GROVE_PIN1_MUX_I2C_SCL = "/bus@f0000/pinctrl@f4000/grove-i2c-pins";
++		GROVE_PIN1_MUX_DIGITAL = "/bus@f0000/pinctrl@f4000/grove-digital-pins";
++		/* GROVE_PIN1_MUX_ANALOG not available on this pin on this connector on this board */
++		GROVE_PIN1_MUX_UART_RX = "/bus@f0000/pinctrl@f4000/grove-uart-pins";
++
++		/* Grove connector 0 Pin2 options */
++		GROVE_PIN2_MUX_I2C_SDA = "/bus@f0000/pinctrl@f4000/grove-i2c-pins";
++		GROVE_PIN2_MUX_DIGITAL = "/bus@f0000/pinctrl@f4000/grove-digital-pins";
++		/* GROVE_PIN2_MUX_ANALOG not available on this pin on this connector on this board */
++		GROVE_PIN2_MUX_UART_TX = "/bus@f0000/pinctrl@f4000/grove-uart-pins";
++
++		/* Grove connector 0 uses main_i2c1 for I2C on BeaglePlay */
++		GROVE_PIN1_I2C = "/bus@f0000/i2c@20010000";
++		GROVE_PIN2_I2C = "/bus@f0000/i2c@20010000";
++
++		/* Grove connector 0 uses main_gpio1 for DIGITAL on BeaglePlay */
++		GROVE_PIN1_DIGITAL = "/bus@f0000/gpio@601000";
++		GROVE_PIN2_DIGITAL = "/bus@f0000/gpio@601000";
++
++		/* Grove connector 0 does not have ANALOG on BeaglePlay */
++
++		/* Grove connector 0 uses main_uart1 for UART on BeaglePlay */
++		GROVE_PIN1_UART = "/bus@f0000/serial@2810000";
++		GROVE_PIN2_UART = "/bus@f0000/serial@2810000";
++	};
++};
+diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay-grove-connector1.dtso b/arch/arm64/boot/dts/ti/k3-am625-beagleplay-grove-connector1.dtso
+new file mode 100644
+index 000000000000..1a0e463d4ec6
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay-grove-connector1.dtso
+@@ -0,0 +1,22 @@
++// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
++/**
++ * Gasket Overlay for BeaglePlay Grove Connector 1
++ *
++ * Copyright (C) 2024 Texas Instruments Incorporated - http://www.ti.com/
++ */
++
++/dts-v1/;
++/plugin/;
++
++&{/} {
++	__symbols__ {
++		GROVE_CONNECTOR = "/grove-connector1";
++
++		/* This connector does not exist on BeaglePlay, this
++		 * file is here as an example to show that add-ons cannot
++		 * be applied when the needed pins are unavailable. No
++		 * pin is available so all add-on overlays should fail
++		 * to attach to this connector.
++		 */
++	};
++};
+-- 
+2.39.2
+
