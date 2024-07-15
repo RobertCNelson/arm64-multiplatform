@@ -229,6 +229,24 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_GPIO_AGGREGATOR
 ./scripts/config --module CONFIG_PWM_GPIO
 
+#cc33xx ble
+./scripts/config --disable CONFIG_BT_BNEP
+./scripts/config --disable CONFIG_BT_HCIBTSDIO
+./scripts/config --disable CONFIG_BT_TI
+
+#Gone on Mainline, supporting 32bit only...
+./scripts/config --disable CONFIG_UIO
+./scripts/config --disable CONFIG_UIO_PRUSS
+
+./scripts/config --module CONFIG_CC33XX
+./scripts/config --module CONFIG_CC33XX_SDIO
+
+./scripts/config --module CONFIG_VIDEO_IMG_VXD_DEC
+./scripts/config --module CONFIG_VIDEO_IMG_VXE_ENC
+./scripts/config --module CONFIG_VIDEO_E5010_JPEG_ENC
+./scripts/config --module CONFIG_TI_EQEP
+./scripts/config --enable CONFIG_CRYPTO_DEV_TI_MCRC64
+
 #PCI Express Precision Time Measurement support
 ./scripts/config --enable CONFIG_PCIE_PTM
 
