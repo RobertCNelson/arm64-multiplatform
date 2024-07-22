@@ -218,6 +218,7 @@ wireless_regdb () {
 mainline_patches () {
 	#exit 2
 	dir 'rfc/beagleplay-connector'
+	dir 'rfc/beagleplay-cc1352p7'
 	#exit 2
 }
 
