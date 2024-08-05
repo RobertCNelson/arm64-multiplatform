@@ -47,10 +47,10 @@ toolchain="gcc_13_aarch64"
 
 #Kernel
 KERNEL_REL=6.10
-KERNEL_TAG=${KERNEL_REL}
+KERNEL_TAG=${KERNEL_REL}.3
 kernel_rt="-rc6-rt11"
 #Kernel Build
-BUILD=${build_prefix}5.1
+BUILD=${build_prefix}5.2
 
 #v6.X-rcX + upto SHA
 #prev_KERNEL_SHA=""
