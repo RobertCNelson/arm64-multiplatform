@@ -187,6 +187,14 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 #removed in 6.7-rc1
 ./scripts/config --disable CONFIG_DEV_APPLETALK
 
+#TI delta 09.01.00.004:
+./scripts/config --enable CONFIG_APERTURE_HELPERS
+./scripts/config --enable CONFIG_FB_CFB_FILLRECT
+./scripts/config --enable CONFIG_FB_CFB_COPYAREA
+./scripts/config --enable CONFIG_FB_CFB_IMAGEBLIT
+./scripts/config --enable CONFIG_FB_SIMPLE
+./scripts/config --module CONFIG_TI_EQEP
+
 ./scripts/config  --enable CONFIG_USB_CDNS_SUPPORT
 ./scripts/config  --enable CONFIG_USB_CDNS3
 ./scripts/config  --enable CONFIG_USB_CDNS3_TI
@@ -202,6 +210,7 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --module CONFIG_VIDEO_OV5645
 ./scripts/config --module CONFIG_VIDEO_IMX219
 ./scripts/config --module CONFIG_VIDEO_IMX390
+./scripts/config --module CONFIG_VIDEO_OX05B1S
 
 #enable MIKROBUS
 ./scripts/config --enable CONFIG_SPI_OMAP24XX
@@ -218,6 +227,40 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --disable CONFIG_MODULE_COMPRESS_ZSTD
 ./scripts/config --enable CONFIG_MODULE_COMPRESS_XZ
 ./scripts/config --enable CONFIG_GPIO_AGGREGATOR
+./scripts/config --module CONFIG_PWM_GPIO
+
+#cc33xx ble
+./scripts/config --disable CONFIG_BT_BNEP
+./scripts/config --disable CONFIG_BT_HCIBTSDIO
+./scripts/config --disable CONFIG_BT_TI
+
+#Gone on Mainline, supporting 32bit only...
+./scripts/config --disable CONFIG_UIO
+./scripts/config --disable CONFIG_UIO_PRUSS
+
+./scripts/config --module CONFIG_CC33XX
+./scripts/config --module CONFIG_CC33XX_SDIO
+
+./scripts/config --module CONFIG_VIDEO_IMG_VXD_DEC
+./scripts/config --module CONFIG_VIDEO_IMG_VXE_ENC
+./scripts/config --module CONFIG_VIDEO_E5010_JPEG_ENC
+./scripts/config --module CONFIG_TI_EQEP
+./scripts/config --enable CONFIG_CRYPTO_DEV_TI_MCRC64
+
+#PCI Express Precision Time Measurement support
+./scripts/config --enable CONFIG_PCIE_PTM
+
+./scripts/config --module CONFIG_RPMSG
+./scripts/config --module CONFIG_RPMSG_NS
+./scripts/config --module CONFIG_RPMSG_VIRTIO
+
+#Google Coral Gasket
+./scripts/config --module CONFIG_STAGING_GASKET_FRAMEWORK
+./scripts/config --module CONFIG_STAGING_APEX_DRIVER
+
+#TI: 10.00.04
+./scripts/config --enable CONFIG_FB_SIMPLE
+./scripts/config --module CONFIG_RPMSG_PRU
 
 #configure CONFIG_EXTRA_FIRMWARE
 ./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s cadence/mhdp8546.bin"
