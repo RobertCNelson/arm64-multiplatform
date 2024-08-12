@@ -2,7 +2,7 @@ image: robertcnelson/beagle-devscripts-kernel-debian-12-amd64
 # https://openbeagle.org/beagleboard/ci-docker-images
 
 cache:
-  key: "$CI_PROJECT_NAME-v6.10.x-arm64-k3"
+  key: "$CI_PROJECT_NAME-v6.11.x-arm64-k3"
   paths:
     - dl/*.tar.xz
     - ccache.tar.lz4
@@ -27,6 +27,6 @@ build:
     - tar --use-compress-program=lz4 -cf ccache.tar.lz4 /root/.cache/ccache/
   artifacts:
     expire_in: 28 days
-    name: "$CI_PROJECT_NAME-v6.10.x-arm64-k3-$CI_JOB_ID"
+    name: "$CI_PROJECT_NAME-v6.11.x-arm64-k3-$CI_JOB_ID"
     paths:
       - "deploy/linux-image-*.deb"
