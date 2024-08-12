@@ -71,19 +71,19 @@ git_kernel_stable () {
 }
 
 unsecure_git_kernel_torvalds () {
-	${git_bin} pull --no-edit "${unsecure_torvalds_linux}" master --tags
+	${git_bin} ${SSL} pull --no-edit "${unsecure_torvalds_linux}" master --tags
 }
 
 git_kernel_torvalds () {
 	echo "-----------------------------"
 	echo "scripts/git: pulling from: ${torvalds_linux}"
 	echo "log: [${git_bin} pull --no-rebase --no-edit "${torvalds_linux}" master --tags]"
-	${git_bin} pull --no-rebase --no-edit "${torvalds_linux}" master --tags || unsecure_git_kernel_torvalds
+	${git_bin} ${SSL} pull --no-rebase --no-edit "${torvalds_linux}" master --tags || unsecure_git_kernel_torvalds
 	${git_bin} tag | grep v"${KERNEL_TAG}" >/dev/null 2>&1 || git_kernel_stable
 }
 
 unsecure_check_and_or_clone () {
-	${git_bin} clone "${unsecure_torvalds_linux}" "${DIR}/ignore/linux-src"
+	${git_bin} ${SSL} clone "${unsecure_torvalds_linux}" "${DIR}/ignore/linux-src"
 }
 
 check_and_or_clone () {
@@ -101,7 +101,7 @@ check_and_or_clone () {
 			echo "-----------------------------"
 			echo "scripts/git: LINUX_GIT not defined in system.sh"
 			echo "cloning ${torvalds_linux} into default location: ${DIR}/ignore/linux-src"
-			${git_bin} clone "${torvalds_linux}" "${DIR}/ignore/linux-src" || unsecure_check_and_or_clone
+			${git_bin} ${SSL} clone "${torvalds_linux}" "${DIR}/ignore/linux-src" || unsecure_check_and_or_clone
 		fi
 		LINUX_GIT="${DIR}/ignore/linux-src"
 	fi
@@ -202,8 +202,8 @@ git_kernel () {
 	fi
 
 	if [ "${TOPOFTREE}" ] ; then
-		${git_bin} pull --no-edit "${torvalds_linux}" master || true
-		${git_bin} pull --no-edit "${torvalds_linux}" master --tags || true
+		${git_bin} ${SSL} pull --no-edit "${torvalds_linux}" master || true
+		${git_bin} ${SSL} pull --no-edit "${torvalds_linux}" master --tags || true
 	fi
 
 	${git_bin} describe
@@ -312,12 +312,14 @@ if [ ! "${git_config_user_name}" ] ; then
 	${git_bin} config --local user.name "Your Name"
 fi
 
+SSL=""
 torvalds_linux="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 unsecure_torvalds_linux="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 linux_stable="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
 unsecure_linux_stable="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
 
 if [ "${USE_LOCAL_GIT_MIRROR}" ] ; then
+	SSL="-c http.sslVerify=false"
 	torvalds_linux="https://git.gfnd.rcn-ee.org/kernel.org/linux.git"
 	unsecure_torvalds_linux="https://git.gfnd.rcn-ee.org/kernel.org/linux.git"
 	linux_stable="https://git.gfnd.rcn-ee.org/kernel.org/linux-stable.git"
