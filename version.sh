@@ -8,7 +8,7 @@ build_prefix="-arm64-k3-r"
 branch_prefix="v"
 branch_postfix=".x-arm64-k3"
 
-#https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/changes.rst?h=v6.10-rc1
+#https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/changes.rst?h=v6.11-rc1
 #arm
 #KERNEL_ARCH=arm
 #DEBARCH=armhf
