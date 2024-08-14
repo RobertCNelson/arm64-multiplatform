@@ -12,9 +12,6 @@ build:
     - docker-amd64
   stage: build
   script:
-    - pwd
-    - whoami
-    - tree
     - sed -i -e 's:gcc_13_aarch64:gcc_14_aarch64:g' version.sh
     - . version.sh && echo $BRANCH
     - mkdir -p /root/.cache/ccache/ || true
@@ -22,6 +19,7 @@ build:
     - ccache -s
     - cp -v system.sh.sample system.sh
     - echo "AUTO_BUILD=1" >> system.sh
+    - echo "LINUX_GIT=/opt/linux-src/" >> system.sh
     - echo "USE_LOCAL_GIT_MIRROR=1" >> system.sh
     - ./build_deb.sh
     - du -sh deploy/linux-image-*.deb || true
