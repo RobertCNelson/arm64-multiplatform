@@ -1,11 +1,11 @@
 image: robertcnelson/beagle-devscripts-kernel-debian-12-amd64
-# https://git.beagleboard.org/beagleboard/ci-docker-images
+# https://openbeagle.org/beagleboard/ci-docker-images
 
 cache:
   key: "$CI_PROJECT_NAME-v6.5.x-arm64-k3"
   paths:
     - dl/*.tar.xz
-    - ccache.tar.gz
+    - ccache.tar.lz4
 
 build:
   tags:
@@ -15,19 +15,18 @@ build:
     - sed -i -e 's:gcc_13_aarch64:gcc_13_aarch64:g' version.sh
     - . version.sh && echo $BRANCH
     - mkdir -p /root/.cache/ccache/ || true
-    - ccache -s
-    - tar -xf ccache.tar.gz -C / || true
+    - tar --use-compress-program=lz4 -xf ccache.tar.lz4 -C / || true
     - ccache -s
     - cp -v system.sh.sample system.sh
     - echo "AUTO_BUILD=1" >> system.sh
-    - echo "LINUX_GIT=/mnt/yocto-cache/git/linux-src/" >> system.sh
-    - git config --global --add safe.directory /mnt/yocto-cache/git/linux-src
+    - echo "LINUX_GIT=/opt/linux-src/" >> system.sh
+    - echo "USE_LOCAL_GIT_MIRROR=1" >> system.sh
     - ./build_deb.sh
     - du -sh deploy/linux-image-*.deb || true
     - ccache -s
-    - tar -cf ccache.tar.gz /root/.cache/ccache/
-  artifacts:
-    expire_in: 28 days
-    name: "$CI_PROJECT_NAME-v6.5.x-arm64-k3-$CI_JOB_ID"
-    paths:
-      - "deploy/linux-image-*.deb"
+    - tar --use-compress-program=lz4 -cf ccache.tar.lz4 /root/.cache/ccache/
+#  artifacts:
+#    expire_in: 28 days
+#    name: "$CI_PROJECT_NAME-v6.5.x-arm64-k3-$CI_JOB_ID"
+#    paths:
+#      - "deploy/linux-image-*.deb"
