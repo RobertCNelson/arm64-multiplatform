@@ -62,8 +62,10 @@ build_git () {
 
 git_kernel_stable () {
 	echo "-----------------------------"
-	echo "scripts/git: fetching from: ${linux_stable}"
-	${git_bin} fetch "${linux_stable}" master --tags
+	if [ ! "${USE_LOCAL_GIT_MIRROR}" ] ; then
+		echo "scripts/git: fetching from: ${linux_stable}"
+		${git_bin} fetch "${linux_stable}" master --tags
+	fi
 }
 
 git_kernel_torvalds () {
