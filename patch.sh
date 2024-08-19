@@ -383,7 +383,7 @@ copy_mainline_driver
 wpanusb
 #rt
 wireless_regdb
-mainline_patches
+#mainline_patches
 beagleboard_dtbs
 #local_patch
 
@@ -451,7 +451,7 @@ patch_backports () {
 }
 
 backports () {
-	backport_tag="rpi-6.10.y"
+	backport_tag="rpi-6.11.y"
 
 	subsystem="edt-ft5x06"
 	#regenerate="enable"

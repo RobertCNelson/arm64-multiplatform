@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.11.0-rc3 Kernel Configuration
+# Linux/arm64 6.11.0-rc4 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 13.3.0"
 CONFIG_CC_IS_GCC=y
@@ -10046,6 +10046,7 @@ CONFIG_OVERLAY_FS_REDIRECT_ALWAYS_FOLLOW=y
 #
 CONFIG_NETFS_SUPPORT=y
 # CONFIG_NETFS_STATS is not set
+# CONFIG_NETFS_DEBUG is not set
 # CONFIG_FSCACHE is not set
 # end of Caches
 

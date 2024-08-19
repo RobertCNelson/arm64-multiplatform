@@ -1,6 +1,6 @@
-From aaa7ddaa31c36435724b4929c57eb4871e3d3f9a Mon Sep 17 00:00:00 2001
+From c2a59bf9f30fd5680a0040c5b2098071a55d82e6 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 12 Aug 2024 14:50:09 -0500
+Date: Mon, 19 Aug 2024 16:54:09 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.11.x
@@ -45,7 +45,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/BONE-I2C3.dtso         |  24 +
  arch/arm64/boot/dts/ti/Makefile               |  14 +
  .../dts/ti/k3-am625-beagleplay-pinmux.dtsi    |  68 +++
- .../arm64/boot/dts/ti/k3-am625-beagleplay.dts |   1 +
+ .../arm64/boot/dts/ti/k3-am625-beagleplay.dts |  36 +-
  arch/arm64/boot/dts/ti/k3-am62p-mcu.dtsi      | 217 ++++++++
  arch/arm64/boot/dts/ti/k3-am62p-thermal.dtsi  |  50 ++
  arch/arm64/boot/dts/ti/k3-am62p-wakeup.dtsi   | 113 ++++
@@ -61,7 +61,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |   1 +
  arch/arm64/boot/dts/ti/k3-j721e-main.dtsi     |   9 +
  .../boot/dts/ti/k3-j721e-mcu-wakeup.dtsi      |  11 +
- 53 files changed, 3186 insertions(+), 20 deletions(-)
+ 53 files changed, 3213 insertions(+), 28 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/AM57XX-PRU-UIO-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
@@ -2420,10 +2420,10 @@ index 000000000000..1467d8ef5581
 +	symlink = "bone/i2c/3";
 +};
 diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
-index 7d1ce7a5d97b..014a6f5ba944 100644
+index e20b27ddf901..6df2a57444f7 100644
 --- a/arch/arm64/boot/dts/ti/Makefile
 +++ b/arch/arm64/boot/dts/ti/Makefile
-@@ -227,6 +227,18 @@ dtb- += k3-am625-beagleplay-csi2-ov5640.dtb \
+@@ -222,6 +222,18 @@ dtb- += k3-am625-beagleplay-csi2-ov5640.dtb \
  	k3-j784s4-evm-quad-port-eth-exp1.dtb \
  	k3-j784s4-evm-usxgmii-exp1-exp2.dtb
  
@@ -2442,7 +2442,7 @@ index 7d1ce7a5d97b..014a6f5ba944 100644
  # Enable support for device-tree overlays
  DTC_FLAGS_k3-am625-beagleplay += -@
  DTC_FLAGS_k3-am625-phyboard-lyra-rdk += -@
-@@ -245,3 +257,5 @@ DTC_FLAGS_k3-j721e-common-proc-board += -@
+@@ -240,3 +252,5 @@ DTC_FLAGS_k3-j721e-common-proc-board += -@
  DTC_FLAGS_k3-j721e-sk += -@
  DTC_FLAGS_k3-j721s2-common-proc-board += -@
  DTC_FLAGS_k3-j784s4-evm += -@
@@ -2523,7 +2523,7 @@ index 000000000000..556c4e62e112
 +	};
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
-index 8c02b361a597..91d6aae7fa5d 100644
+index 70de288d728e..91d6aae7fa5d 100644
 --- a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 @@ -12,6 +12,7 @@
@@ -2534,6 +2534,69 @@ index 8c02b361a597..91d6aae7fa5d 100644
  
  / {
  	compatible = "beagle,am625-beagleplay", "ti,am625";
+@@ -227,6 +228,10 @@ simple-audio-card,codec {
+ 		};
+ 	};
+ 
++	grove_connector0: grove-connector0 {
++		pinctrl-names = "default";
++		pinctrl-0 = <&grove_pins_default>;
++	};
+ };
+ 
+ &main_pmx0 {
+@@ -270,6 +275,27 @@ AM62X_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A17) I2C1_SDA */
+ 		>;
+ 	};
+ 
++	grove_pins_digital: grove-digital-pins {
++		pinctrl-single,pins = <
++			AM62X_IOPAD(0x01e8, PIN_INPUT, 7) /* (B17) I2C1_SCL.GPIO1_28 */
++			AM62X_IOPAD(0x01ec, PIN_INPUT, 7) /* (A17) I2C1_SDA.GPIO1_29 */
++		>;
++	};
++
++	grove_pins_uart: grove-uart-pins {
++		pinctrl-single,pins = <
++			AM62X_IOPAD(0x01e8, PIN_INPUT, 1) /* (B17) I2C1_SCL.UART1_RXD */
++			AM62X_IOPAD(0x01ec, PIN_OUTPUT, 1) /* (A17) I2C1_SDA.UART1_TXD */
++		>;
++	};
++
++	grove_pins_i2c: grove-i2c-pins {
++		pinctrl-single,pins = <
++			AM62X_IOPAD(0x01e8, PIN_INPUT_PULLUP, 0) /* (B17) I2C1_SCL */
++			AM62X_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A17) I2C1_SDA */
++		>;
++	};
++
+ 	local_i2c_pins_default: local-i2c-default-pins {
+ 		bootph-all;
+ 		pinctrl-single,pins = <
+@@ -753,13 +779,6 @@ ldo4_reg: ldo4 {
+ 	};
+ };
+ 
+-&main_i2c1 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&grove_pins_default>;
+-	clock-frequency = <100000>;
+-	status = "okay";
+-};
+-
+ &main_i2c2 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&i2c2_1v8_pins_default>;
+@@ -888,7 +907,8 @@ &main_uart6 {
+ 
+ 	mcu {
+ 		compatible = "ti,cc1352p7";
+-		reset-gpios = <&main_gpio0 72 GPIO_ACTIVE_LOW>;
++		bootloader-backdoor-gpios = <&main_gpio0 13 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&main_gpio0 14 GPIO_ACTIVE_HIGH>;
+ 		vdds-supply = <&vdd_3v3>;
+ 	};
+ };
 diff --git a/arch/arm64/boot/dts/ti/k3-am62p-mcu.dtsi b/arch/arm64/boot/dts/ti/k3-am62p-mcu.dtsi
 new file mode 100644
 index 000000000000..3fcbcc52004d
