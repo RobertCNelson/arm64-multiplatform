@@ -30,8 +30,7 @@ build:
     - du -sh deploy/linux-image-*.deb || true
     - ccache -sv
     - tar --use-compress-program=lz4 -cf ccache.tar.lz4 /root/.cache/ccache/
-#  artifacts:
-#    expire_in: 28 days
-#    name: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH-$CI_JOB_ID"
-#    paths:
-#      - "deploy/linux-image-*.deb"
+  artifacts:
+    name: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH-$CI_JOB_ID"
+    paths:
+      - "deploy/linux-image-*.deb"
