@@ -475,6 +475,7 @@ drivers () {
 
 	dir 'external/cadence'
 	dir 'external/gasket'
+	dir 'rfc/beagley-ai'
 }
 
 ###

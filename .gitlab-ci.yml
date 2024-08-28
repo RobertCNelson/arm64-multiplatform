@@ -6,7 +6,7 @@ before_script:
   - apt-get update
   - apt-get upgrade -yq
   - apt-get install -yq python3-pip
-  - pip3 install --break-system-packages --root-user-action=ignore git+https://github.com/devicetree-org/dt-schema.git@main
+  - pip3 install --break-system-packages --root-user-action=ignore git+https://git.gfnd.rcn-ee.org/mirror/dt-schema.git@main
   - dt-validate --version
 
 cache:
