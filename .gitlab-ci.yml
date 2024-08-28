@@ -6,7 +6,8 @@ before_script:
   - apt-get update
   - apt-get upgrade -yq
   - apt-get install -yq python3-pip
-  - pip3 install git+https://github.com/devicetree-org/dt-schema.git@main --break-system-packages
+  - pip3 install git+https://github.com/devicetree-org/dt-schema.git@main --break-system-packages --root-user-action
+  - dt-doc-validate
 
 cache:
   key: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH"
