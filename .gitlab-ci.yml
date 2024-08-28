@@ -5,6 +5,7 @@ before_script:
   - export PATH=/usr/lib/ccache:$PATH
   - apt-get update
   - apt-get upgrade -yq
+  - pip3 install git+https://github.com/devicetree-org/dt-schema.git@main
 
 cache:
   key: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH"
