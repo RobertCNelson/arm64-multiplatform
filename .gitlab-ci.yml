@@ -3,6 +3,7 @@ image: robertcnelson/beagle-devscripts-kernel-debian-13-amd64
 
 before_script:
   - export PATH=/usr/lib/ccache:$PATH
+  - echo "Acquire::http::Proxy \"http://192.168.1.10:3142\";" > /etc/apt/apt.conf.d/00aptproxy
   - apt-get update
   - apt-get upgrade -yq
   - pip3 install --break-system-packages --root-user-action=ignore git+https://git.gfnd.rcn-ee.org/mirror/dt-schema.git@main
