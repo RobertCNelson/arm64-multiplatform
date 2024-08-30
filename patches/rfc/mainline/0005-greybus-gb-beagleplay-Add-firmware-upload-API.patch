@@ -1,7 +1,7 @@
-From a3689b674ec5440583d2994f3e008d2dbd03fc8b Mon Sep 17 00:00:00 2001
+From 2daa4a03571fed88f544579b30c0d30027ce3c03 Mon Sep 17 00:00:00 2001
 From: Ayush Singh <ayush@beagleboard.org>
-Date: Thu, 1 Aug 2024 00:21:07 +0530
-Subject: [PATCH 3/3] greybus: gb-beagleplay: Add firmware upload API
+Date: Sun, 25 Aug 2024 22:17:07 +0530
+Subject: [PATCH 5/5] greybus: gb-beagleplay: Add firmware upload API
 
 Register with firmware upload API to allow updating firmware on cc1352p7
 without resorting to overlay for using the userspace flasher.

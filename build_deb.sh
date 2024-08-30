@@ -97,9 +97,9 @@ make_deb () {
 
 	if [ "${DTBS_CHECK}" ] ; then
 		echo "-----------------------------"
-		echo "make ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" dtbs_check"
+		echo "make -j4 ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" dtbs_check"
 		echo "-----------------------------"
-		make ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" dtbs_check
+		make -j4 ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" dtbs_check
 	fi
 
 	cd "${DIR}/" || exit

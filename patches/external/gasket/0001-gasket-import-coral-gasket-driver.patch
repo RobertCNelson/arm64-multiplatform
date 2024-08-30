@@ -1,6 +1,6 @@
-From 4bb882e95478ce871f4e2a77152f3a70aeebd935 Mon Sep 17 00:00:00 2001
+From 39cd2ee52f5348e074c6d0c47d24e93b50b1af8f Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 26 Apr 2024 15:30:35 -0500
+Date: Fri, 30 Aug 2024 10:48:40 -0500
 Subject: [PATCH] gasket: import coral gasket driver
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
@@ -43,10 +43,10 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  create mode 100644 drivers/staging/gasket/gasket_sysfs.h
 
 diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
-index 5cfabd5376cc..e44ce82b2c1b 100644
+index db4a392841b1..25b3d55ae075 100644
 --- a/drivers/staging/Kconfig
 +++ b/drivers/staging/Kconfig
-@@ -80,4 +80,6 @@ source "drivers/staging/qlge/Kconfig"
+@@ -66,4 +66,6 @@ source "drivers/staging/fieldbus/Kconfig"
  
  source "drivers/staging/vme_user/Kconfig"
  

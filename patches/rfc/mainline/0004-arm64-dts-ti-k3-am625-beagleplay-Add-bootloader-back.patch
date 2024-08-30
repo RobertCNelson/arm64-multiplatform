@@ -1,7 +1,7 @@
-From 6d0d8422a098602591c8c2401489d3fb93d0d507 Mon Sep 17 00:00:00 2001
+From d6d32a1afddfdf5b60a1a4786b5e6fed5b148fdd Mon Sep 17 00:00:00 2001
 From: Ayush Singh <ayush@beagleboard.org>
-Date: Thu, 1 Aug 2024 00:21:06 +0530
-Subject: [PATCH 2/3] arm64: dts: ti: k3-am625-beagleplay: Add
+Date: Sun, 25 Aug 2024 22:17:06 +0530
+Subject: [PATCH 4/5] arm64: dts: ti: k3-am625-beagleplay: Add
  bootloader-backdoor-gpios to cc1352p7
 
 Add bootloader-backdoor-gpios which is required for enabling bootloader
@@ -15,10 +15,10 @@ Signed-off-by: Ayush Singh <ayush@beagleboard.org>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
-index 004eb5c24a84..8c02b361a597 100644
+index 70de288d728e..a1cd47d7f5e3 100644
 --- a/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay.dts
-@@ -906,7 +906,8 @@ &main_uart6 {
+@@ -888,7 +888,8 @@ &main_uart6 {
  
  	mcu {
  		compatible = "ti,cc1352p7";

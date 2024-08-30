@@ -220,8 +220,7 @@ wireless_regdb () {
 
 mainline_patches () {
 	#exit 2
-	dir 'rfc/beagleplay-connector'
-	dir 'rfc/beagleplay-cc1352p7'
+	dir 'rfc/mainline'
 	#exit 2
 }
 
@@ -336,8 +335,6 @@ beagleboard_dtbs () {
 
 		device="am335x-boneblack-uboot.dtb" ; arm_dtb_makefile_append
 
-		device="k3-am67a-beagley-ai.dtb" ; k3_dtb_makefile_append
-
 		device="BONE-I2C1" ; k3_dtbo_makefile_append
 		device="BONE-I2C2" ; k3_dtbo_makefile_append
 		device="BONE-I2C3" ; k3_dtbo_makefile_append
@@ -386,7 +383,7 @@ copy_mainline_driver
 wpanusb
 rt
 wireless_regdb
-#mainline_patches
+mainline_patches
 beagleboard_dtbs
 #local_patch
 
@@ -478,7 +475,6 @@ drivers () {
 
 	dir 'external/cadence'
 	dir 'external/gasket'
-	dir 'rfc/beagley-ai'
 }
 
 ###
