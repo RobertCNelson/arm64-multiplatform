@@ -22,7 +22,6 @@ build:
   script:
     - git config --global user.email "$GITLAB_USER_EMAIL"
     - git config --global user.name "$GITLAB_USER_NAME"
-#    - sed -i -e 's:gcc_13_aarch64:gcc_14_aarch64:g' version.sh
     - . version.sh && echo $BRANCH
     - mkdir -p /root/.cache/ccache/ || true
     - tar --use-compress-program=lz4 -xf ccache.tar.lz4 -C / || true
@@ -32,8 +31,8 @@ build:
     - du -sh deploy/linux-image-*.deb || true
     - ccache -sv
     - tar --use-compress-program=lz4 -cf ccache.tar.lz4 /root/.cache/ccache/
-#  artifacts:
-#    when: on_success
-#    name: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH-$CI_JOB_ID"
-#    paths:
-#      - "deploy/linux-image-*.deb"
+  artifacts:
+    when: on_success
+    name: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH-$CI_JOB_ID"
+    paths:
+      - "deploy/linux-image-*.deb"
