@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.11.0-rc5 Kernel Configuration
+# Linux/arm64 6.11.0-rc6 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 13.3.0"
 CONFIG_CC_IS_GCC=y
@@ -7894,7 +7894,6 @@ CONFIG_SOUNDWIRE=m
 #
 # Qualcomm SoC drivers
 #
-# CONFIG_QCOM_PD_MAPPER is not set
 CONFIG_QCOM_PDR_HELPERS=m
 CONFIG_QCOM_PDR_MSG=m
 # CONFIG_QCOM_PMIC_PDCHARGER_ULOG is not set
