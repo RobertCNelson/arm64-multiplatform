@@ -111,6 +111,12 @@ external_git () {
 	${git_bin} describe
 }
 
+mainline_patches () {
+	#exit 2
+	dir 'rfc/mainline'
+	#exit 2
+}
+
 wpanusb () {
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
@@ -216,12 +222,6 @@ wireless_regdb () {
 		cleanup
 	fi
 	dir 'external/wireless_regdb'
-}
-
-mainline_patches () {
-	#exit 2
-	dir 'rfc/mainline'
-	#exit 2
 }
 
 cleanup_dts_builds () {
@@ -380,10 +380,10 @@ local_patch () {
 
 copy_mainline_driver
 #external_git
+mainline_patches
 wpanusb
 rt
 wireless_regdb
-mainline_patches
 beagleboard_dtbs
 #local_patch
 
@@ -464,8 +464,6 @@ backports () {
 	else
 		patch_backports
 	fi
-
-	${git} "${DIR}/patches/backports/mmc-core-quirks/0002-mmc-core-apply-SD-quirks-earlier-during-probe.patch"
 }
 
 drivers () {
