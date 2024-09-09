@@ -187,4 +187,10 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 #removed in 6.7-rc1
 ./scripts/config --disable CONFIG_DEV_APPLETALK
 
+./scripts/config --disable CONFIG_MODULE_COMPRESS_ZSTD
+./scripts/config --enable CONFIG_MODULE_COMPRESS_XZ
+
+#configure CONFIG_EXTRA_FIRMWARE
+./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s"
+
 cd ${DIR}/
