@@ -67,28 +67,27 @@ config_value () {
 cd ${DIR}/KERNEL/
 
 #Docker.io
-config="CONFIG_NETFILTER_XT_MATCH_IPVS"; config_enable
-config="CONFIG_CGROUP_BPF"; config_enable
-
-config="CONFIG_BLK_DEV_THROTTLING"; config_enable
-config="CONFIG_NET_CLS_CGROUP"; config_enable
-config="CONFIG_CGROUP_NET_PRIO"; config_enable
-config="CONFIG_IP_NF_TARGET_REDIRECT"; config_enable
-config="CONFIG_IP_VS"; config_enable
-config="CONFIG_IP_VS_NFCT"; config_enable
-config="CONFIG_IP_VS_PROTO_TCP"; config_enable
-config="CONFIG_IP_VS_PROTO_UDP"; config_enable
-config="CONFIG_IP_VS_RR"; config_enable
-config="CONFIG_SECURITY_SELINUX"; config_enable
-config="CONFIG_SECURITY_APPARMOR"; config_enable
-config="CONFIG_VXLAN"; config_enable
-config="CONFIG_IPVLAN"; config_enable
-config="CONFIG_DUMMY"; config_enable
-config="CONFIG_NF_NAT_FTP"; config_enable
-config="CONFIG_NF_CONNTRACK_FTP"; config_enable
-config="CONFIG_NF_NAT_TFTP"; config_enable
-config="CONFIG_NF_CONNTRACK_TFTP"; config_enable
-config="CONFIG_DM_THIN_PROVISIONING"; config_enable
+./scripts/config --enable CONFIG_NETFILTER_XT_MATCH_IPVS
+./scripts/config --enable CONFIG_CGROUP_BPF
+./scripts/config --enable CONFIG_BLK_DEV_THROTTLING
+./scripts/config --enable CONFIG_NET_CLS_CGROUP
+./scripts/config --enable CONFIG_CGROUP_NET_PRIO
+./scripts/config --enable CONFIG_IP_NF_TARGET_REDIRECT
+./scripts/config --enable CONFIG_IP_VS
+./scripts/config --enable CONFIG_IP_VS_NFCT
+./scripts/config --enable CONFIG_IP_VS_PROTO_TCP
+./scripts/config --enable CONFIG_IP_VS_PROTO_UDP
+./scripts/config --enable CONFIG_IP_VS_RR
+./scripts/config --enable CONFIG_SECURITY_SELINUX
+./scripts/config --enable CONFIG_SECURITY_APPARMOR
+./scripts/config --enable CONFIG_VXLAN
+./scripts/config --enable CONFIG_IPVLAN
+./scripts/config --enable CONFIG_DUMMY
+./scripts/config --enable CONFIG_NF_NAT_FTP
+./scripts/config --enable CONFIG_NF_CONNTRACK_FTP
+./scripts/config --enable CONFIG_NF_NAT_TFTP
+./scripts/config --enable CONFIG_NF_CONNTRACK_TFTP
+./scripts/config --enable CONFIG_DM_THIN_PROVISIONING
 
 #abi="5.13.0-trunk"
 #kernel="5.13.9-1~exp2"
