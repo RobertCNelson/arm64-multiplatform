@@ -31,8 +31,6 @@ build:
     - ccache -z
     - cp -v system.sh.gitlab system.sh
     - ./build_deb.sh
-    - git diff patches/defconfig > defconfig.diff
-    - cat defconfig.diff
     - du -sh deploy/linux-image-*.deb || true
     - ccache -sv
     - tar --use-compress-program=lz4 -cf ccache.tar.lz4 /root/.cache/ccache/
