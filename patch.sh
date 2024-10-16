@@ -475,7 +475,7 @@ drivers () {
 }
 
 ###
-#backports
+backports
 drivers
 
 echo "patch.sh ran successfully"
