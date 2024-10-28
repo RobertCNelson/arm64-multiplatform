@@ -478,5 +478,7 @@ drivers () {
 backports
 drivers
 
+dir 'fixes'
+
 echo "patch.sh ran successfully"
 #
