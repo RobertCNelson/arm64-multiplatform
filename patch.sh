@@ -429,6 +429,7 @@ backports () {
 drivers () {
 	dir 'branding/boris'
 
+	dir 'drivers/ite'
 	dir 'drivers/pcie'
 
 	dir 'external/cadence'
