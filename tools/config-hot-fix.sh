@@ -281,6 +281,13 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --module CONFIG_HX9023S
 ./scripts/config --module CONFIG_AW96103
 
+#new in debian v6.12.x 6.12~rc6-1~exp1
+./scripts/config --enable CONFIG_ZONE_DEVICE
+./scripts/config --module CONFIG_IP_VS_TWOS
+./scripts/config --module CONFIG_VIDEO_OV5648
+./scripts/config --enable CONFIG_DRM_DISPLAY_DP_AUX_CHARDEV
+./scripts/config --module CONFIG_TI_PRUSS
+
 #configure CONFIG_EXTRA_FIRMWARE
 ./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s cadence/mhdp8546.bin"
 
