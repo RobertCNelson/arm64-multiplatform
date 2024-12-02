@@ -1,6 +1,6 @@
-From 7d3058d704c4bcf29b2b7c1d0e79155061528f28 Mon Sep 17 00:00:00 2001
+From e44955793d61f1dd9fad26582b3c69033212b374 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 18 Nov 2024 10:12:24 -0600
+Date: Mon, 2 Dec 2024 15:06:26 -0600
 Subject: [PATCH] Add wireless-regdb regulatory database file
 
 https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/commit/?id=b66b9a188adf01b8a7654b902749ae161b5ebc60
