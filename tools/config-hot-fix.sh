@@ -187,9 +187,6 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 #removed in 6.7-rc1
 ./scripts/config --disable CONFIG_DEV_APPLETALK
 
-#temp, with drm backport
-./scripts/config --disable CONFIG_SND_USB_CAIAQ
-
 ./scripts/config  --enable CONFIG_USB_CDNS_SUPPORT
 ./scripts/config  --enable CONFIG_USB_CDNS3
 ./scripts/config  --enable CONFIG_USB_CDNS3_TI
