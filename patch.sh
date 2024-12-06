@@ -111,42 +111,10 @@ external_git () {
 	${git_bin} describe
 }
 
-wpanusb () {
-	#regenerate="enable"
-	if [ "x${regenerate}" = "xenable" ] ; then
-		cd ../
-		if [ -d ./wpanusb ] ; then
-			rm -rf ./wpanusb || true
-		fi
-
-		${git_bin} clone https://openbeagle.org/beagleconnect/linux/wpanusb.git --depth=1
-		cd ./wpanusb
-			wpanusb_hash=$(git rev-parse HEAD)
-		cd -
-
-		cd ./KERNEL/
-
-		cp -v ../wpanusb/wpanusb.h drivers/net/ieee802154/
-		cp -v ../wpanusb/wpanusb.c drivers/net/ieee802154/
-
-		${git_bin} add .
-		${git_bin} commit -a -m 'merge: wpanusb: https://git.beagleboard.org/beagleconnect/linux/wpanusb' -m "https://openbeagle.org/beagleconnect/linux/wpanusb/-/commit/${wpanusb_hash}" -s
-		${git_bin} format-patch -1 -o ../patches/external/wpanusb/
-		echo "WPANUSB: https://openbeagle.org/beagleconnect/linux/wpanusb/-/commit/${wpanusb_hash}" > ../patches/external/git/WPANUSB
-
-		rm -rf ../wpanusb/ || true
-
-		${git_bin} reset --hard HEAD~1
-
-		start_cleanup
-
-		${git} "${DIR}/patches/external/wpanusb/0001-merge-wpanusb-https-git.beagleboard.org-beagleconnec.patch"
-
-		wdir="external/wpanusb"
-		number=1
-		cleanup
-	fi
-	dir 'external/wpanusb'
+mainline_patches () {
+	#exit 2
+	dir 'rfc/mainline'
+	#exit 2
 }
 
 rt_cleanup () {
@@ -216,12 +184,6 @@ wireless_regdb () {
 		cleanup
 	fi
 	dir 'external/wireless_regdb'
-}
-
-mainline_patches () {
-	#exit 2
-	dir 'rfc/mainline'
-	#exit 2
 }
 
 cleanup_dts_builds () {
@@ -379,10 +341,9 @@ local_patch () {
 
 copy_mainline_driver
 #external_git
-wpanusb
+mainline_patches
 rt
 wireless_regdb
-mainline_patches
 beagleboard_dtbs
 #local_patch
 
