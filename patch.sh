@@ -96,14 +96,6 @@ cherrypick () {
 	num=$(($num+1))
 }
 
-copy_mainline_driver () {
-	#regenerate="enable"
-	if [ "x${regenerate}" = "xenable" ] ; then
-		cp -v ./drivers/mmc/core/quirks.h ../patches/mainline/mmc/
-		exit 2
-	fi
-}
-
 external_git () {
 	git_tag=""
 	echo "pulling: ${git_tag}"
@@ -342,7 +334,6 @@ local_patch () {
 	${git} "${DIR}/patches/dir/0001-patch.patch"
 }
 
-copy_mainline_driver
 #external_git
 #mainline_patches
 rt
