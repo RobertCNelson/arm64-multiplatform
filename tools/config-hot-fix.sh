@@ -296,11 +296,20 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_ZRAM_DEF_COMP_LZ4
 ./scripts/config --set-str CONFIG_ZRAM_DEF_COMP "lz4"
 
+#new in v6.14
+./scripts/config --module CONFIG_NTSYNC
+./scripts/config --module CONFIG_PPS_GENERATOR
+./scripts/config --module CONFIG_SENSORS_CRPS
+./scripts/config --module CONFIG_SENSORS_TPS25990
+./scripts/config --module CONFIG_BD79703
+./scripts/config --module CONFIG_OPT4060
+./scripts/config --enable CONFIG_FPROBE
+
 #configure CONFIG_EXTRA_FIRMWARE
 ./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s cadence/mhdp8546.bin"
 ./scripts/config --enable CONFIG_FW_LOADER_COMPRESS
 ./scripts/config --enable CONFIG_FW_LOADER_COMPRESS_XZ
-./scripts/config --disable CONFIG_FW_LOADER_COMPRESS_ZSTD
+./scripts/config --enable CONFIG_FW_LOADER_COMPRESS_ZSTD
 
 #BeagleBoard.org
 ./scripts/config --enable CONFIG_MSPM0_I2C
