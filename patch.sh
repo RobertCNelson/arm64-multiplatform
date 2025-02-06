@@ -368,6 +368,11 @@ post_backports () {
 	exit 2
 }
 
+patch_backports () {
+	echo "dir: backports/${subsystem}"
+	${git} "${DIR}/patches/backports/${subsystem}/0001-backports-${subsystem}-from-linux.git.patch"
+}
+
 pre_rpibackports () {
 	echo "dir: backports/${subsystem}"
 
@@ -396,11 +401,6 @@ post_rpibackports () {
 	exit 2
 }
 
-patch_backports () {
-	echo "dir: backports/${subsystem}"
-	${git} "${DIR}/patches/backports/${subsystem}/0001-backports-${subsystem}-from-linux.git.patch"
-}
-
 backports () {
 	backport_tag="rpi-6.6.y"
 
@@ -427,6 +427,10 @@ drivers () {
 	dir 'mikrobus'
 	dir 'external/cadence'
 	dir 'external/gasket'
+
+	#git revert --no-edit -s 3edf588e7fe00e90d1dc7fb9e599861b2c2cf442
+	#Breaking Kingston eMMC on new BBB's..
+	dir 'drivers/fixes/mmc'
 }
 
 ###
