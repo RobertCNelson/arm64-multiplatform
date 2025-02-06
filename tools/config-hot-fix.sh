@@ -264,6 +264,14 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_FB_SIMPLE
 ./scripts/config --module CONFIG_RPMSG_PRU
 
+#TI: 10.00.06
+./scripts/config --disable CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
+./scripts/config --enable CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+./scripts/config --disable CONFIG_MTD_SPI_NOR_USE_4K_SECTORS
+
+#TI: 10.01.01
+./scripts/config --module CONFIG_OMAP2PLUS_MBOX
+
 #new in v6.12.x
 ./scripts/config --enable CONFIG_PREEMPT_RT
 ./scripts/config --enable CONFIG_RPMB
@@ -305,6 +313,16 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --module CONFIG_OPT4060
 ./scripts/config --enable CONFIG_FPROBE
 
+#TI: 11.00.01
+./scripts/config --enable CONFIG_SRAM_DMA_HEAP
+./scripts/config --module CONFIG_CC33XX
+./scripts/config --module CONFIG_CC33XX_SDIO
+./scripts/config --module CONFIG_VIDEO_IMX390
+./scripts/config --enable CONFIG_DMABUF_HEAPS
+./scripts/config --enable CONFIG_DMABUF_HEAPS_SYSTEM
+./scripts/config --enable CONFIG_DMABUF_HEAPS_CMA
+./scripts/config --enable CONFIG_DMABUF_HEAPS_CARVEOUT
+
 #configure CONFIG_EXTRA_FIRMWARE
 ./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s cadence/mhdp8546.bin"
 ./scripts/config --enable CONFIG_FW_LOADER_COMPRESS
@@ -313,5 +331,9 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 
 #BeagleBoard.org
 ./scripts/config --enable CONFIG_MSPM0_I2C
+
+#Rust
+./scripts/config --disable CONFIG_MODVERSIONS
+./scripts/config --enable CONFIG_RUST
 
 cd ${DIR}/
