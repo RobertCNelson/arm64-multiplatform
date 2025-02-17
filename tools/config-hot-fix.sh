@@ -223,9 +223,11 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_FUNCTION_TRACER
 ./scripts/config --enable CONFIG_DYNAMIC_FTRACE
 
+./scripts/config --enable CONFIG_MODULE_COMPRESS
 ./scripts/config --disable CONFIG_MODULE_COMPRESS_GZIP
 ./scripts/config --enable CONFIG_MODULE_COMPRESS_XZ
 ./scripts/config --disable CONFIG_MODULE_COMPRESS_ZSTD
+./scripts/config --enable CONFIG_MODULE_COMPRESS_ALL
 ./scripts/config --enable CONFIG_GPIO_AGGREGATOR
 ./scripts/config --module CONFIG_PWM_GPIO
 
@@ -250,17 +252,25 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 #PCI Express Precision Time Measurement support
 ./scripts/config --enable CONFIG_PCIE_PTM
 
+#REMOTEPROC
 ./scripts/config --module CONFIG_RPMSG
 ./scripts/config --module CONFIG_RPMSG_NS
-./scripts/config --module CONFIG_RPMSG_VIRTIO
+./scripts/config --module CONFIG_RPMSG_PRU
+./scripts/config --enable CONFIG_RPMSG_VIRTIO
+./scripts/config --module CONFIG_TI_K3_DSP_REMOTEPROC
+./scripts/config --module CONFIG_TI_K3_M4_REMOTEPROC
+./scripts/config --module CONFIG_TI_K3_R5_REMOTEPROC
 
 #Google Coral Gasket
 ./scripts/config --module CONFIG_STAGING_GASKET_FRAMEWORK
 ./scripts/config --module CONFIG_STAGING_APEX_DRIVER
 
+#DRM_PANIC
+./scripts/config --enable CONFIG_DRM_PANIC
+./scripts/config --enable CONFIG_DRM_PANIC_SCREEN_QR_CODE
+
 #TI: 10.00.04
 ./scripts/config --enable CONFIG_FB_SIMPLE
-./scripts/config --module CONFIG_RPMSG_PRU
 
 #TI: 10.00.06
 ./scripts/config --disable CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
@@ -273,8 +283,6 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 #new in v6.12.x
 ./scripts/config --enable CONFIG_PREEMPT_RT
 ./scripts/config --enable CONFIG_RPMB
-./scripts/config --enable CONFIG_DRM_PANIC
-./scripts/config --module CONFIG_TI_K3_M4_REMOTEPROC
 ./scripts/config --module CONFIG_ADXL380_SPI
 ./scripts/config --module CONFIG_ADXL380_I2C
 ./scripts/config --module CONFIG_AD4000
@@ -320,6 +328,16 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_DMABUF_HEAPS_SYSTEM
 ./scripts/config --enable CONFIG_DMABUF_HEAPS_CMA
 ./scripts/config --enable CONFIG_DMABUF_HEAPS_CARVEOUT
+
+#TI: 11.00.02
+./scripts/config --module CONFIG_REGULATOR_RASPBERRYPI_TOUCHSCREEN_ATTINY
+./scripts/config --module CONFIG_DRM_TOSHIBA_TC358762
+#./scripts/config --module CONFIG_DRM_CDNS_DSI
+#./scripts/config --module CONFIG_DRM_CDNS_DSI_J721E
+#./scripts/config --module CONFIG_HWSPINLOCK_OMAP
+#./scripts/config --module CONFIG_PWM_OMAP_DMTIMER
+#./scripts/config --module CONFIG_PHY_CADENCE_DPHY
+./scripts/config --module CONFIG_TI_ECAP_CAPTURE
 
 #configure CONFIG_EXTRA_FIRMWARE
 ./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s cadence/mhdp8546.bin"
