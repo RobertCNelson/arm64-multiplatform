@@ -347,6 +347,7 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 
 #BeagleBoard.org
 ./scripts/config --enable CONFIG_MSPM0_I2C
+./scripts/config --module CONFIG_SEG_LED_GPIO
 
 #Rust
 ./scripts/config --disable CONFIG_MODVERSIONS
