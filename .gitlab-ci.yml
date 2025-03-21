@@ -1,11 +1,10 @@
-image: robertcnelson/beagle-devscripts-kernel-debian-13-amd64:latest
+image: robertcnelson/beagle-devscripts-kernel-debian-12-amd64:latest
 # https://openbeagle.org/beagleboard/ci-docker-images
 
 before_script:
   - export PATH=/usr/lib/ccache:$PATH
   - echo "Acquire::http::Proxy \"http://192.168.1.10:3142\";" > /etc/apt/apt.conf.d/00aptproxy
   - apt-get update
-  - apt-get upgrade -yq
   - apt-get dist-upgrade -yq
   - cd /opt/linux-src/ ; git pull ; cd -
 
@@ -27,7 +26,7 @@ build:
     - ccache -M 1G
     - ccache -z
     - cp -v system.sh.gitlab system.sh
-    - ./build_deb.sh
+    - ./build_kernel.sh && ./tools/rebuild_deb.sh
     - du -sh deploy/linux-image-*.deb || true
     - ccache -sv
     - tar --use-compress-program=lz4 -cf ccache.tar.lz4 /root/.cache/ccache/
@@ -35,9 +34,9 @@ build:
     - if: $CI_COMMIT_TAG
       when: never
     - when: always
-#  artifacts:
-#    expire_in: 28 days
-#    when: on_success
-#    name: "$CI_PROJECT_NAME-v6.11.x-arm64-k3-$CI_JOB_ID"
-#    paths:
-#      - "deploy/linux-image-*.deb"
+  artifacts:
+    expire_in: 28 days
+    when: on_success
+    name: "$CI_PROJECT_NAME-v6.11.x-arm64-k3-$CI_JOB_ID"
+    paths:
+      - "deploy/linux-image-*.deb"
