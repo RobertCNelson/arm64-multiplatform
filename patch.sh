@@ -304,6 +304,7 @@ beagleboard_dtbs () {
 		device="k3-j721e-beagleboneai64-pwm-epwm2-p9_14" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-pwm-epwm2-p9_14-p9_16" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-pwm-epwm2-p9_16" ; k3_dtbo_makefile_append
+		device="k3-j721e-beagleboneai64-pwm-epwm4-p9_25" ; k3_dtbo_makefile_append
 
 		k3_makefile_patch_cleanup_overlays
 
@@ -371,6 +372,11 @@ post_backports () {
 	exit 2
 }
 
+patch_backports () {
+	echo "dir: backports/${subsystem}"
+	${git} "${DIR}/patches/backports/${subsystem}/0001-backports-${subsystem}-from-linux.git.patch"
+}
+
 pre_rpibackports () {
 	echo "dir: backports/${subsystem}"
 
@@ -399,11 +405,6 @@ post_rpibackports () {
 	exit 2
 }
 
-patch_backports () {
-	echo "dir: backports/${subsystem}"
-	${git} "${DIR}/patches/backports/${subsystem}/0001-backports-${subsystem}-from-linux.git.patch"
-}
-
 backports () {
 	backport_tag="rpi-6.10.y"
 
@@ -427,6 +428,10 @@ drivers () {
 
 	dir 'external/cadence'
 	dir 'external/gasket'
+
+	#git revert --no-edit -s 3edf588e7fe00e90d1dc7fb9e599861b2c2cf442
+	#Breaking Kingston eMMC on new BBB's..
+	dir 'drivers/fixes/mmc'
 }
 
 ###

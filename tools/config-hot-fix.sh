@@ -211,7 +211,7 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --module CONFIG_VIDEO_IMX390
 ./scripts/config --module CONFIG_VIDEO_OX05B1S
 
-#enable MIKROBUS
+#enable SPI/W1
 ./scripts/config --enable CONFIG_SPI_OMAP24XX
 ./scripts/config --enable CONFIG_W1
 ./scripts/config --enable CONFIG_MIKROBUS
@@ -223,9 +223,11 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_FUNCTION_TRACER
 ./scripts/config --enable CONFIG_DYNAMIC_FTRACE
 
+./scripts/config --enable CONFIG_MODULE_COMPRESS
 ./scripts/config --disable CONFIG_MODULE_COMPRESS_GZIP
 ./scripts/config --enable CONFIG_MODULE_COMPRESS_XZ
 ./scripts/config --disable CONFIG_MODULE_COMPRESS_ZSTD
+./scripts/config --enable CONFIG_MODULE_COMPRESS_ALL
 ./scripts/config --enable CONFIG_GPIO_AGGREGATOR
 ./scripts/config --module CONFIG_PWM_GPIO
 
@@ -250,23 +252,30 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 #PCI Express Precision Time Measurement support
 ./scripts/config --enable CONFIG_PCIE_PTM
 
+#REMOTEPROC
 ./scripts/config --module CONFIG_RPMSG
 ./scripts/config --module CONFIG_RPMSG_NS
-./scripts/config --module CONFIG_RPMSG_VIRTIO
+./scripts/config --module CONFIG_RPMSG_PRU
+./scripts/config --enable CONFIG_RPMSG_VIRTIO
+./scripts/config --module CONFIG_TI_K3_DSP_REMOTEPROC
+./scripts/config --module CONFIG_TI_K3_M4_REMOTEPROC
+./scripts/config --module CONFIG_TI_K3_R5_REMOTEPROC
 
 #Google Coral Gasket
 ./scripts/config --module CONFIG_STAGING_GASKET_FRAMEWORK
 ./scripts/config --module CONFIG_STAGING_APEX_DRIVER
 
-#TI: 10.00.04
-./scripts/config --enable CONFIG_FB_SIMPLE
-./scripts/config --module CONFIG_RPMSG_PRU
+#TI: 10.00.06
+./scripts/config --disable CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
+./scripts/config --enable CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+./scripts/config --disable CONFIG_MTD_SPI_NOR_USE_4K_SECTORS
+
+#TI: 10.01.01
+./scripts/config --module CONFIG_OMAP2PLUS_MBOX
 
 #new in v6.12.x
 ./scripts/config --enable CONFIG_PREEMPT_RT
 ./scripts/config --enable CONFIG_RPMB
-./scripts/config --enable CONFIG_DRM_PANIC
-./scripts/config --module CONFIG_TI_K3_M4_REMOTEPROC
 ./scripts/config --module CONFIG_ADXL380_SPI
 ./scripts/config --module CONFIG_ADXL380_I2C
 ./scripts/config --module CONFIG_AD4000
@@ -294,13 +303,91 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_ZRAM_DEF_COMP_LZ4
 ./scripts/config --set-str CONFIG_ZRAM_DEF_COMP "lz4"
 
+#debian 6.12.16-1
+./scripts/config --enable CONFIG_RCU_LAZY
+./scripts/config --module CONFIG_NSM
+./scripts/config --module CONFIG_NITRO_ENCLAVES
+./scripts/config --module CONFIG_USB_MASS_STORAGE
+
+#debian 6.13.5-1
+./scripts/config --enable CONFIG_UDMABUF
+
+#debian 6.13.7-1
+./scripts/config --module CONFIG_VIRTIO_IOMMU
+./scripts/config --enable CONFIG_CRYPTO_ECDSA
+
+#new in v6.14
+./scripts/config --module CONFIG_NTSYNC
+./scripts/config --module CONFIG_PPS_GENERATOR
+./scripts/config --module CONFIG_SENSORS_CRPS
+./scripts/config --module CONFIG_SENSORS_TPS25990
+./scripts/config --module CONFIG_BD79703
+./scripts/config --module CONFIG_OPT4060
+./scripts/config --enable CONFIG_FPROBE
+
+#TI: 11.00.01
+./scripts/config --enable CONFIG_SRAM_DMA_HEAP
+./scripts/config --module CONFIG_CC33XX
+./scripts/config --module CONFIG_CC33XX_SDIO
+./scripts/config --module CONFIG_VIDEO_IMX390
+./scripts/config --enable CONFIG_DMABUF_HEAPS
+./scripts/config --enable CONFIG_DMABUF_HEAPS_SYSTEM
+./scripts/config --enable CONFIG_DMABUF_HEAPS_CMA
+./scripts/config --enable CONFIG_DMABUF_HEAPS_CARVEOUT
+
+#TI: 11.00.02
+./scripts/config --module CONFIG_REGULATOR_RASPBERRYPI_TOUCHSCREEN_ATTINY
+./scripts/config --module CONFIG_DRM_TOSHIBA_TC358762
+#./scripts/config --module CONFIG_DRM_CDNS_DSI
+#./scripts/config --module CONFIG_DRM_CDNS_DSI_J721E
+#./scripts/config --module CONFIG_HWSPINLOCK_OMAP
+#./scripts/config --module CONFIG_PWM_OMAP_DMTIMER
+#./scripts/config --module CONFIG_PHY_CADENCE_DPHY
+./scripts/config --module CONFIG_TI_ECAP_CAPTURE
+
+#TI: 11.00.04
+./scripts/config --enable CONFIG_MTD_SPI_NAND
+./scripts/config --enable CONFIG_MTD_UBI
+./scripts/config --enable CONFIG_TI_K3_UDMA_AM62L
+./scripts/config --enable CONFIG_UBIFS_FS
+./scripts/config --enable CONFIG_CRYPTO_ZSTD
+./scripts/config --enable CONFIG_ZSTD_COMPRESS
+
+#TI: 11.00.06
+./scripts/config --module CONFIG_CRYPTO_CRC64_ISO3309
+./scripts/config --enable CONFIG_CRYPTO_USER_API_HASH
+./scripts/config --enable CONFIG_CRYPTO_DEV_TI_MCRC64
+./scripts/config --enable CONFIG_CRYPTO_DEV_TI_DTHEV2
+./scripts/config --module CONFIG_TOUCHSCREEN_ILI210X
+
+#TI: 11.00.07
+./scripts/config --module CONFIG_SERIAL_8250_PRUSS
+./scripts/config --module CONFIG_VIDEO_IMX728
+./scripts/config --module CONFIG_VIDEO_OV2312
+
 #configure CONFIG_EXTRA_FIRMWARE
 ./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s cadence/mhdp8546.bin"
 ./scripts/config --enable CONFIG_FW_LOADER_COMPRESS
 ./scripts/config --enable CONFIG_FW_LOADER_COMPRESS_XZ
-./scripts/config --disable CONFIG_FW_LOADER_COMPRESS_ZSTD
+./scripts/config --enable CONFIG_FW_LOADER_COMPRESS_ZSTD
 
 #BeagleBoard.org
 ./scripts/config --enable CONFIG_MSPM0_I2C
+./scripts/config --module CONFIG_SEG_LED_GPIO
+./scripts/config --module CONFIG_SND_SOC_TLV320AIC3X_I2C
+
+#PCIE
+./scripts/config --enable CONFIG_PCI_ENDPOINT
+./scripts/config --enable CONFIG_PCI_ENDPOINT_CONFIGFS
+./scripts/config --enable CONFIG_PCIE_CADENCE_EP
+./scripts/config --enable CONFIG_PCI_J721E_EP
+./scripts/config --module CONFIG_PCI_EPF_TEST
+./scripts/config --module CONFIG_PCI_EPF_NTB
+./scripts/config --module CONFIG_PCI_EPF_VNTB
+./scripts/config --module CONFIG_PCI_ENDPOINT_TEST
+
+#Rust
+./scripts/config --disable CONFIG_MODVERSIONS
+#./scripts/config --enable CONFIG_RUST
 
 cd ${DIR}/
