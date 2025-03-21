@@ -54,7 +54,7 @@ KERNEL_TAG=${KERNEL_REL}.77
 #https://mirrors.edge.kernel.org/pub/linux/kernel/projects/rt/6.6/
 kernel_rt=".77-rt50"
 #Kernel Build
-BUILD=${build_prefix}34
+BUILD=${build_prefix}34.1
 
 #v6.X-rcX + upto SHA
 #prev_KERNEL_SHA=""
