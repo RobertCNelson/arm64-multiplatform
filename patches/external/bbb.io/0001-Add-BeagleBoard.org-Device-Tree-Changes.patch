@@ -1,11 +1,11 @@
-From 72ef3a28f9c925ef698dd47821dbe98582b424e0 Mon Sep 17 00:00:00 2001
+From 9a60682489ba2ffca326f28cb70012f77def275a Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 21 Mar 2025 16:15:42 -0500
+Date: Fri, 21 Mar 2025 17:08:46 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.10.x
 
-https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/09a0077756701a0042311722ffd740664823cca1
+https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/9eeaa88f124b3a76315930423360b927f2a39620
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  .../boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso |   28 +
@@ -63,7 +63,6 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/k3-am62p-main.dtsi     |    4 +-
  arch/arm64/boot/dts/ti/k3-am62p-mcu.dtsi      |   10 +
  arch/arm64/boot/dts/ti/k3-am62p-wakeup.dtsi   |    5 +
- arch/arm64/boot/dts/ti/k3-am62p5.dtsi         |   43 +
  .../arm64/boot/dts/ti/k3-am62x-sk-common.dtsi |   53 +-
  .../dts/ti/k3-am67a-beagley-ai-pinmux.dtsi    |  936 ++++++++++++++
  .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  159 +++
@@ -92,7 +91,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../dt-bindings/clock/sophgo,sg2042-rpgate.h  |   58 +
  .../interrupt-controller/arm-gic.h            |    2 +
  include/uapi/linux/input-event-codes.h        |    1 +
- 84 files changed, 8125 insertions(+), 97 deletions(-)
+ 83 files changed, 8082 insertions(+), 97 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso
@@ -5928,60 +5927,6 @@ index c71d9624ea27..71784e10b4f1 100644
  		usb0_phy_ctrl: syscon@4008 {
  			compatible = "ti,am62-usb-phy-ctrl", "syscon";
  			reg = <0x4008 0x4>;
-diff --git a/arch/arm64/boot/dts/ti/k3-am62p5.dtsi b/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
-index 41f479dca455..f9bcce59441d 100644
---- a/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-am62p5.dtsi
-@@ -96,6 +96,49 @@ cpu3: cpu@3 {
- 		};
- 	};
- 
-+	a53_opp_table: opp-table {
-+		compatible = "operating-points-v2-ti-cpu";
-+		opp-shared;
-+		syscon = <&opp_efuse_table>;
-+
-+		opp-200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			opp-supported-hw = <0x01 0x0007>;
-+			clock-latency-ns = <6000000>;
-+		};
-+
-+		opp-400000000 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-supported-hw = <0x01 0x0007>;
-+			clock-latency-ns = <6000000>;
-+		};
-+
-+		opp-600000000 {
-+			opp-hz = /bits/ 64 <600000000>;
-+			opp-supported-hw = <0x01 0x0007>;
-+			clock-latency-ns = <6000000>;
-+		};
-+
-+		opp-800000000 {
-+			opp-hz = /bits/ 64 <800000000>;
-+			opp-supported-hw = <0x01 0x0007>;
-+			clock-latency-ns = <6000000>;
-+		};
-+
-+		opp-1000000000 {
-+			opp-hz = /bits/ 64 <1000000000>;
-+			opp-supported-hw = <0x01 0x0006>;
-+			clock-latency-ns = <6000000>;
-+		};
-+
-+		opp-1250000000 {
-+			opp-hz = /bits/ 64 <1250000000>;
-+			opp-supported-hw = <0x01 0x0004>;
-+			clock-latency-ns = <6000000>;
-+			opp-suspend;
-+		};
-+	};
-+
- 	l2_0: l2-cache0 {
- 		compatible = "cache";
- 		cache-unified;
 diff --git a/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi b/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi
 index 63b4e88e3a94..91dbdabf97ec 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62x-sk-common.dtsi
