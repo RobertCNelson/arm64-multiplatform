@@ -96,14 +96,6 @@ cherrypick () {
 	num=$(($num+1))
 }
 
-copy_mainline_driver () {
-	#regenerate="enable"
-	if [ "x${regenerate}" = "xenable" ] ; then
-		cp -v ./drivers/mmc/core/quirks.h ../patches/mainline/mmc/
-		exit 2
-	fi
-}
-
 external_git () {
 	git_tag=""
 	echo "pulling: ${git_tag}"
@@ -309,6 +301,7 @@ beagleboard_dtbs () {
 		device="k3-j721e-beagleboneai64-pwm-epwm2-p9_14" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-pwm-epwm2-p9_14-p9_16" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-pwm-epwm2-p9_16" ; k3_dtbo_makefile_append
+		device="k3-j721e-beagleboneai64-pwm-epwm4-p9_25" ; k3_dtbo_makefile_append
 
 		k3_makefile_patch_cleanup_overlays
 
@@ -339,7 +332,6 @@ local_patch () {
 	${git} "${DIR}/patches/dir/0001-patch.patch"
 }
 
-copy_mainline_driver
 #external_git
 mainline_patches
 rt
@@ -377,6 +369,11 @@ post_backports () {
 	exit 2
 }
 
+patch_backports () {
+	echo "dir: backports/${subsystem}"
+	${git} "${DIR}/patches/backports/${subsystem}/0001-backports-${subsystem}-from-linux.git.patch"
+}
+
 pre_rpibackports () {
 	echo "dir: backports/${subsystem}"
 
@@ -405,11 +402,6 @@ post_rpibackports () {
 	exit 2
 }
 
-patch_backports () {
-	echo "dir: backports/${subsystem}"
-	${git} "${DIR}/patches/backports/${subsystem}/0001-backports-${subsystem}-from-linux.git.patch"
-}
-
 backports () {
 	backport_tag="rpi-6.8.y"
 
@@ -433,6 +425,10 @@ drivers () {
 
 	dir 'external/cadence'
 	dir 'external/gasket'
+
+	#git revert --no-edit -s 3edf588e7fe00e90d1dc7fb9e599861b2c2cf442
+	#Breaking Kingston eMMC on new BBB's..
+	dir 'drivers/fixes/mmc'
 }
 
 ###
