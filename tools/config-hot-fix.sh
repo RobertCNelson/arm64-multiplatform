@@ -320,6 +320,12 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --module CONFIG_VIRTIO_IOMMU
 ./scripts/config --enable CONFIG_CRYPTO_ECDSA
 
+#debian 6.13.8-1
+./scripts/config --enable CONFIG_NVME_TARGET_PASSTHRU
+./scripts/config --module CONFIG_NVME_TARGET_LOOP
+./scripts/config --module CONFIG_NVME_TARGET_FCLOOP
+./scripts/config --enable CONFIG_RPCSEC_GSS_KRB5_ENCTYPES_AES_SHA2
+
 #new in v6.14
 ./scripts/config --module CONFIG_NTSYNC
 ./scripts/config --module CONFIG_PPS_GENERATOR
