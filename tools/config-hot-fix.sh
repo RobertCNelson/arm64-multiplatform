@@ -313,6 +313,10 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --module CONFIG_NITRO_ENCLAVES
 ./scripts/config --module CONFIG_USB_MASS_STORAGE
 
+#debian 6.12.20-1
+./scripts/config --module CONFIG_VIDEO_OV5675
+./scripts/config --enable CONFIG_RPCSEC_GSS_KRB5_ENCTYPES_AES_SHA2
+
 #debian 6.13.5-1
 ./scripts/config --enable CONFIG_UDMABUF
 
@@ -324,7 +328,6 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_NVME_TARGET_PASSTHRU
 ./scripts/config --module CONFIG_NVME_TARGET_LOOP
 ./scripts/config --module CONFIG_NVME_TARGET_FCLOOP
-./scripts/config --enable CONFIG_RPCSEC_GSS_KRB5_ENCTYPES_AES_SHA2
 
 #new in v6.14
 ./scripts/config --module CONFIG_NTSYNC
@@ -375,6 +378,9 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --module CONFIG_VIDEO_IMX728
 ./scripts/config --module CONFIG_VIDEO_OV2312
 
+#TI: 11.00.08
+./scripts/config --module CONFIG_VIDEO_OX05B1S
+
 #configure CONFIG_EXTRA_FIRMWARE
 ./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s cadence/mhdp8546.bin"
 ./scripts/config --enable CONFIG_FW_LOADER_COMPRESS
@@ -385,6 +391,8 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_MSPM0_I2C
 ./scripts/config --module CONFIG_SEG_LED_GPIO
 ./scripts/config --module CONFIG_SND_SOC_TLV320AIC3X_I2C
+./scripts/config --module CONFIG_WIZNET_W5100
+./scripts/config --module CONFIG_WIZNET_W5100_SPI
 
 #PCIE
 ./scripts/config --enable CONFIG_PCI_ENDPOINT
