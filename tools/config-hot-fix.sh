@@ -381,6 +381,24 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 #TI: 11.00.08
 ./scripts/config --module CONFIG_VIDEO_OX05B1S
 
+#new in v6.15
+./scripts/config --module CONFIG_FWCTL
+./scripts/config --module CONFIG_IWLMLD
+./scripts/config --module CONFIG_RTW88_8814AU
+./scripts/config --module CONFIG_RTW88_8814AE
+./scripts/config --module CONFIG_SPI_OFFLOAD_TRIGGER_PWM
+./scripts/config --module CONFIG_SENSORS_HTU31
+./scripts/config --module CONFIG_SENSORS_INA233
+./scripts/config --module CONFIG_HID_UNIVERSAL_PIDFF
+./scripts/config --module CONFIG_AD4030
+./scripts/config --module CONFIG_AD4851
+./scripts/config --module CONFIG_AD7191
+./scripts/config --module CONFIG_TI_ADS7138
+./scripts/config --module CONFIG_ADIS16550
+./scripts/config --module CONFIG_AL3000A
+./scripts/config --module CONFIG_APDS9160
+./scripts/config --module CONFIG_SI7210
+
 #configure CONFIG_EXTRA_FIRMWARE
 ./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s cadence/mhdp8546.bin"
 ./scripts/config --enable CONFIG_FW_LOADER_COMPRESS

@@ -246,7 +246,7 @@ k3_makefile_patch_cleanup_overlays () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.14.x"
+	branch="v6.15.x"
 	https_repo="https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -444,7 +444,7 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="rpi-6.14.y"
+	backport_tag="rpi-6.15.y"
 
 	subsystem="edt-ft5x06"
 	#regenerate="enable"
@@ -468,10 +468,6 @@ drivers () {
 
 	dir 'external/cadence'
 	dir 'external/gasket'
-
-	#git revert --no-edit -s 3edf588e7fe00e90d1dc7fb9e599861b2c2cf442
-	#Breaking Kingston eMMC on new BBB's..
-	dir 'drivers/fixes/mmc'
 }
 
 ###
