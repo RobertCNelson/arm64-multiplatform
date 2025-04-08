@@ -1,0 +1,46 @@
+From 6da09f1cd0c10ef3ecee63ea8383762635cd910f Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Tue, 8 Apr 2025 16:52:11 -0500
+Subject: [PATCH v2 1/2] dt-bindings: arm: ti: Add PocketBeagle2
+
+This board is based on ti,am625 family using the am6232 and am6254 variations.
+
+https://www.beagleboard.org/boards/pocketbeagle-2
+https://openbeagle.org/pocketbeagle/pocketbeagle-2
+
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+CC: Nishanth Menon <nm@ti.com>
+CC: Vignesh Raghavendra <vigneshr@ti.com>
+CC: Tero Kristo <kristo@kernel.org>
+CC: Rob Herring <robh@kernel.org>
+CC: Krzysztof Kozlowski <krzk+dt@kernel.org>
+CC: Conor Dooley <conor+dt@kernel.org>
+CC: Andrew Davis <afd@ti.com>
+CC: Andrei Aldea <a-aldea@ti.com>
+CC: Dhruva Gole <d-gole@ti.com>
+CC: Jason Kridner <jkridner@beagleboard.org>
+CC: Deepak Khatri <lorforlinux@beagleboard.org>
+CC: Ayush Singh <ayush@beagleboard.org>
+---
+Changes since v1:
+ - Apply acked-by from Conor Dooley
+---
+ Documentation/devicetree/bindings/arm/ti/k3.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/ti/k3.yaml b/Documentation/devicetree/bindings/arm/ti/k3.yaml
+index 18f155cd06c8..b7f6cd8d4b9e 100644
+--- a/Documentation/devicetree/bindings/arm/ti/k3.yaml
++++ b/Documentation/devicetree/bindings/arm/ti/k3.yaml
+@@ -46,6 +46,7 @@ properties:
+       - description: K3 AM625 SoC
+         items:
+           - enum:
++              - beagle,am62-pocketbeagle2
+               - beagle,am625-beagleplay
+               - ti,am625-sk
+               - ti,am62-lp-sk
+-- 
+2.47.2
+
