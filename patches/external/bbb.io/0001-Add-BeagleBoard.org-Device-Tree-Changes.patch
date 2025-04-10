@@ -1,25 +1,25 @@
-From 98119cc3773227702a1f9c09c8fa0a6dcbf4430a Mon Sep 17 00:00:00 2001
+From a6657bd69b89e8030c9e54d065951863c3fcc797 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 21 Mar 2025 18:17:57 -0500
+Date: Thu, 10 Apr 2025 14:59:00 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees/-/tree/v6.6.x
 
-https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/049d6dd06a58b65c1a1c1a8b12a75d85606bf621
+https://openbeagle.org/beagleboard/BeagleBoard-DeviceTrees/-/commit/db8600aa1e622731f1ae7d2b4f8918dffd27aa46
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  .../boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso |  28 ++
  arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso    | 112 ++++++++
- .../boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso | 123 +++++++++
- .../boot/dts/ti/omap/BB-BBGG-WL1835-00A0.dtso | 249 +++++++++++++++++
- .../boot/dts/ti/omap/BB-BBGW-WL1835-00A0.dtso | 217 +++++++++++++++
- .../dts/ti/omap/BB-BONE-eMMC1-01-00A0.dtso    |  61 +++++
+ .../boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso | 123 ++++++++
+ .../boot/dts/ti/omap/BB-BBGG-WL1835-00A0.dtso | 249 ++++++++++++++++
+ .../boot/dts/ti/omap/BB-BBGW-WL1835-00A0.dtso | 217 ++++++++++++++
+ .../dts/ti/omap/BB-BONE-eMMC1-01-00A0.dtso    |  61 ++++
  .../boot/dts/ti/omap/BBORG_COMMS-00A2.dtso    |  47 ++++
  arch/arm/boot/dts/ti/omap/BBORG_FAN-A000.dtso |  16 ++
  arch/arm/boot/dts/ti/omap/BONE-ADC.dtso       |  28 ++
- arch/arm/boot/dts/ti/omap/Makefile            |  15 ++
+ arch/arm/boot/dts/ti/omap/Makefile            |  15 +
  .../dts/ti/omap/am335x-bbb-bone-buses.dtsi    |  69 +++++
- .../boot/dts/ti/omap/am335x-bone-common.dtsi  | 107 +++++---
+ .../boot/dts/ti/omap/am335x-bone-common.dtsi  | 107 ++++---
  arch/arm/boot/dts/ti/omap/am335x-bone.dts     |   5 +
  .../dts/ti/omap/am335x-boneblack-uboot.dts    | 194 +++++++++++++
  .../dts/ti/omap/am335x-boneblack-wireless.dts |   8 +
@@ -27,7 +27,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm/boot/dts/ti/omap/am335x-boneblue.dts |  16 +-
  .../dts/ti/omap/am335x-bonegreen-common.dtsi  |   1 +
  .../dts/ti/omap/am335x-bonegreen-wireless.dts |  71 ++++-
- .../arm/boot/dts/ti/omap/am335x-bonegreen.dts | 153 +++++++++++
+ .../arm/boot/dts/ti/omap/am335x-bonegreen.dts | 153 ++++++++++
  .../dts/ti/omap/am335x-osd3358-sm-red.dts     |   7 +
  .../dts/ti/omap/am335x-osd335x-common.dtsi    |   1 +
  .../boot/dts/ti/omap/am335x-pocketbeagle.dts  |  59 +++-
@@ -39,7 +39,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../dts/ti/omap/am57xx-beagle-x15-revb1.dts   |   5 +
  .../dts/ti/omap/am57xx-beagle-x15-revc.dts    |   5 +
  .../boot/dts/ti/omap/am57xx-beagle-x15.dts    |   5 +
- .../arm/boot/dts/ti/omap/bbai-bone-buses.dtsi |  75 ++++++
+ .../arm/boot/dts/ti/omap/bbai-bone-buses.dtsi |  75 +++++
  arch/arm/boot/dts/ti/omap/dra7-l4.dtsi        |   2 +-
  arch/arm/boot/dts/ti/omap/dra7.dtsi           |  18 +-
  arch/arm/boot/dts/ti/omap/dra7xx-clocks.dtsi  |   2 +-
@@ -56,19 +56,19 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/BONE-I2C1.dtso         |  24 ++
  arch/arm64/boot/dts/ti/BONE-I2C2.dtso         |  24 ++
  arch/arm64/boot/dts/ti/BONE-I2C3.dtso         |  24 ++
- arch/arm64/boot/dts/ti/Makefile               |  14 +
- arch/arm64/boot/dts/ti/k3-am62-main.dtsi      | 186 ++++++++++---
+ arch/arm64/boot/dts/ti/Makefile               |  22 ++
+ arch/arm64/boot/dts/ti/k3-am62-main.dtsi      | 186 +++++++++---
  arch/arm64/boot/dts/ti/k3-am62-mcu.dtsi       |  20 +-
  arch/arm64/boot/dts/ti/k3-am62-thermal.dtsi   |  39 ++-
  arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi    |   6 +-
  arch/arm64/boot/dts/ti/k3-am62.dtsi           |   7 +-
- .../dts/ti/k3-am625-beagleplay-pinmux.dtsi    |  96 +++++++
+ .../dts/ti/k3-am625-beagleplay-pinmux.dtsi    | 143 ++++++++++
  .../arm64/boot/dts/ti/k3-am625-beagleplay.dts | 174 +++++++++---
- arch/arm64/boot/dts/ti/k3-am625-sk.dts        |  31 ++-
+ arch/arm64/boot/dts/ti/k3-am625-sk.dts        |  31 +-
  arch/arm64/boot/dts/ti/k3-am625.dtsi          |   8 +-
  .../arm64/boot/dts/ti/k3-am62x-sk-common.dtsi |  78 +++++-
  .../k3-j721e-beagleboneai64-BBORG_MOTOR.dtso  |  95 +++++++
- .../ti/k3-j721e-beagleboneai64-pinmux.dtsi    | 121 +++++++++
+ .../ti/k3-j721e-beagleboneai64-pinmux.dtsi    | 125 +++++++++
  ...-beagleboneai64-pwm-epwm0-p8_13-p8_19.dtso |  39 +++
  ...-j721e-beagleboneai64-pwm-epwm0-p8_13.dtso |  37 +++
  ...-j721e-beagleboneai64-pwm-epwm0-p8_19.dtso |  37 +++
@@ -76,12 +76,20 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  ...-j721e-beagleboneai64-pwm-epwm2-p9_14.dtso |  37 +++
  ...-j721e-beagleboneai64-pwm-epwm2-p9_16.dtso |  37 +++
  ...-j721e-beagleboneai64-pwm-epwm4-p9_25.dtso |  38 +++
- .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |  27 +-
- .../dts/ti/k3-j721e-common-proc-board.dts     |  21 +-
+ ...beagleboneai64-spi-mcspi1-cs0-no-miso.dtso |  86 ++++++
+ ...3-j721e-beagleboneai64-spi-mcspi1-cs0.dtso |  92 ++++++
+ ...3-j721e-beagleboneai64-spi-mcspi2-cs0.dtso |  81 ++++++
+ ...beagleboneai64-spi-mcspi3-cs0-no-miso.dtso |  75 +++++
+ ...21e-beagleboneai64-spi-mcspi6-cs0-cs1.dtso | 109 +++++++
+ ...3-j721e-beagleboneai64-spi-mcspi6-cs0.dtso |  87 ++++++
+ ...beagleboneai64-spi-mcspi6-cs1-no-miso.dtso |  72 +++++
+ ...3-j721e-beagleboneai64-spi-mcspi7-cs0.dtso |  62 ++++
+ .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |  29 +-
+ .../dts/ti/k3-j721e-common-proc-board.dts     |  24 +-
  arch/arm64/boot/dts/ti/k3-j721e-main.dtsi     |   8 +-
  .../boot/dts/ti/k3-j721e-mcu-wakeup.dtsi      |  48 +++-
- arch/arm64/boot/dts/ti/k3-j721e-sk.dts        | 255 +++++++++++++++++-
- arch/arm64/boot/dts/ti/k3-j721e-som-p0.dtsi   | 225 +++++++++++++++-
+ arch/arm64/boot/dts/ti/k3-j721e-sk.dts        | 265 +++++++++++++++++-
+ arch/arm64/boot/dts/ti/k3-j721e-som-p0.dtsi   | 234 +++++++++++++++-
  arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi  |   5 +-
  arch/arm64/boot/dts/ti/k3-j721e.dtsi          |   4 +-
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |  36 ++-
@@ -90,8 +98,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../interrupt-controller/arm-gic.h            |   2 +
  include/dt-bindings/leds/common.h             |   8 +
  include/dt-bindings/net/ti-dp83867.h          |   4 +-
- include/uapi/linux/input-event-codes.h        |   1 +
- 83 files changed, 3539 insertions(+), 257 deletions(-)
+ 90 files changed, 4282 insertions(+), 260 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso
@@ -117,6 +124,14 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-pwm-epwm2-p9_14.dtso
  create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-pwm-epwm2-p9_16.dtso
  create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-pwm-epwm4-p9_25.dtso
+ create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi1-cs0-no-miso.dtso
+ create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi1-cs0.dtso
+ create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi2-cs0.dtso
+ create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi3-cs0-no-miso.dtso
+ create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs0-cs1.dtso
+ create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs0.dtso
+ create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs1-no-miso.dtso
+ create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi7-cs0.dtso
 
 diff --git a/arch/arm/boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso b/arch/arm/boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso
 new file mode 100644
@@ -2629,10 +2644,10 @@ index 000000000000..983854bfc1e2
 +	pinctrl-0 = <&bborg_comms_can_pins>;
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/dra7-l4.dtsi b/arch/arm/boot/dts/ti/omap/dra7-l4.dtsi
-index 5733e3a4ea8e..6e67d99832ac 100644
+index 3fdb79b0e8bf..ba7fdaae9c6e 100644
 --- a/arch/arm/boot/dts/ti/omap/dra7-l4.dtsi
 +++ b/arch/arm/boot/dts/ti/omap/dra7-l4.dtsi
-@@ -80,7 +80,7 @@ pbias_mmc_reg: pbias_mmc_omap5 {
+@@ -81,7 +81,7 @@ pbias_mmc_reg: pbias_mmc_omap5 {
  						};
  					};
  
@@ -3017,10 +3032,10 @@ index 000000000000..1467d8ef5581
 +	symlink = "bone/i2c/3";
 +};
 diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
-index 8bd5acc6d683..70e277c9e6b1 100644
+index 8bd5acc6d683..09cb55f939bf 100644
 --- a/arch/arm64/boot/dts/ti/Makefile
 +++ b/arch/arm64/boot/dts/ti/Makefile
-@@ -76,9 +76,23 @@ dtb-$(CONFIG_ARCH_K3) += k3-j721s2-evm.dtb
+@@ -76,9 +76,31 @@ dtb-$(CONFIG_ARCH_K3) += k3-j721s2-evm.dtb
  dtb-$(CONFIG_ARCH_K3) += k3-am69-sk.dtb
  dtb-$(CONFIG_ARCH_K3) += k3-j784s4-evm.dtb
  
@@ -3035,6 +3050,14 @@ index 8bd5acc6d683..70e277c9e6b1 100644
 +dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-pwm-epwm2-p9_14-p9_16.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-pwm-epwm2-p9_16.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-pwm-epwm4-p9_25.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-spi-mcspi1-cs0.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-spi-mcspi1-cs0-no-miso.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-spi-mcspi2-cs0.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-spi-mcspi3-cs0-no-miso.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-spi-mcspi6-cs0-cs1.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-spi-mcspi6-cs0.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-spi-mcspi6-cs1-no-miso.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-j721e-beagleboneai64-spi-mcspi7-cs0.dtbo
 +
  # Enable support for device-tree overlays
  DTC_FLAGS_k3-am625-sk += -@
@@ -3565,10 +3588,10 @@ index 11f14eef2d44..f0781f2bea29 100644
  			#size-cells = <2>;
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay-pinmux.dtsi b/arch/arm64/boot/dts/ti/k3-am625-beagleplay-pinmux.dtsi
 new file mode 100644
-index 000000000000..65af1bcd5260
+index 000000000000..834b557b53ad
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay-pinmux.dtsi
-@@ -0,0 +1,96 @@
+@@ -0,0 +1,143 @@
 +// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
 + * https://beagleplay.org/
@@ -3636,6 +3659,53 @@ index 000000000000..65af1bcd5260
 +			AM62X_IOPAD(0x01b8, PIN_OUTPUT, 2) /* (C13) SPI0_CS1.EHRPWM0_B */
 +		>;
 +	};
++};
++
++&main_gpio0 {
++	bootph-all;
++	pinctrl-names = "default";
++	pinctrl-0 = <&gpio0_pins_default>;
++	gpio-line-names = "BL_EN_3V3", "SPE_PO_EN", "RTC_INT",	/* 0-2 */
++		"USR0", "USR1", "USR2", "USR3", "", "", "USR4",	/* 3-9 */
++		"EEPROM_WP",					/* 10 */
++		"CSI2_CAMERA_GPIO1", "CSI2_CAMERA_GPIO2",	/* 11-12 */
++		"CC1352P7_BOOT", "CC1352P7_RSTN", "GBE_RSTN", "", "",	/* 13-17 */
++		"USR_BUTTON", "", "", "", "", "", "", "", "",	/* 18-26 */
++		"", "", "", "", "", "", "", "", "", "HDMI_INT",	/* 27-36 */
++		"", "VDD_WLAN_EN", "", "", "WL_IRQ", "GBE_INTN",/* 37-42 */
++		"", "", "", "", "", "", "", "", "", "", "", "",	/* 43-54 */
++		"", "", "", "", "", "", "", "", "", "", "", "", /* 55-66 */
++		"", "", "", "", "", "", "", "", "", "", "", "", /* 67-78 */
++		"", "", "", "", "", "",				/* 79-84 */
++		"BITBANG_MDIO_DATA", "BITBANG_MDIO_CLK",	/* 85-86 */
++		"", "", "", "", "";				/* 87-91 */
++};
++
++&main_gpio1 {
++	bootph-all;
++	pinctrl-names = "default";
++	pinctrl-0 = <&mikrobus_gpio_pins_default>;
++	gpio-line-names = "", "", "", "", "",			/* 0-4 */
++		"SPE_RSTN", "SPE_INTN", "MIKROBUS_GPIO1_7",	/* 5-7 */
++		"MIKROBUS_GPIO1_8", "MIKROBUS_GPIO1_9",		/* 8-9 */
++		"MIKROBUS_GPIO1_10", "MIKROBUS_GPIO1_11",	/* 10-11 */
++		"MIKROBUS_GPIO1_12", "MIKROBUS_W1_GPIO0",	/* 12-13 */
++		"MIKROBUS_GPIO1_14",				/* 14 */
++		"", "", "", "", "VDD_3V3_SD", "", "",		/* 15-21 */
++		"MIKROBUS_GPIO1_22", "MIKROBUS_GPIO1_23",	/* 22-23 */
++		"MIKROBUS_GPIO1_24", "MIKROBUS_GPIO1_25",	/* 24-25 */
++		"", "", "", "", "", "", "", "", "", "", "", "",	/* 26-37 */
++		"", "", "", "", "", "", "", "", "", "",		/* 38-47 */
++		"SD_CD", "SD_VOLT_SEL", "", "";			/* 48-51 */
++};
++
++&mcu_gpio0 {
++	gpio-line-names = "", "", "", "",			/* 0-3 */
++		"", "", "", "",					/* 4-7 */
++		"", "", "", "",					/* 8-11 */
++		"", "", "", "",					/* 12-15 */
++		"", "QWIIC_I2C0_SCL", "QWIIC_I2C0_SDA", "",	/* 16-19 */
++		"", "", "", "";					/* 20-23 */
 +};
 +
 +&wkup_i2c0 {
@@ -4688,10 +4758,10 @@ index 000000000000..171f9c295d57
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-pinmux.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-pinmux.dtsi
 new file mode 100644
-index 000000000000..4ef358151a02
+index 000000000000..c9451861281d
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-pinmux.dtsi
-@@ -0,0 +1,121 @@
+@@ -0,0 +1,125 @@
 +// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
 + * https://beagleboard.org/ai-64
@@ -4771,7 +4841,11 @@ index 000000000000..4ef358151a02
 +			  "", "", "P8_16", "", "", /* 60-64 */
 +			  "", "", "", "", "", /* 65-69 */
 +			  "", "", "", "", "", /* 70-74 */
-+			  "P8_14", "", "", "", ""; /* 75-79 */
++			  "P8_14", "", "", "", "", /* 75-79 */
++			  "", "", "", "", "", /* 80-84 */
++			  "", "", "", "", "", /* 85-89 */
++			  "", "", "", "P9_14", "P9_16", /* 90-94 */
++			  "", "", "", "", ""; /* 95-99 */
 +};
 +
 +&main_gpio1 {
@@ -5119,8 +5193,727 @@ index 000000000000..745b2216064d
 +	pinctrl-0 = <&P9_25_pwm>;
 +	status = "okay";
 +};
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi1-cs0-no-miso.dtso b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi1-cs0-no-miso.dtso
+new file mode 100644
+index 000000000000..5435e23f2bd4
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi1-cs0-no-miso.dtso
+@@ -0,0 +1,86 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * DT Overlay for SPI1 pins P8_35b(cs0), P9_26a(clk), P9_24a(MOSI).
++ *
++ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
++ *
++ */
++
++/*
++ * WARNING!!!
++ * This overlay will not mux if there are pin conflicts. For example, by default i2c4 is enabled taking
++ * pins P9_24 and P9_26. To stop pin conflicts, this overlay disables i2c4.
++ *
++ * Look for errors in `sudo beagle-version \| grep UBOOT`
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "k3-pinctrl.h"
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++*/
++&{/chosen} {
++        overlays {
++                k3-j721e-beagleboneai64-spi-mcspi1-cs0.kernel = __TIMESTAMP__;
++                mcspi1.2110000.spi = "k3-j721e-beagleboneai64-spi-mcspi1-cs0.2110000";
++        };
++};
++
++/* Disable i2c4 to free up pins p9_24 and p9_26 */
++&main_i2c4 {
++        status = "disable";
++};
++
++/* To figure out which SoC pad numbers go with which BB header pins, look at columns A and B
++ * in the following spreadsheet. To figure out mux modes, look at row 10.
++ * https://drive.google.com/file/d/15NLaUeMBy-iT8s6rFrP4Esf0Qh57T4xu/view?pli=1
++ *
++ * To figure out the addresses of SoC pads, look at table "Table 5-125. Pin Multiplexing" in the TDA4VM Processor datasheet
++ * https://www.ti.com/lit/ds/symlink/tda4vm.pdf?ts=1741890214437&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTDA4VM
++ *
++*/
++&main_pmx0 {
++    mcspi1_cs_zero: mcspi1-cs0-pins {
++        pinctrl-single,pins = <
++            /* Used TI SysConfig app to generate these, had manually adjust output modes */
++			J721E_IOPAD(0x1dc, PIN_OUTPUT, 0) /* (Y1) SPI1_CLK P9_26a*/
++			J721E_IOPAD(0x1d4, PIN_OUTPUT, 0) /* (Y3) SPI1_CS0 P8_35b*/
++			J721E_IOPAD(0x1e0, PIN_OUTPUT, 0) /* (Y5) SPI1_D0 P9_24a*/
++            /* J721E_IOPAD(0x1e4, PIN_INPUT, 0) (Y2) SPI1_D1 P9_18b......Conflicts with SPI6_D1*/
++
++            /* Disable SoC pins that share same BB header pins */
++            J721E_IOPAD(0x30, PIN_DISABLE, 7) /* (AF24) disable P9_26b */
++            J721E_IOPAD(0x64, PIN_DISABLE, 7) /* (AD23) disable P8_35a  */
++            J721E_IOPAD(0x34, PIN_DISABLE, 7) /* (AJ24) disable P9_24b */
++            /* J721E_IOPAD(0xA4, PIN_DISABLE, 7) (0xA4) disable P9_18a .... for if we are using P9_18b */
++        >;
++    };
++};
++
++/*
++ * Most of the stuff in this section is here for the spidev linux driver. For control from
++ * from a DSP or R5 core, only the status and pinctrl parts matter.
++ *
++ * Make sure to load the spidev driver to control SPI from linux.
++ */
++&main_spi1 {
++    #address-cells = <1>;
++    #size-cells = <0>;
++    pinctrl-names = "default";
++    pinctrl-0 = <&mcspi1_cs_zero>;
++    ti,spi-num-cs = <1>; /* With this number wrong, no spi device would get created, error seen with `sudo journalctl -k` */
++    ti,pindir-d0-out-d1-in; /* d1 is not really an input, the pin is not muxed */
++    status = "okay";
++
++    /* When controlling SPI from outside linux, you may want to delete this spidev stuff */
++    channel@0 {
++        symlink = "bone/spi/1.0_no_miso"; /* /dev/bone/spi/1.0_no_miso */
++        compatible = "rohm,dh2228fv";
++        reg = <0>; /* CE0 */
++        spi-max-frequency = <125000000>;
++    };
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi1-cs0.dtso b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi1-cs0.dtso
+new file mode 100644
+index 000000000000..6c7416d49c9e
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi1-cs0.dtso
+@@ -0,0 +1,92 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * DT Overlay for SPI1 pins P8_35b(cs0), P9_26a(clk), P9_24a(MOSI).
++ *
++ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
++ *
++ */
++
++/*
++ * WARNING!!!
++ * This overlay will not mux if there are pin conflicts. For example, by default i2c4 is enabled taking
++ * pins P9_24 and P9_26. To stop pin conflicts, this overlay disables i2c4 and i2c6. This overlay
++ * also conflicts with SPI6_D1, the miso for spi6
++ *
++ * Look for errors in `sudo beagle-version \| grep UBOOT`
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "k3-pinctrl.h"
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++*/
++&{/chosen} {
++        overlays {
++                k3-j721e-beagleboneai64-spi-mcspi1-cs0.kernel = __TIMESTAMP__;
++                mcspi1.2110000.spi = "k3-j721e-beagleboneai64-spi-mcspi1-cs0.2110000";
++        };
++};
++
++/* Disable i2c4 to free up pins p9_24 and p9_26 */
++&main_i2c4 {
++        status = "disable";
++};
++
++/* Disable i2c6 to free up pin p9_18 */
++&main_i2c6 {
++        status = "disable";
++};
++
++/* To figure out which SoC pad numbers go with which BB header pins, look at columns A and B
++ * in the following spreadsheet. To figure out mux modes, look at row 10.
++ * https://drive.google.com/file/d/15NLaUeMBy-iT8s6rFrP4Esf0Qh57T4xu/view?pli=1
++ *
++ * To figure out the addresses of SoC pads, look at table "Table 5-125. Pin Multiplexing" in the TDA4VM Processor datasheet
++ * https://www.ti.com/lit/ds/symlink/tda4vm.pdf?ts=1741890214437&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTDA4VM
++ *
++*/
++&main_pmx0 {
++    mcspi1_cs_zero: mcspi1-cs0-pins {
++        pinctrl-single,pins = <
++            /* Used TI SysConfig app to generate these, had manually adjust output modes */
++			J721E_IOPAD(0x1dc, PIN_OUTPUT, 0) /* (Y1) SPI1_CLK P9_26a*/
++			J721E_IOPAD(0x1d4, PIN_OUTPUT, 0) /* (Y3) SPI1_CS0 P8_35b*/
++			J721E_IOPAD(0x1e0, PIN_OUTPUT, 0) /* (Y5) SPI1_D0 P9_24a*/
++            J721E_IOPAD(0x1e4, PIN_INPUT, 0)  /* (Y2) SPI1_D1 P9_18b......Conflicts with SPI6_D1*/
++
++            /* Disable SoC pins that share same BB header pins */
++            J721E_IOPAD(0x30, PIN_DISABLE, 7) /* (AF24) disable P9_26b */
++            J721E_IOPAD(0x64, PIN_DISABLE, 7) /* (AD23) disable P835a  */
++            J721E_IOPAD(0x34, PIN_DISABLE, 7) /* (AJ24) disable P9_24b */
++            J721E_IOPAD(0xA4, PIN_DISABLE, 7) /* (AH22) disable P9_18a */
++        >;
++    };
++};
++
++/*
++ * Most of the stuff in this section is here for the spidev linux driver. For control from
++ * from a DSP or R5 core, only the status and pinctrl parts matter.
++ *
++ * Make sure to load the spidev driver to control SPI from linux.
++ */
++&main_spi1 {
++    #address-cells = <1>;
++    #size-cells = <0>;
++    pinctrl-names = "default";
++    pinctrl-0 = <&mcspi1_cs_zero>;
++    ti,spi-num-cs = <1>; /* With this number wrong, no spi device would get created, error seen with `sudo journalctl -k` */
++    ti,pindir-d0-out-d1-in; /* d1 is not really an input, the pin is not muxed */
++    status = "okay";
++
++    /* When controlling SPI from outside linux, you may want to delete this spidev stuff */
++    channel@0 {
++        symlink = "bone/spi/1.0"; /* /dev/bone/spi/1.0 */
++        compatible = "rohm,dh2228fv";
++        reg = <0>; /* CE0 */
++        spi-max-frequency = <125000000>;
++    };
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi2-cs0.dtso b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi2-cs0.dtso
+new file mode 100644
+index 000000000000..07fb0d66c9e7
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi2-cs0.dtso
+@@ -0,0 +1,81 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * DT Overlay for SPI6 pins P9_17(cs0), P9_22(clk), P9_21(MOSI), P9_18(MISO).
++ *
++ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
++ *
++ */
++
++/*
++ * WARNING!!!
++ * This overlay will not mux if there are pin conflicts. For example, by default i2c6 is enabled taking
++ * pins P9_17 and P9_18. To stop pin conflicts, this overlay disables i2c6.
++ *
++ * Look for errors in `sudo beagle-version \| grep UBOOT`
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "k3-pinctrl.h"
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++*/
++&{/chosen} {
++        overlays {
++                k3-j721e-beagleboneai64-spi-mcspi2-cs0.kernel = __TIMESTAMP__;
++                mcspi2.2120000.spi = "k3-j721e-beagleboneai64-spi-mcspi2-cs0.2120000";
++        };
++};
++
++/* To figure out which SoC pad numbers go with which BB header pins, look at columns A and B
++ * in the following spreadsheet. To figure out mux modes, look at row 10.
++ * https://drive.google.com/file/d/15NLaUeMBy-iT8s6rFrP4Esf0Qh57T4xu/view?pli=1
++ *
++ * To figure out the addresses of SoC pads, look at table "Table 5-125. Pin Multiplexing" in the TDA4VM Processor datasheet
++ * https://www.ti.com/lit/ds/symlink/tda4vm.pdf?ts=1741890214437&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTDA4VM
++ *
++*/
++&main_pmx0 {
++    mcspi2_cs_zero: mcspi2-cs0-pins {
++        pinctrl-single,pins = <
++            /* Used TI SysConfig app to generate these, had manually adjust output modes */
++            J721E_IOPAD(0x1f4, PIN_OUTPUT, 4) /* (AB1) UART0_RTSn.SPI2_CLK */
++            J721E_IOPAD(0x1f0, PIN_OUTPUT, 4) /* (AC2) UART0_CTSn.SPI2_CS0 */
++            J721E_IOPAD(0x200, PIN_OUTPUT, 4) /* (AC4) UART1_CTSn.SPI2_D0 */
++            J721E_IOPAD(0x204, PIN_INPUT, 4) /* (AD5) UART1_RTSn.SPI2_D1 */
++
++            /* Disable SoC pins that share same BB header pins */
++            /* This pin conflics*/
++            J721E_IOPAD(0xbc, PIN_DISABLE, 7) /* (AD26) disable P9_27a */
++            J721E_IOPAD(0x4c, PIN_DISABLE, 7) /* (AJ21) disable P9_42b */
++            J721E_IOPAD(0x1A4, PIN_DISABLE, 7) /* (W26) disable P9_25b */
++        >;
++    };
++};
++
++/*
++ * Most of the stuff in this section is here for the spidev linux driver. For control from
++ * from a DSP or R5 core, only the status and pinctrl parts matter.
++ *
++ * Make sure to load the spidev driver to control SPI from linux.
++ */
++&main_spi2 {
++    #address-cells = <1>;
++    #size-cells = <0>;
++    pinctrl-names = "default";
++    pinctrl-0 = <&mcspi2_cs_zero>;
++    ti,spi-num-cs = <1>;
++    ti,pindir-d0-out-d1-in;
++    status = "okay";
++
++    /* When controlling SPI from outside linux, you may want to delete this spidev stuff */
++    channel@0 {
++        symlink = "bone/spi/2.0"; /* /dev/bone/spi/2.0 */
++        compatible = "rohm,dh2228fv";
++        reg = <0>; /* CE0 */
++        spi-max-frequency = <125000000>;
++    };
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi3-cs0-no-miso.dtso b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi3-cs0-no-miso.dtso
+new file mode 100644
+index 000000000000..dcf0bfb82242
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi3-cs0-no-miso.dtso
+@@ -0,0 +1,75 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * DT Overlay for SPI6 pins P8_40(cs0), P8_46(clk), P9_40b(MOSI).
++ *
++ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
++ *
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "k3-pinctrl.h"
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++*/
++&{/chosen} {
++        overlays {
++                k3-j721e-beagleboneai64-spi-mcspi3-cs0.kernel = __TIMESTAMP__;
++                mcspi3.2130000.spi = "k3-j721e-beagleboneai64-spi-mcspi3-cs0.2130000";
++        };
++};
++
++/* To figure out which SoC pad numbers go with which BB header pins, look at columns A and B
++ * in the following spreadsheet. To figure out mux modes, look at row 10.
++ * https://drive.google.com/file/d/15NLaUeMBy-iT8s6rFrP4Esf0Qh57T4xu/view?pli=1
++ *
++ * To figure out the addresses of SoC pads, look at table "Table 5-125. Pin Multiplexing" in the TDA4VM Processor datasheet
++ * https://www.ti.com/lit/ds/symlink/tda4vm.pdf?ts=1741890214437&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTDA4VM
++ *
++*/
++&main_pmx0 {
++    mcspi3_cs_zero: mcspi3-cs0-pins {
++        pinctrl-single,pins = <
++            /* Used TI SysConfig app to generate these, had manually adjust output modes */
++            J721E_IOPAD(0x144, PIN_OUTPUT, 4) /* (Y25) PRG0_PRU1_GPO17.SPI3_CLK P8_46 */
++            J721E_IOPAD(0x11c, PIN_OUTPUT, 4) /* (AA24) PRG0_PRU1_GPO7.SPI3_CS0 P8_40*/
++            J721E_IOPAD(0x148, PIN_OUTPUT, 4) /* (AA26) PRG0_PRU1_GPO18.SPI3_D0 P9_40b*/
++
++            /* Disable SoC pins that share same BB header pins
++             *
++             * Turns out there is no P9_40a pin connected to the main domain. You may be tempted to disable the pad K26
++             * using the J721E_WKUP_IOPAD() macro. It turns out in actuality this disables P8_20. MCU pad K26 and main domain
++             * pad AF2,as seen from the processor datasheet, happen to have the same address 11c134. It turns out the
++             * J721E_IOPAD() and J721E_WKUP_IOPAD() marcos are the same. They do not do anything different.
++             *
++            */
++        >;
++    };
++};
++
++/*
++ * Most of the stuff in this section is here for the spidev linux driver. For control from
++ * from a DSP or R5 core, only the status and pinctrl parts matter.
++ *
++ * Make sure to load the spidev driver to control SPI from linux.
++ */
++&main_spi3 {
++    #address-cells = <1>;
++    #size-cells = <0>;
++    pinctrl-names = "default";
++    pinctrl-0 = <&mcspi3_cs_zero>;
++    ti,spi-num-cs = <1>; /* With this number wrong, no spi device would get created, error seen with `sudo journalctl -k` */
++    ti,pindir-d0-out-d1-in; /* d1 is not really an input, the pin is not muxed */
++    status = "okay";
++
++    /* When controlling SPI from outside linux, you may want to delete this spidev stuff */
++    channel@0 {
++        symlink = "bone/spi/3.0_no_miso"; /* /dev/bone/spi/3.0_no_miso */
++        compatible = "rohm,dh2228fv";
++        reg = <0>; /* CE0 */
++        spi-max-frequency = <125000000>;
++    };
++};
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs0-cs1.dtso b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs0-cs1.dtso
+new file mode 100644
+index 000000000000..c1aabaf131de
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs0-cs1.dtso
+@@ -0,0 +1,109 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * DT Overlay for SPI6 CS0 and CS1 on the BeagleBoneAI64.
++ * Pins:
++ * - CS0: P9_17a (SPI6_CS0)
++ * - CS1: P9_23 (SPI6_CS1)
++ * - CLK: P9_22a (SPI6_CLK)
++ * - MOSI: P9_21a (SPI6_D0)
++ * - MISO: P9_18a (SPI6_D1)
++ *
++ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
++ */
++
++/*
++ *WARNING!!!
++ * This overlay will not mux if there are pin conflicts. For example, by default i2c6 is enabled taking
++ * pins P9_17 and P9_18. To stop pin conflicts, this overlay disables i2c6.
++ *
++ * Look for errors in `sudo beagle-version \| grep UBOOT`
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "k3-pinctrl.h"
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++*/
++&{/chosen} {
++    overlays {
++        k3-j721e-beagleboneai64-spi-mcspi6-cs0-cs1.kernel = __TIMESTAMP__;
++        mcspi6.2160000.spi = "k3-j721e-beagleboneai64-spi-mcspi6-cs0-cs1.2160000";
++    };
++};
++
++/* Disable i2c6 to free up pins p9_17 and p9_18 */
++&main_i2c6 {
++        status = "disable";
++};
++
++/* To figure out which SoC pad numbers go with which BB header pins, look at columns A and B
++ * in the following spreadsheet. To figure out mux modes, look at row 10.
++ * https://drive.google.com/file/d/15NLaUeMBy-iT8s6rFrP4Esf0Qh57T4xu/view?pli=1
++ *
++ * To figure out the addresses of SoC pads, look at table "Table 5-125. Pin Multiplexing" in the TDA4VM Processor datasheet
++ * https://www.ti.com/lit/ds/symlink/tda4vm.pdf?ts=1741890214437&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTDA4VM
++ *
++*/
++&main_pmx0 {
++	mcspi6_pins: mcspi6-pins {
++		pinctrl-single,pins = <
++            /* Used TI SysConfig app to generate these, had manually adjust output modes */
++            J721E_IOPAD(0x9c, PIN_OUTPUT, 4) /* (AC22) PRG1_PRU1_GPO17.SPI6_CLK P9_22a */
++			J721E_IOPAD(0x74, PIN_OUTPUT, 4) /* (AC21) PRG1_PRU1_GPO7.SPI6_CS0 P9_17a */
++			J721E_IOPAD(0xa0, PIN_OUTPUT, 4) /* (AJ22) PRG1_PRU1_GPO18.SPI6_D0 MOSI P9_21a */
++			J721E_IOPAD(0xa4, PIN_INPUT, 4) /* (AH22) PRG1_PRU1_GPO19.SPI6_D1 MISO P9_18a */
++            J721E_IOPAD(0x28, PIN_OUTPUT, 4) /* (AG20) PRG1_PRU1_GPO8.SPI6_CS1 P9_23 */
++
++            /* Disable SoC pins that share same BB header pins */
++            /* These pins conflict */
++            J721E_IOPAD(0x170, PIN_DISABLE, 7) /* (U29) disable P9_22b */
++            J721E_IOPAD(0x1D0, PIN_DISABLE, 7) /* (AA3) disable P9_17b */
++            J721E_IOPAD(0x16C, PIN_DISABLE, 7) /* (U28) disable P9_21b */
++            J721E_IOPAD(0x1E4, PIN_DISABLE, 7) /* (Y2) disable P9_18b */
++            /* No conflicting pad for P9_23 (AG20), so no disable needed */
++		>;
++	};
++};
++
++/*
++ * SPI6 controller configuration with support for two chip selects (CS0 and CS1).
++ *
++ *
++ * Most of the stuff in this section is here for the spidev linux driver. For control from
++ * from a DSP or R5 core, only the status and pinctrl parts matter.
++ *
++ * Make sure to load the spidev driver to control SPI from linux.
++ */
++&main_spi6 {
++    #address-cells = <1>;
++    #size-cells = <0>;
++    pinctrl-names = "default";
++    pinctrl-0 = <&mcspi6_pins>;
++    ti,spi-num-cs = <2>; /* Support two chip selects */
++    ti,pindir-d0-out-d1-in;
++    status = "okay";
++
++	/* THIS IS FOR SPIDEV, to see device at /dev/bone/spi, first run `sudo modprobe spidev` */
++	/* When controlling SPI from outside linux, you may want to delete this spidev stuff */
++
++    /* Channel for SPI6_CS0 */
++    channel@0 {
++        symlink = "bone/spi/6.0"; /* /dev/bone/spi/6.0 */
++        compatible = "rohm,dh2228fv";
++        reg = <0>; /* CE0 */
++        spi-max-frequency = <125000000>;
++    };
++
++    /* Channel for SPI6_CS1 */
++    channel@1 {
++        symlink = "bone/spi/6.1"; /* /dev/bone/spi/6.1 */
++        compatible = "rohm,dh2228fv";
++        reg = <1>;  /* CE1 */
++        spi-max-frequency = <125000000>;
++    };
++
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs0.dtso b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs0.dtso
+new file mode 100644
+index 000000000000..7672159eab9c
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs0.dtso
+@@ -0,0 +1,87 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * DT Overlay for SPI6 pins P9_17(cs0), P9_22(clk), P9_21(MOSI), P9_18(MISO).
++ *
++ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
++ *
++ */
++
++/*
++ * WARNING!!!
++ * This overlay will not mux if there are pin conflicts. For example, by default i2c6 is enabled taking
++ * pins P9_17 and P9_18. To stop pin conflicts, this overlay disables i2c6.
++ *
++ * Look for errors in `sudo beagle-version \| grep UBOOT`
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "k3-pinctrl.h"
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++*/
++&{/chosen} {
++        overlays {
++                k3-j721e-beagleboneai64-spi-mcspi6-cs0.kernel = __TIMESTAMP__;
++                mcspi6.2160000.spi = "k3-j721e-beagleboneai64-spi-mcspi6-cs0.2160000";
++        };
++};
++
++/* Disable i2c6 to free up pins p9_17 and p9_18 */
++&main_i2c6 {
++        status = "disable";
++};
++
++/* To figure out which SoC pad numbers go with which BB header pins, look at columns A and B
++ * in the following spreadsheet. To figure out mux modes, look at row 10.
++ * https://drive.google.com/file/d/15NLaUeMBy-iT8s6rFrP4Esf0Qh57T4xu/view?pli=1
++ *
++ * To figure out the addresses of SoC pads, look at table "Table 5-125. Pin Multiplexing" in the TDA4VM Processor datasheet
++ * https://www.ti.com/lit/ds/symlink/tda4vm.pdf?ts=1741890214437&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTDA4VM
++ *
++*/
++&main_pmx0 {
++    mcspi6_cs_zero: mcspi6-cs0-pins {
++        pinctrl-single,pins = <
++            /* Used TI SysConfig app to generate these, had manually adjust output modes */
++            J721E_IOPAD(0x9c, PIN_OUTPUT, 4) /* (AC22) PRG1_PRU1_GPO17.SPI6_CLK P9_22a */
++            J721E_IOPAD(0x74, PIN_OUTPUT, 4) /* (AC21) PRG1_PRU1_GPO7.SPI6_CS0 P9_17a */
++            J721E_IOPAD(0xa0, PIN_OUTPUT, 4) /* (AJ22) PRG1_PRU1_GPO18.SPI6_D0 MOSI P9_21a */
++            J721E_IOPAD(0xa4, PIN_INPUT, 4) /* (AH22) PRG1_PRU1_GPO19.SPI6_D1 MISO P9_18a */
++
++            /* Disable SoC pins that share same BB header pins */
++            /* This pin conflics*/
++            J721E_IOPAD(0x170, PIN_DISABLE, 7) /* (U29) disable P9_22b */
++            J721E_IOPAD(0x1D0, PIN_DISABLE, 7) /* (AA3) disable P9_17b */
++            J721E_IOPAD(0x16C, PIN_DISABLE, 7) /* (U28) disable P9_21b */
++            J721E_IOPAD(0x1E4, PIN_DISABLE, 7) /* (Y2) disable P9_18b */
++        >;
++    };
++};
++
++/*
++ * Most of the stuff in this section is here for the spidev linux driver. For control from
++ * from a DSP or R5 core, only the status and pinctrl parts matter.
++ *
++ * Make sure to load the spidev driver to control SPI from linux.
++ */
++&main_spi6 {
++    #address-cells = <1>;
++    #size-cells = <0>;
++    pinctrl-names = "default";
++    pinctrl-0 = <&mcspi6_cs_zero>;
++    ti,spi-num-cs = <1>;
++    ti,pindir-d0-out-d1-in;
++    status = "okay";
++
++    /* When controlling SPI from outside linux, you may want to delete this spidev stuff */
++    channel@0 {
++        symlink = "bone/spi/6.0"; /* /dev/bone/spi/6.0 */
++        compatible = "rohm,dh2228fv";
++        reg = <0>; /* CE0 */
++        spi-max-frequency = <125000000>;
++    };
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs1-no-miso.dtso b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs1-no-miso.dtso
+new file mode 100644
+index 000000000000..c6a35de6b8af
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi6-cs1-no-miso.dtso
+@@ -0,0 +1,72 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * DT Overlay for SPI6 pins P9_23(cs1), P9_22(clk), P9_21(MOSI).
++ *
++ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
++ *
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "k3-pinctrl.h"
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++*/
++&{/chosen} {
++        overlays {
++                k3-j721e-beagleboneai64-spi-mcspi6-cs1.kernel = __TIMESTAMP__;
++                mcspi6.2160000.spi = "k3-j721e-beagleboneai64-spi-mcspi6-cs1.2160000";
++        };
++};
++
++/* To figure out which SoC pad numbers go with which BB header pins, look at columns A and B
++ * in the following spreadsheet. To figure out mux modes, look at row 10.
++ * https://drive.google.com/file/d/15NLaUeMBy-iT8s6rFrP4Esf0Qh57T4xu/view?pli=1
++ *
++ * To figure out the addresses of SoC pads, look at table "Table 5-125. Pin Multiplexing" in the TDA4VM Processor datasheet
++ * https://www.ti.com/lit/ds/symlink/tda4vm.pdf?ts=1741890214437&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTDA4VM
++ *
++*/
++&main_pmx0 {
++	mcspi6_cs_one: mcspi6-cs1-pins {
++		pinctrl-single,pins = <
++            /* Used TI SysConfig app to generate these, had manually adjust output modes */
++            J721E_IOPAD(0x9c, PIN_OUTPUT, 4) /* (AC22) PRG1_PRU1_GPO17.SPI6_CLK P9_22a */
++			J721E_IOPAD(0xa0, PIN_OUTPUT, 4) /* (AJ22) PRG1_PRU1_GPO18.SPI6_D0 MOSI P9_21a */
++            J721E_IOPAD(0x28, PIN_OUTPUT, 4) /* (AG20) PRG1_PRU1_GPO8.SPI6_CS1 P9_23 */
++
++            /* Disable SoC pins that share same BB header pins */
++            /* This pin conflics*/
++            J721E_IOPAD(0x170, PIN_DISABLE, 7) /* (U29) disable P9_22b */
++            J721E_IOPAD(0x16C, PIN_DISABLE, 7) /* (U28) disable P9_21b */
++            /* No conflicting pad for P9_23 (AG20), so no disable needed */
++		>;
++	};
++};
++
++/*
++ * Most of the stuff in this section is here for the spidev linux driver. For control from
++ * from a DSP or R5 core, only the status and pinctrl parts matter.
++ *
++ * Make sure to load the spidev driver to control SPI from linux.
++ */
++&main_spi6 {
++    #address-cells = <1>;
++    #size-cells = <0>;
++    pinctrl-names = "default";
++    pinctrl-0 = <&mcspi6_cs_one>;
++    ti,spi-num-cs = <2>; /* With this number wrong, no spi device would get created, error seen with `sudo journalctl -k` */
++    ti,pindir-d0-out-d1-in; /* d1 is not really an input, the pin is not muxed */
++    status = "okay";
++
++	/* When controlling SPI from outside linux, you may want to delete this spidev stuff */
++    channel@1 {
++        symlink = "bone/spi/6.1_no_miso"; /* /dev/bone/spi/6.1_no_miso */
++        compatible = "rohm,dh2228fv";
++        reg = <1>; /* CE1 */
++        spi-max-frequency = <125000000>;
++    };
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi7-cs0.dtso b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi7-cs0.dtso
+new file mode 100644
+index 000000000000..7f59356a27eb
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64-spi-mcspi7-cs0.dtso
+@@ -0,0 +1,62 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * DT Overlay for pins P9_28(cs0), P9_31(clk), P9_30(MOSI), P9_29B(MISO) SPI7 connections within the expansion header.
++ *
++ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
++ *
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "k3-pinctrl.h"
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++*/
++&{/chosen} {
++        overlays {
++                k3-j721e-beagleboneai64-spi-mcspi7-cs0.kernel = __TIMESTAMP__;
++                mcspi7.2170000.spi = "k3-j721e-beagleboneai64-spi-mcspi7-cs0.2170000";
++        };
++};
++
++&main_pmx0 {
++	mcspi7_cs_zero: mcspi7-cs0-pins {
++		pinctrl-single,pins = <
++			J721E_IOPAD(0x234, PIN_OUTPUT, 6) /* (U3) EXT_REFCLK1.SPI7_CLK P9_31a*/
++			J721E_IOPAD(0xD4, PIN_DISABLE, 7) /* (AB26) disable p9_31b */
++			J721E_IOPAD(0x230, PIN_OUTPUT, 6) /* (U2) ECAP0_IN_APWM_OUT.SPI7_CS0 P9_28a */
++			J721E_IOPAD(0xB0, PIN_DISABLE, 7) /* (AF28) disable p9_28b */
++			J721E_IOPAD(0x238, PIN_OUTPUT, 6) /* (V6) TIMER_IO0.SPI7_D0 MOSI P9_30a */
++			J721E_IOPAD(0xB4, PIN_DISABLE, 7) /* (AE28) disable P9_30b */
++			J721E_IOPAD(0x23c, PIN_INPUT, 6) /* (V5) TIMER_IO1.SPI7_D1 MISO P9_29a */
++			J721E_IOPAD(0xD8, PIN_DISABLE, 7) /* (AB25) disable p9_29b */
++		>;
++	};
++};
++
++/*
++ * Most of the stuff in this section is here for the spidev linux driver. For control from
++ * from a DSP or R5 core, only the status and pinctrl parts matter.
++ *
++ * Make sure to load the spidev driver to control SPI from linux.
++ */
++&main_spi7 {
++    #address-cells = <1>;
++    #size-cells = <0>;
++    pinctrl-names = "default";
++    pinctrl-0 = <&mcspi7_cs_zero>;
++    ti,spi-num-cs = <1>;
++    ti,pindir-d0-out-d1-in;
++    status = "okay";
++
++    /* When controlling SPI from outside linux, you may want to delete this spidev stuff */
++    channel@0 {
++        symlink = "bone/spi/7.0";
++        compatible = "rohm,dh2228fv";
++        reg = <0>; /* CE0 */
++        spi-max-frequency = <125000000>;
++    };
++};
+\ No newline at end of file
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
-index 7897323376a5..2f859fe17b4d 100644
+index 7897323376a5..e131d046850d 100644
 --- a/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
 +++ b/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dts
 @@ -1,9 +1,9 @@
@@ -5145,6 +5938,15 @@ index 7897323376a5..2f859fe17b4d 100644
  
  / {
  	compatible = "beagle,j721e-beagleboneai64", "ti,j721e";
+@@ -698,7 +699,7 @@ torrent_phy_dp: phy@0 {
+ 		resets = <&serdes_wiz4 1>;
+ 		cdns,phy-type = <PHY_TYPE_DP>;
+ 		cdns,num-lanes = <4>;
+-		cdns,max-bit-rate = <5400>;
++		cdns,max-bit-rate = <2700>;
+ 		#phy-cells = <0>;
+ 	};
+ };
 @@ -936,58 +937,58 @@ mbox_c71_0: mbox-c71-0 {
  };
  
@@ -5214,7 +6016,7 @@ index 7897323376a5..2f859fe17b4d 100644
  			<&c71_0_memory_region>;
  };
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-common-proc-board.dts b/arch/arm64/boot/dts/ti/k3-j721e-common-proc-board.dts
-index fe5207ac7d85..4421852161dd 100644
+index fe5207ac7d85..0051661f55bb 100644
 --- a/arch/arm64/boot/dts/ti/k3-j721e-common-proc-board.dts
 +++ b/arch/arm64/boot/dts/ti/k3-j721e-common-proc-board.dts
 @@ -1,6 +1,6 @@
@@ -5351,7 +6153,15 @@ index fe5207ac7d85..4421852161dd 100644
  };
  
  &usbss1 {
-@@ -613,6 +629,7 @@ partition@800000 {
+@@ -555,6 +571,7 @@ &usb1 {
+ };
+ 
+ &ospi1 {
++	status = "okay";
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&mcu_fss0_ospi1_pins_default>;
+ 
+@@ -613,6 +630,7 @@ partition@800000 {
  			partition@3fe0000 {
  				label = "qspi.phypattern";
  				reg = <0x3fe0000 0x20000>;
@@ -5359,6 +6169,15 @@ index fe5207ac7d85..4421852161dd 100644
  			};
  		};
  	};
+@@ -911,7 +929,7 @@ torrent_phy_dp: phy@0 {
+ 		resets = <&serdes_wiz4 1>;
+ 		cdns,phy-type = <PHY_TYPE_DP>;
+ 		cdns,num-lanes = <4>;
+-		cdns,max-bit-rate = <5400>;
++		cdns,max-bit-rate = <2700>;
+ 		#phy-cells = <0>;
+ 	};
+ };
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi
 index f6c7e1614521..2f4f5a8d8a97 100644
 --- a/arch/arm64/boot/dts/ti/k3-j721e-main.dtsi
@@ -5571,7 +6390,7 @@ index 1893d611b173..a5cd6c34a705 100644
  	};
  };
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-sk.dts b/arch/arm64/boot/dts/ti/k3-j721e-sk.dts
-index ccacb65683b5..58b310d42080 100644
+index ccacb65683b5..3c0c5675357a 100644
 --- a/arch/arm64/boot/dts/ti/k3-j721e-sk.dts
 +++ b/arch/arm64/boot/dts/ti/k3-j721e-sk.dts
 @@ -1,6 +1,6 @@
@@ -5591,7 +6410,22 @@ index ccacb65683b5..58b310d42080 100644
  		/* 4G RAM */
  		reg = <0x00000000 0x80000000 0x00000000 0x80000000>,
  		      <0x00000008 0x80000000 0x00000000 0x80000000>;
-@@ -300,6 +301,7 @@ J721E_IOPAD(0x244, PIN_INPUT, 0) /* (R25) MMC1_DAT2 */
+@@ -41,6 +42,14 @@ reserved_memory: reserved-memory {
+ 		#size-cells = <2>;
+ 		ranges;
+ 
++		 /* global cma region */
++		linux,cma {
++			compatible = "shared-dma-pool";
++			reusable;
++			size = <0x00 0x20000000>;
++			linux,cma-default;
++		};
++
+ 		secure_ddr: optee@9e800000 {
+ 			reg = <0x00 0x9e800000 0x00 0x01800000>;
+ 			alignment = <0x1000>;
+@@ -300,6 +309,7 @@ J721E_IOPAD(0x244, PIN_INPUT, 0) /* (R25) MMC1_DAT2 */
  			J721E_IOPAD(0x240, PIN_INPUT, 0) /* (R26) MMC1_DAT3 */
  			J721E_IOPAD(0x258, PIN_INPUT, 0) /* (P23) MMC1_SDCD */
  		>;
@@ -5599,7 +6433,7 @@ index ccacb65683b5..58b310d42080 100644
  	};
  
  	main_uart0_pins_default: main-uart0-default-pins {
-@@ -309,6 +311,7 @@ J721E_IOPAD(0x1f4, PIN_OUTPUT, 0) /* (AB1) UART0_RTSn */
+@@ -309,6 +319,7 @@ J721E_IOPAD(0x1f4, PIN_OUTPUT, 0) /* (AB1) UART0_RTSn */
  			J721E_IOPAD(0x1e8, PIN_INPUT, 0) /* (AB2) UART0_RXD */
  			J721E_IOPAD(0x1ec, PIN_OUTPUT, 0) /* (AB3) UART0_TXD */
  		>;
@@ -5607,7 +6441,7 @@ index ccacb65683b5..58b310d42080 100644
  	};
  
  	main_uart1_pins_default: main-uart1-default-pins {
-@@ -344,12 +347,59 @@ main_usbss0_pins_default: main-usbss0-default-pins {
+@@ -344,12 +355,59 @@ main_usbss0_pins_default: main-usbss0-default-pins {
  			J721E_IOPAD(0x290, PIN_OUTPUT, 0) /* (U6) USB0_DRVVBUS */
  			J721E_IOPAD(0x210, PIN_INPUT, 7) /* (W3) MCAN1_RX.GPIO1_3 */
  		>;
@@ -5667,7 +6501,7 @@ index ccacb65683b5..58b310d42080 100644
  	};
  
  	dp0_pins_default: dp0-default-pins {
-@@ -459,6 +509,12 @@ J721E_IOPAD(0x234, PIN_INPUT, 7) /* (U3) EXT_REFCLK1.GPIO1_12 */
+@@ -459,6 +517,12 @@ J721E_IOPAD(0x234, PIN_INPUT, 7) /* (U3) EXT_REFCLK1.GPIO1_12 */
  };
  
  &wkup_pmx0 {
@@ -5680,7 +6514,7 @@ index ccacb65683b5..58b310d42080 100644
  	mcu_cpsw_pins_default: mcu-cpsw-default-pins {
  		pinctrl-single,pins = <
  			J721E_WKUP_IOPAD(0x84, PIN_INPUT, 0) /* (B24) MCU_RGMII1_RD0 */
-@@ -497,6 +553,7 @@ J721E_WKUP_IOPAD(0x24, PIN_INPUT, 0) /* (B22) MCU_OSPI0_D6 */
+@@ -497,6 +561,7 @@ J721E_WKUP_IOPAD(0x24, PIN_INPUT, 0) /* (B22) MCU_OSPI0_D6 */
  			J721E_WKUP_IOPAD(0x28, PIN_INPUT, 0) /* (G21) MCU_OSPI0_D7 */
  			J721E_WKUP_IOPAD(0x8, PIN_INPUT, 0) /* (D21) MCU_OSPI0_DQS */
  		>;
@@ -5688,7 +6522,7 @@ index ccacb65683b5..58b310d42080 100644
  	};
  
  	vdd_mmc1_en_pins_default: vdd-mmc1-en-default-pins {
-@@ -525,6 +582,7 @@ J721E_WKUP_IOPAD(0xf4, PIN_OUTPUT, 2)/* (D25) MCU_I3C0_SDA.MCU_UART0_RTSn */
+@@ -525,6 +590,7 @@ J721E_WKUP_IOPAD(0xf4, PIN_OUTPUT, 2)/* (D25) MCU_I3C0_SDA.MCU_UART0_RTSn */
  			J721E_WKUP_IOPAD(0xe4, PIN_INPUT, 0) /* (H28) WKUP_GPIO0_13.MCU_UART0_RXD */
  			J721E_WKUP_IOPAD(0xe0, PIN_OUTPUT, 0)/* (G29) WKUP_GPIO0_12.MCU_UART0_TXD */
  		>;
@@ -5696,7 +6530,7 @@ index ccacb65683b5..58b310d42080 100644
  	};
  
  	wkup_i2c0_pins_default: wkup-i2c0-default-pins {
-@@ -532,6 +590,20 @@ wkup_i2c0_pins_default: wkup-i2c0-default-pins {
+@@ -532,6 +598,20 @@ wkup_i2c0_pins_default: wkup-i2c0-default-pins {
  			J721E_WKUP_IOPAD(0xf8, PIN_INPUT_PULLUP, 0) /* (J25) WKUP_I2C0_SCL */
  			J721E_WKUP_IOPAD(0xfc, PIN_INPUT_PULLUP, 0) /* (H24) WKUP_I2C0_SDA */
  		>;
@@ -5717,7 +6551,7 @@ index ccacb65683b5..58b310d42080 100644
  	};
  
  	/* Reset for M.2 M Key slot on PCIe1  */
-@@ -547,6 +619,7 @@ &wkup_uart0 {
+@@ -547,6 +627,7 @@ &wkup_uart0 {
  	status = "reserved";
  	pinctrl-names = "default";
  	pinctrl-0 = <&wkup_uart0_pins_default>;
@@ -5725,7 +6559,7 @@ index ccacb65683b5..58b310d42080 100644
  };
  
  &wkup_i2c0 {
-@@ -560,12 +633,158 @@ eeprom@51 {
+@@ -560,12 +641,158 @@ eeprom@51 {
  		compatible = "atmel,24c512";
  		reg = <0x51>;
  	};
@@ -5884,7 +6718,7 @@ index ccacb65683b5..58b310d42080 100644
  };
  
  &main_uart0 {
-@@ -574,6 +793,7 @@ &main_uart0 {
+@@ -574,6 +801,7 @@ &main_uart0 {
  	pinctrl-0 = <&main_uart0_pins_default>;
  	/* Shared with ATF on this platform */
  	power-domains = <&k3_pds 146 TI_SCI_PD_SHARED>;
@@ -5892,7 +6726,7 @@ index ccacb65683b5..58b310d42080 100644
  };
  
  &main_uart1 {
-@@ -589,6 +809,7 @@ &main_sdhci1 {
+@@ -589,6 +817,7 @@ &main_sdhci1 {
  	vqmmc-supply = <&vdd_sd_dv_alt>;
  	pinctrl-names = "default";
  	pinctrl-0 = <&main_mmc1_pins_default>;
@@ -5900,7 +6734,7 @@ index ccacb65683b5..58b310d42080 100644
  	ti,driver-strength-ohm = <50>;
  	disable-wp;
  };
-@@ -653,6 +874,7 @@ partition@800000 {
+@@ -653,6 +882,7 @@ partition@800000 {
  			partition@3fc0000 {
  				label = "ospi.phypattern";
  				reg = <0x3fc0000 0x40000>;
@@ -5908,7 +6742,7 @@ index ccacb65683b5..58b310d42080 100644
  			};
  		};
  	};
-@@ -707,14 +929,14 @@ i2c-mux@70 {
+@@ -707,14 +937,14 @@ i2c-mux@70 {
  		reg = <0x70>;
  
  		/* CSI0 I2C */
@@ -5925,7 +6759,7 @@ index ccacb65683b5..58b310d42080 100644
  			#address-cells = <1>;
  			#size-cells = <0>;
  			reg = <1>;
-@@ -748,6 +970,7 @@ &wkup_gpio0 {
+@@ -748,6 +978,7 @@ &wkup_gpio0 {
  
  &usb_serdes_mux {
  	idle-states = <1>, <1>; /* USB0 to SERDES3, USB1 to SERDES2 */
@@ -5933,7 +6767,7 @@ index ccacb65683b5..58b310d42080 100644
  };
  
  &serdes_ln_ctrl {
-@@ -757,6 +980,7 @@ &serdes_ln_ctrl {
+@@ -757,6 +988,7 @@ &serdes_ln_ctrl {
  		      <J721E_SERDES3_LANE0_USB3_0_SWAP>, <J721E_SERDES3_LANE1_USB3_0>,
  		      <J721E_SERDES4_LANE0_EDP_LANE0>, <J721E_SERDES4_LANE1_EDP_LANE1>,
  		      <J721E_SERDES4_LANE2_EDP_LANE2>, <J721E_SERDES4_LANE3_EDP_LANE3>;
@@ -5941,7 +6775,7 @@ index ccacb65683b5..58b310d42080 100644
  };
  
  &serdes_wiz3 {
-@@ -771,6 +995,7 @@ serdes3_usb_link: phy@0 {
+@@ -771,6 +1003,7 @@ serdes3_usb_link: phy@0 {
  		#phy-cells = <0>;
  		cdns,phy-type = <PHY_TYPE_USB3>;
  		resets = <&serdes_wiz3 1>, <&serdes_wiz3 2>;
@@ -5949,7 +6783,16 @@ index ccacb65683b5..58b310d42080 100644
  	};
  };
  
-@@ -795,6 +1020,7 @@ &mhdp {
+@@ -780,7 +1013,7 @@ torrent_phy_dp: phy@0 {
+ 		resets = <&serdes_wiz4 1>;
+ 		cdns,phy-type = <PHY_TYPE_DP>;
+ 		cdns,num-lanes = <4>;
+-		cdns,max-bit-rate = <5400>;
++		cdns,max-bit-rate = <2700>;
+ 		#phy-cells = <0>;
+ 	};
+ };
+@@ -795,6 +1028,7 @@ &mhdp {
  &usbss0 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&main_usbss0_pins_default>;
@@ -5957,7 +6800,7 @@ index ccacb65683b5..58b310d42080 100644
  	ti,vbus-divider;
  };
  
-@@ -803,6 +1029,7 @@ &usb0 {
+@@ -803,6 +1037,7 @@ &usb0 {
  	maximum-speed = "super-speed";
  	phys = <&serdes3_usb_link>;
  	phy-names = "cdns3,usb3-phy";
@@ -5965,7 +6808,7 @@ index ccacb65683b5..58b310d42080 100644
  };
  
  &serdes2 {
-@@ -818,6 +1045,7 @@ serdes2_usb_link: phy@1 {
+@@ -818,6 +1053,7 @@ serdes2_usb_link: phy@1 {
  &usbss1 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&main_usbss1_pins_default>;
@@ -5973,7 +6816,7 @@ index ccacb65683b5..58b310d42080 100644
  	ti,vbus-divider;
  };
  
-@@ -826,6 +1054,7 @@ &usb1 {
+@@ -826,6 +1062,7 @@ &usb1 {
  	maximum-speed = "super-speed";
  	phys = <&serdes2_usb_link>;
  	phy-names = "cdns3,usb3-phy";
@@ -5981,7 +6824,7 @@ index ccacb65683b5..58b310d42080 100644
  };
  
  &mcu_cpsw {
-@@ -1017,58 +1246,58 @@ mbox_c71_0: mbox-c71-0 {
+@@ -1017,58 +1254,58 @@ mbox_c71_0: mbox-c71-0 {
  };
  
  &mcu_r5fss0_core0 {
@@ -6050,7 +6893,7 @@ index ccacb65683b5..58b310d42080 100644
  			<&c71_0_memory_region>;
  };
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-som-p0.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-som-p0.dtsi
-index 7f0686c2ce37..0722f6361cc8 100644
+index 7f0686c2ce37..16a15a7e6fdf 100644
 --- a/arch/arm64/boot/dts/ti/k3-j721e-som-p0.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-j721e-som-p0.dtsi
 @@ -1,6 +1,6 @@
@@ -6070,7 +6913,22 @@ index 7f0686c2ce37..0722f6361cc8 100644
  		/* 4G RAM */
  		reg = <0x00000000 0x80000000 0x00000000 0x80000000>,
  		      <0x00000008 0x80000000 0x00000000 0x80000000>;
-@@ -150,6 +151,13 @@ wkup_i2c0_pins_default: wkup-i2c0-default-pins {
+@@ -22,6 +23,14 @@ reserved_memory: reserved-memory {
+ 		#size-cells = <2>;
+ 		ranges;
+ 
++		 /* global cma region */
++		linux,cma {
++			compatible = "shared-dma-pool";
++			reusable;
++			size = <0x00 0x20000000>;
++			linux,cma-default;
++		};
++
+ 		secure_ddr: optee@9e800000 {
+ 			reg = <0x00 0x9e800000 0x00 0x01800000>;
+ 			alignment = <0x1000>;
+@@ -150,6 +159,13 @@ wkup_i2c0_pins_default: wkup-i2c0-default-pins {
  			J721E_WKUP_IOPAD(0xf8, PIN_INPUT_PULLUP, 0) /* (J25) WKUP_I2C0_SCL */
  			J721E_WKUP_IOPAD(0xfc, PIN_INPUT_PULLUP, 0) /* (H24) WKUP_I2C0_SDA */
  		>;
@@ -6084,7 +6942,7 @@ index 7f0686c2ce37..0722f6361cc8 100644
  	};
  
  	mcu_fss0_ospi0_pins_default: mcu-fss0-ospi0-default-pins {
-@@ -166,6 +174,7 @@ J721E_WKUP_IOPAD(0x0024, PIN_INPUT, 0)  /* MCU_OSPI0_D6 */
+@@ -166,6 +182,7 @@ J721E_WKUP_IOPAD(0x0024, PIN_INPUT, 0)  /* MCU_OSPI0_D6 */
  			J721E_WKUP_IOPAD(0x0028, PIN_INPUT, 0)  /* MCU_OSPI0_D7 */
  			J721E_WKUP_IOPAD(0x002c, PIN_OUTPUT, 0) /* MCU_OSPI0_CSn0 */
  		>;
@@ -6092,7 +6950,7 @@ index 7f0686c2ce37..0722f6361cc8 100644
  	};
  
  	mcu_fss0_hpb0_pins_default: mcu-fss0-hpb0-default-pins {
-@@ -185,6 +194,7 @@ J721E_WKUP_IOPAD(0x20, PIN_INPUT, 1)  /* MCU_HYPERBUS0_DQ5 */
+@@ -185,6 +202,7 @@ J721E_WKUP_IOPAD(0x20, PIN_INPUT, 1)  /* MCU_HYPERBUS0_DQ5 */
  			J721E_WKUP_IOPAD(0x24, PIN_INPUT, 1)  /* MCU_HYPERBUS0_DQ6 */
  			J721E_WKUP_IOPAD(0x28, PIN_INPUT, 1)  /* MCU_HYPERBUS0_DQ7 */
  		>;
@@ -6100,7 +6958,7 @@ index 7f0686c2ce37..0722f6361cc8 100644
  	};
  };
  
-@@ -199,6 +209,160 @@ eeprom@50 {
+@@ -199,6 +217,160 @@ eeprom@50 {
  		compatible = "atmel,24c256";
  		reg = <0x50>;
  	};
@@ -6261,7 +7119,15 @@ index 7f0686c2ce37..0722f6361cc8 100644
  };
  
  &ospi0 {
-@@ -261,6 +425,7 @@ partition@800000 {
+@@ -217,6 +389,7 @@ flash@0 {
+ 		cdns,tchsh-ns = <60>;
+ 		cdns,tslch-ns = <60>;
+ 		cdns,read-delay = <0>;
++		cdns,phy-mode;
+ 
+ 		partitions {
+ 			compatible = "fixed-partitions";
+@@ -261,6 +434,7 @@ partition@800000 {
  			partition@3fe0000 {
  				label = "ospi.phypattern";
  				reg = <0x3fe0000 0x20000>;
@@ -6269,7 +7135,7 @@ index 7f0686c2ce37..0722f6361cc8 100644
  			};
  		};
  	};
-@@ -279,6 +444,7 @@ &hbmc {
+@@ -279,6 +453,7 @@ &hbmc {
  	flash@0,0 {
  		compatible = "cypress,hyperflash", "cfi-flash";
  		reg = <0x00 0x00 0x4000000>;
@@ -6277,7 +7143,7 @@ index 7f0686c2ce37..0722f6361cc8 100644
  
  		partitions {
  			compatible = "fixed-partitions";
-@@ -389,58 +555,95 @@ mbox_c71_0: mbox-c71-0 {
+@@ -389,58 +564,95 @@ mbox_c71_0: mbox-c71-0 {
  };
  
  &mcu_r5fss0_core0 {
@@ -6612,18 +7478,6 @@ index 6fc4b445d3a1..b8a4f3ff4a3b 100644
   */
  
  #ifndef _DT_BINDINGS_TI_DP83867_H
-diff --git a/include/uapi/linux/input-event-codes.h b/include/uapi/linux/input-event-codes.h
-index a4206723f503..5a199f3d4a26 100644
---- a/include/uapi/linux/input-event-codes.h
-+++ b/include/uapi/linux/input-event-codes.h
-@@ -519,6 +519,7 @@
- #define KEY_NOTIFICATION_CENTER	0x1bc	/* Show/hide the notification center */
- #define KEY_PICKUP_PHONE	0x1bd	/* Answer incoming call */
- #define KEY_HANGUP_PHONE	0x1be	/* Decline incoming call */
-+#define KEY_LINK_PHONE		0x1bf   /* AL Phone Syncing */
- 
- #define KEY_DEL_EOL		0x1c0
- #define KEY_DEL_EOS		0x1c1
 -- 
 2.47.2
 
