@@ -265,6 +265,10 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --module CONFIG_STAGING_GASKET_FRAMEWORK
 ./scripts/config --module CONFIG_STAGING_APEX_DRIVER
 
+#DRM_PANIC
+./scripts/config --enable CONFIG_DRM_PANIC
+./scripts/config --enable CONFIG_DRM_PANIC_SCREEN_QR_CODE
+
 #TI: 10.00.06
 ./scripts/config --disable CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
 ./scripts/config --enable CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
@@ -309,12 +313,21 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --module CONFIG_NITRO_ENCLAVES
 ./scripts/config --module CONFIG_USB_MASS_STORAGE
 
+#debian 6.12.20-1
+./scripts/config --module CONFIG_VIDEO_OV5675
+./scripts/config --enable CONFIG_RPCSEC_GSS_KRB5_ENCTYPES_AES_SHA2
+
 #debian 6.13.5-1
 ./scripts/config --enable CONFIG_UDMABUF
 
 #debian 6.13.7-1
 ./scripts/config --module CONFIG_VIRTIO_IOMMU
 ./scripts/config --enable CONFIG_CRYPTO_ECDSA
+
+#debian 6.13.8-1
+./scripts/config --enable CONFIG_NVME_TARGET_PASSTHRU
+./scripts/config --module CONFIG_NVME_TARGET_LOOP
+./scripts/config --module CONFIG_NVME_TARGET_FCLOOP
 
 #new in v6.14
 ./scripts/config --module CONFIG_NTSYNC
@@ -365,6 +378,27 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --module CONFIG_VIDEO_IMX728
 ./scripts/config --module CONFIG_VIDEO_OV2312
 
+#TI: 11.00.08
+./scripts/config --module CONFIG_VIDEO_OX05B1S
+
+#new in v6.15
+./scripts/config --module CONFIG_FWCTL
+./scripts/config --module CONFIG_IWLMLD
+./scripts/config --module CONFIG_RTW88_8814AU
+./scripts/config --module CONFIG_RTW88_8814AE
+./scripts/config --module CONFIG_SPI_OFFLOAD_TRIGGER_PWM
+./scripts/config --module CONFIG_SENSORS_HTU31
+./scripts/config --module CONFIG_SENSORS_INA233
+./scripts/config --module CONFIG_HID_UNIVERSAL_PIDFF
+./scripts/config --module CONFIG_AD4030
+./scripts/config --module CONFIG_AD4851
+./scripts/config --module CONFIG_AD7191
+./scripts/config --module CONFIG_TI_ADS7138
+./scripts/config --module CONFIG_ADIS16550
+./scripts/config --module CONFIG_AL3000A
+./scripts/config --module CONFIG_APDS9160
+./scripts/config --module CONFIG_SI7210
+
 #configure CONFIG_EXTRA_FIRMWARE
 ./scripts/config --set-str CONFIG_EXTRA_FIRMWARE "regulatory.db regulatory.db.p7s cadence/mhdp8546.bin"
 ./scripts/config --enable CONFIG_FW_LOADER_COMPRESS
@@ -375,6 +409,8 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 ./scripts/config --enable CONFIG_MSPM0_I2C
 ./scripts/config --module CONFIG_SEG_LED_GPIO
 ./scripts/config --module CONFIG_SND_SOC_TLV320AIC3X_I2C
+./scripts/config --module CONFIG_WIZNET_W5100
+./scripts/config --module CONFIG_WIZNET_W5100_SPI
 
 #PCIE
 ./scripts/config --enable CONFIG_PCI_ENDPOINT
