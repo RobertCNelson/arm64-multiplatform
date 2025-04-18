@@ -372,10 +372,10 @@ local_patch () {
 }
 
 #external_git
-mainline_patches
+#mainline_patches
 rt
 wireless_regdb
-beagleboard_dtbs
+#beagleboard_dtbs
 #local_patch
 
 pre_backports () {
@@ -469,8 +469,8 @@ drivers () {
 }
 
 ###
-backports
-drivers
+#backports
+#drivers
 
 echo "patch.sh ran successfully"
 #

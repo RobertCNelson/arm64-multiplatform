@@ -2358,7 +2358,6 @@ CONFIG_TPS6594_ESM=m
 CONFIG_TPS6594_PFSM=m
 # CONFIG_NSM is not set
 # CONFIG_MARVELL_CN10K_DPI is not set
-# CONFIG_MSPM0_I2C is not set
 # CONFIG_C2PORT is not set
 
 #
@@ -6302,7 +6301,6 @@ CONFIG_LOGO=y
 # CONFIG_LOGO_LINUX_MONO is not set
 # CONFIG_LOGO_LINUX_VGA16 is not set
 CONFIG_LOGO_LINUX_CLUT224=y
-CONFIG_LOGO_BEAGLE_CLUT224=y
 # end of Graphics support
 
 # CONFIG_DRM_ACCEL is not set
@@ -8167,13 +8165,6 @@ CONFIG_SND_BCM2835=m
 # CONFIG_XIL_AXIS_FIFO is not set
 # CONFIG_VME_BUS is not set
 # CONFIG_GPIB is not set
-
-#
-# Gasket devices
-#
-# CONFIG_STAGING_GASKET_FRAMEWORK is not set
-# end of Gasket devices
-
 # CONFIG_GOLDFISH is not set
 CONFIG_CHROME_PLATFORMS=y
 # CONFIG_CHROMEOS_ACPI is not set

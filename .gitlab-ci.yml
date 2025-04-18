@@ -13,7 +13,7 @@ build-debian-12-amd64:
   image: robertcnelson/beagle-devscripts-kernel-debian-12-amd64:latest
   # https://openbeagle.org/beagleboard/ci-docker-images
   cache:
-    key: "$CI_PROJECT_NAME-v6.15.x-arm64-k3-debian-12-amd64"
+    key: "$CI_PROJECT_NAME-v6.15.x-arm64-stm32-debian-12-amd64"
     paths:
       - ccache.tar.lz4
   tags:
@@ -37,7 +37,7 @@ build-debian-12-amd64:
   artifacts:
     expire_in: 28 days
     when: on_success
-    name: "$CI_PROJECT_NAME-v6.15.x-arm64-k3-debian-12-$CI_JOB_ID"
+    name: "$CI_PROJECT_NAME-v6.15.x-arm64-stm32-debian-12-$CI_JOB_ID"
     paths:
       - "deploy/linux-image-*.deb"
 
@@ -45,7 +45,7 @@ build-debian-13-amd64:
   image: robertcnelson/beagle-devscripts-kernel-debian-13-amd64:latest
   # https://openbeagle.org/beagleboard/ci-docker-images
   cache:
-    key: "$CI_PROJECT_NAME-v6.15.x-arm64-k3-debian-13-amd64"
+    key: "$CI_PROJECT_NAME-v6.15.x-arm64-stm32-debian-13-amd64"
     paths:
       - ccache.tar.lz4
   tags:
@@ -69,6 +69,6 @@ build-debian-13-amd64:
   artifacts:
     expire_in: 28 days
     when: on_success
-    name: "$CI_PROJECT_NAME-v6.15.x-arm64-k3-debian-13-$CI_JOB_ID"
+    name: "$CI_PROJECT_NAME-v6.15.x-arm64-stm32-debian-13-$CI_JOB_ID"
     paths:
       - "deploy/linux-image-*.deb"

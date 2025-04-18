@@ -4,11 +4,11 @@ ARCH=$(uname -m)
 
 config="defconfig"
 
-build_prefix="-arm64-k3-r"
+build_prefix="-arm64-stm32-r"
 branch_prefix="v"
-branch_postfix=".x-arm64-k3"
+branch_postfix=".x-arm64-stm32"
 
-#https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/changes.rst?h=v6.14-rc1
+#https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/changes.rst?h=v6.15-rc1
 #arm
 #KERNEL_ARCH=arm
 #DEBARCH=armhf
@@ -49,7 +49,7 @@ KERNEL_TAG=${KERNEL_REL}-rc2
 #https://mirrors.edge.kernel.org/pub/linux/kernel/projects/rt/6.15/
 kernel_rt="-rc1-rt1"
 #Kernel Build
-BUILD=${build_prefix}3
+BUILD=${build_prefix}0
 
 #v6.X-rcX + upto SHA
 #prev_KERNEL_SHA=""
