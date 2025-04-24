@@ -1,31 +1,19 @@
-From 6da09f1cd0c10ef3ecee63ea8383762635cd910f Mon Sep 17 00:00:00 2001
+From dd316a57528cd186827fe09d26a279c0b1185e26 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 8 Apr 2025 16:52:11 -0500
-Subject: [PATCH v3 1/2] dt-bindings: arm: ti: Add PocketBeagle2
+Date: Tue, 15 Apr 2025 17:59:39 -0500
+Subject: [PATCH 1/2] dt-bindings: arm: ti: Add PocketBeagle2
 
-This board is based on ti,am625 family using the am6232 and am6254 variations.
+This board is based on ti,am625 family using the am6232 and am6254
+variations.
 
 https://www.beagleboard.org/boards/pocketbeagle-2
 https://openbeagle.org/pocketbeagle/pocketbeagle-2
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
 Reviewed-by: Dhruva Gole <d-gole@ti.com>
-CC: Nishanth Menon <nm@ti.com>
-CC: Vignesh Raghavendra <vigneshr@ti.com>
-CC: Tero Kristo <kristo@kernel.org>
-CC: Rob Herring <robh@kernel.org>
-CC: Krzysztof Kozlowski <krzk+dt@kernel.org>
-CC: Andrew Davis <afd@ti.com>
-CC: Andrei Aldea <a-aldea@ti.com>
-CC: Jason Kridner <jkridner@beagleboard.org>
-CC: Deepak Khatri <lorforlinux@beagleboard.org>
-CC: Ayush Singh <ayush@beagleboard.org>
----
-Changes since v2:
- - Apply Reviewed-by from Dhruva Gole
-Changes since v1:
- - Apply acked-by from Conor Dooley
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Link: https://lore.kernel.org/r/20250415225940.3899486-1-robertcnelson@gmail.com
+Signed-off-by: Nishanth Menon <nm@ti.com>
 ---
  Documentation/devicetree/bindings/arm/ti/k3.yaml | 1 +
  1 file changed, 1 insertion(+)
