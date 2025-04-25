@@ -262,6 +262,11 @@ config="CONFIG_UIO_PDRV_GENIRQ" ; config_module
 #debian 6.13.11-1
 ./scripts/config --enable CONFIG_KALLSYMS_ALL
 
+#debian 6.14.3-1~exp1
+./scripts/config --enable CONFIG_UBSAN
+./scripts/config --enable CONFIG_UBSAN_SHIFT
+./scripts/config --enable CONFIG_FPROBE
+
 #new in v6.14
 ./scripts/config --module CONFIG_NTSYNC
 ./scripts/config --module CONFIG_PPS_GENERATOR

@@ -35,7 +35,7 @@ build-debian-12-amd64:
       when: never
     - when: always
   artifacts:
-    expire_in: 28 days
+    expire_in: 1 week
     when: on_success
     name: "$CI_PROJECT_NAME-v6.15.x-arm64-stm32-debian-12-$CI_JOB_ID"
     paths:
@@ -67,7 +67,7 @@ build-debian-13-amd64:
       when: never
     - when: always
   artifacts:
-    expire_in: 28 days
+    expire_in: 1 week
     when: on_success
     name: "$CI_PROJECT_NAME-v6.15.x-arm64-stm32-debian-13-$CI_JOB_ID"
     paths:
