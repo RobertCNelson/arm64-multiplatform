@@ -36,7 +36,6 @@ build-debian-12-amd64:
     - when: always
   artifacts:
     expire_in: 1 week
-    when: on_success
     name: "$CI_PROJECT_NAME-v6.15.x-arm64-k3-debian-12-$CI_JOB_ID"
     paths:
       - "deploy/linux-image-*.deb"
@@ -68,7 +67,6 @@ build-debian-13-amd64:
     - when: always
   artifacts:
     expire_in: 1 week
-    when: on_success
     name: "$CI_PROJECT_NAME-v6.15.x-arm64-k3-debian-13-$CI_JOB_ID"
     paths:
       - "deploy/linux-image-*.deb"
