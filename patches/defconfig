@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.15.0-rc4 Kernel Configuration
+# Linux/arm64 6.15.0-rc5 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 14.2.0"
 CONFIG_CC_IS_GCC=y
@@ -10085,8 +10085,8 @@ CONFIG_UBSAN_BOUNDS_STRICT=y
 CONFIG_UBSAN_SHIFT=y
 # CONFIG_UBSAN_DIV_ZERO is not set
 # CONFIG_UBSAN_UNREACHABLE is not set
-CONFIG_UBSAN_BOOL=y
-CONFIG_UBSAN_ENUM=y
+# CONFIG_UBSAN_BOOL is not set
+# CONFIG_UBSAN_ENUM is not set
 # CONFIG_UBSAN_ALIGNMENT is not set
 # CONFIG_TEST_UBSAN is not set
 CONFIG_HAVE_ARCH_KCSAN=y
