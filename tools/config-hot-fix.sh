@@ -272,8 +272,15 @@ cd ${DIR}/KERNEL/
 
 #debian 6.14.3-1~exp1
 ./scripts/config --enable CONFIG_UBSAN
+./scripts/config --enable CONFIG_UBSAN_BOUNDS
+./scripts/config --enable CONFIG_UBSAN_BOUNDS_STRICT
 ./scripts/config --enable CONFIG_UBSAN_SHIFT
+./scripts/config --disable CONFIG_UBSAN_BOOL
+./scripts/config --disable CONFIG_UBSAN_ENUM
 ./scripts/config --enable CONFIG_FPROBE
+
+#debian 6.14.5-1~exp1
+./scripts/config --disable CONFIG_UBSAN_SIGNED_WRAP
 
 #new in v6.14
 ./scripts/config --module CONFIG_NTSYNC
