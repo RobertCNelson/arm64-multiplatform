@@ -125,6 +125,8 @@ debian_regs () {
 	check_dpkg
 	pkg="build-essential"
 	check_dpkg
+	pkg="cpio"
+	check_dpkg
 	pkg="fakeroot"
 	check_dpkg
 	pkg="lsb-release"
@@ -490,18 +492,23 @@ debian_regs () {
 			#14 forky: https://wiki.debian.org/DebianForky
 			deb_distro="sid"
 			;;
+		duke)
+			#15 duke: https://wiki.debian.org/DebianDuke
+			deb_distro="sid"
+			;;
 		esac
 
 		#https://wiki.ubuntu.com/Releases
 		unset error_unknown_deb_distro
 		case "${deb_distro}" in
-		buster|bullseye|bookworm|trixie|forky|sid)
+		buster|bullseye|bookworm|trixie|forky|duke|sid)
 			#https://wiki.debian.org/LTS
 			#10 buster: 2024-06-30 https://wiki.debian.org/DebianBuster
 			#11 bullseye: 2026 https://wiki.debian.org/DebianBullseye
 			#12 bookworm: https://wiki.debian.org/DebianBookworm
 			#13 trixie: https://wiki.debian.org/DebianTrixie
 			#14 forky: https://wiki.debian.org/DebianForky
+			#15 duke: https://wiki.debian.org/DebianDuke
 			unset warn_eol_distro
 			;;
 		squeeze|wheezy|jessie|stretch)
@@ -567,16 +574,6 @@ debian_regs () {
 		check_dpkg
 		pkg="libssl-dev:${deb_arch}"
 		check_dpkg
-
-		if [ "x${build_git}" = "xtrue" ] ; then
-			#git
-			pkg="libcurl4-gnutls-dev:${deb_arch}"
-			check_dpkg
-			pkg="libelf-dev:${deb_arch}"
-			check_dpkg
-			pkg="libexpat1-dev:${deb_arch}"
-			check_dpkg
-		fi
 	fi
 
 	if [ "${warn_eol_distro}" ] ; then
@@ -634,38 +631,6 @@ fi
 
 ARCH=$(uname -m)
 
-git_bin=$(which git)
-
-git_major=$(LC_ALL=C ${git_bin} --version | awk '{print $3}' | cut -d. -f1)
-git_minor=$(LC_ALL=C ${git_bin} --version | awk '{print $3}' | cut -d. -f2)
-git_sub=$(LC_ALL=C ${git_bin} --version | awk '{print $3}' | cut -d. -f3)
-
-#debian Stable:
-#https://packages.debian.org/stretch/git -> 2.11.0
-#https://packages.debian.org/buster/git -> 2.20.1
-#https://packages.debian.org/bullseye/git -> 2.30.2
-#https://packages.ubuntu.com/bionic/git (18.04) -> 2.17.1
-#https://packages.ubuntu.com/focal/git (20.04) -> 2.25.1
-#https://packages.ubuntu.com/jammy/git (22.04) -> 2.34.1
-
-compare_major="2"
-compare_minor="20"
-compare_sub="1"
-
-unset build_git
-
-if [ "${git_major}" -lt "${compare_major}" ] ; then
-	build_git="true"
-elif [ "${git_major}" -eq "${compare_major}" ] ; then
-	if [ "${git_minor}" -lt "${compare_minor}" ] ; then
-		build_git="true"
-	elif [ "${git_minor}" -eq "${compare_minor}" ] ; then
-		if [ "${git_sub}" -lt "${compare_sub}" ] ; then
-			build_git="true"
-		fi
-	fi
-fi
-
 echo "-----------------------------"
 unset NEEDS_COMMAND
 check_for_command () {
@@ -679,8 +644,6 @@ check_for_command () {
 }
 
 unset NEEDS_COMMAND
-check_for_command cpio --version
-check_for_command lz4 --version
 check_for_command xz --version
 
 if [ "${NEEDS_COMMAND}" ] ; then
