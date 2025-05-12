@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.15.0-rc5 Kernel Configuration
+# Linux/arm64 6.15.0-rc6 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 14.2.0"
 CONFIG_CC_IS_GCC=y
@@ -5437,7 +5437,6 @@ CONFIG_VIDEO_CAFE_CCIC=m
 #
 # Sunxi media platform drivers
 #
-# CONFIG_VIDEO_SYNOPSYS_HDMIRX is not set
 
 #
 # Texas Instruments drivers
