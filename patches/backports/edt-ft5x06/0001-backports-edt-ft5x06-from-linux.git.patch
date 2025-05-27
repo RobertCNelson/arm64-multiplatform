@@ -1,6 +1,6 @@
-From 6415aa0a083e62fcac0280e608487a8225e67576 Mon Sep 17 00:00:00 2001
+From ddb779ca0198e674cfac92cc5e9f25ef74fec2fb Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 28 Apr 2025 10:08:59 -0500
+Date: Tue, 27 May 2025 10:28:38 -0500
 Subject: [PATCH] backports: edt-ft5x06: from: linux.git
 
 Reference: rpi-6.15.y
