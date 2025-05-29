@@ -266,6 +266,7 @@ cd ${DIR}/KERNEL/
 ./scripts/config --enable CONFIG_NVME_TARGET_PASSTHRU
 ./scripts/config --module CONFIG_NVME_TARGET_LOOP
 ./scripts/config --module CONFIG_NVME_TARGET_FCLOOP
+./scripts/config --module CONFIG_NVME_TARGET_PCI_EPF
 
 #debian 6.13.11-1
 ./scripts/config --enable CONFIG_KALLSYMS_ALL
