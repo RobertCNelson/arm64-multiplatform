@@ -191,13 +191,14 @@ cd ${DIR}/KERNEL/
 ./scripts/config --enable CONFIG_PCIE_PTM
 
 #REMOTEPROC
+./scripts/config --enable CONFIG_REMOTEPROC_CDEV
+./scripts/config --module CONFIG_TI_K3_DSP_REMOTEPROC
+./scripts/config --module CONFIG_TI_K3_M4_REMOTEPROC
+./scripts/config --module CONFIG_TI_K3_R5_REMOTEPROC
 ./scripts/config --module CONFIG_RPMSG
 ./scripts/config --module CONFIG_RPMSG_NS
 ./scripts/config --module CONFIG_RPMSG_PRU
 ./scripts/config --enable CONFIG_RPMSG_VIRTIO
-./scripts/config --module CONFIG_TI_K3_DSP_REMOTEPROC
-./scripts/config --module CONFIG_TI_K3_M4_REMOTEPROC
-./scripts/config --module CONFIG_TI_K3_R5_REMOTEPROC
 
 #Google Coral Gasket
 ./scripts/config --module CONFIG_STAGING_GASKET_FRAMEWORK
@@ -351,6 +352,7 @@ cd ${DIR}/KERNEL/
 ./scripts/config --enable CONFIG_MSPM0_I2C
 ./scripts/config --module CONFIG_SEG_LED_GPIO
 ./scripts/config --module CONFIG_INPUT_PWM_BEEPER
+./scripts/config --module CONFIG_SND_SOC_DAVINCI_MCASP
 ./scripts/config --module CONFIG_SND_SOC_TLV320AIC3X_I2C
 ./scripts/config --module CONFIG_WIZNET_W5100
 ./scripts/config --module CONFIG_WIZNET_W5100_SPI

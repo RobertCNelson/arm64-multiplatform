@@ -1,11 +1,11 @@
-From f95bfb12acd8318a4a0c011c2898f9c4c3be036f Mon Sep 17 00:00:00 2001
+From 5c24e0aaa6464a4071f7d22a59b08de2380cc6df Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Thu, 29 May 2025 18:17:20 -0500
+Date: Mon, 2 Jun 2025 14:10:29 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v6.13.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/048c516603ecc8786f5eef8d1bb87312921583cf
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/22af0585f8b1967cd409d4224cbb99edfa865826
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  .../boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso |  28 +
@@ -48,12 +48,14 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/BONE-I2C1.dtso         |  24 +
  arch/arm64/boot/dts/ti/BONE-I2C2.dtso         |  24 +
  arch/arm64/boot/dts/ti/BONE-I2C3.dtso         |  24 +
- arch/arm64/boot/dts/ti/Makefile               |  48 +
+ arch/arm64/boot/dts/ti/Makefile               |  49 +
  arch/arm64/boot/dts/ti/k3-am62-main.dtsi      |  96 +-
  .../ti/k3-am62-pocketbeagle2-leds-off.dtso    |  29 +
- .../ti/k3-am6232-pocketbeagle2-pinmux.dtsi    | 586 +++++++++++
+ .../dts/ti/k3-am62-pocketbeagle2-pinmux.dtsi  | 672 ++++++++++++
+ .../k3-am62-pocketbeagle2-techlab-cape.dtso   | 126 +++
+ .../boot/dts/ti/k3-am62-pocketbeagle2.dts     |  12 +-
  .../k3-am6232-pocketbeagle2-techlab-cape.dtso | 126 +++
- .../boot/dts/ti/k3-am6232-pocketbeagle2.dts   | 601 +++++++++++
+ .../boot/dts/ti/k3-am6232-pocketbeagle2.dts   | 531 ++++++++++
  .../dts/ti/k3-am625-beagleplay-pinmux.dtsi    | 130 +++
  .../arm64/boot/dts/ti/k3-am625-beagleplay.dts |  11 +-
  arch/arm64/boot/dts/ti/k3-am625-sk.dts        |   7 -
@@ -110,7 +112,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/k3-j722s-evm.dts       | 176 +++-
  arch/arm64/boot/dts/ti/k3-j722s-main.dtsi     | 216 +++-
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |  26 +
- 102 files changed, 7449 insertions(+), 117 deletions(-)
+ 104 files changed, 7603 insertions(+), 118 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso
@@ -129,7 +131,8 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  create mode 100644 arch/arm64/boot/dts/ti/BONE-I2C2.dtso
  create mode 100644 arch/arm64/boot/dts/ti/BONE-I2C3.dtso
  create mode 100644 arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-leds-off.dtso
- create mode 100644 arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2-pinmux.dtsi
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-pinmux.dtsi
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-techlab-cape.dtso
  create mode 100644 arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2-techlab-cape.dtso
  create mode 100644 arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2.dts
  create mode 100644 arch/arm64/boot/dts/ti/k3-am625-beagleplay-pinmux.dtsi
@@ -2993,10 +2996,10 @@ index 000000000000..1467d8ef5581
 +	symlink = "bone/i2c/3";
 +};
 diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
-index 7ab8f9b05802..5f1ac8115fd0 100644
+index 7ab8f9b05802..34f5961f791c 100644
 --- a/arch/arm64/boot/dts/ti/Makefile
 +++ b/arch/arm64/boot/dts/ti/Makefile
-@@ -236,6 +236,50 @@ dtb- += k3-am625-beagleplay-csi2-ov5640.dtb \
+@@ -236,6 +236,51 @@ dtb- += k3-am625-beagleplay-csi2-ov5640.dtb \
  	k3-j784s4-evm-quad-port-eth-exp1.dtb \
  	k3-j784s4-evm-usxgmii-exp1-exp2.dtb
  
@@ -3005,6 +3008,7 @@ index 7ab8f9b05802..5f1ac8115fd0 100644
 +dtb-$(CONFIG_ARCH_K3) += BONE-I2C3.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-am6232-pocketbeagle2.dtb
 +dtb-$(CONFIG_ARCH_K3) += k3-am6232-pocketbeagle2-techlab-cape.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-am62-pocketbeagle2-techlab-cape.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-am62-pocketbeagle2-leds-off.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-am67a-beagley-ai-pwm-ecap0-gpio12.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-am67a-beagley-ai-pwm-ecap1-gpio16.dtbo
@@ -3047,7 +3051,7 @@ index 7ab8f9b05802..5f1ac8115fd0 100644
  # Enable support for device-tree overlays
  DTC_FLAGS_k3-am625-beagleplay += -@
  DTC_FLAGS_k3-am625-phyboard-lyra-rdk += -@
-@@ -256,3 +300,7 @@ DTC_FLAGS_k3-j721e-sk += -@
+@@ -256,3 +301,7 @@ DTC_FLAGS_k3-j721e-sk += -@
  DTC_FLAGS_k3-j721s2-common-proc-board += -@
  DTC_FLAGS_k3-j784s4-evm += -@
  DTC_FLAGS_k3-j742s2-evm += -@
@@ -3216,25 +3220,28 @@ index 000000000000..8e90507b5530
 +		};
 +	};
 +};
-diff --git a/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2-pinmux.dtsi b/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2-pinmux.dtsi
+diff --git a/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-pinmux.dtsi b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-pinmux.dtsi
 new file mode 100644
-index 000000000000..2c634405370e
+index 000000000000..0d2f82bd6e4c
 --- /dev/null
-+++ b/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2-pinmux.dtsi
-@@ -0,0 +1,586 @@
++++ b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-pinmux.dtsi
+@@ -0,0 +1,672 @@
 +// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
 + * https://www.beagleboard.org/boards/pocketbeagle-2
 + *
-+ * Copyright (C) 2022-2024 Texas Instruments Incorporated - https://www.ti.com/
-+ * Copyright (C) 2022-2024 Robert Nelson, BeagleBoard.org Foundation
++ * Copyright (C) 2025 Texas Instruments Incorporated - https://www.ti.com/
++ * Copyright (C) 2025 Robert Nelson, BeagleBoard.org Foundation
 + */
 +
 +#include <dt-bindings/gpio/gpio.h>
 +
++/*
++ * Everything in this file is our staging ground, anything heading to mainline or rejected...
++ */
++
 +/ {
 +	chosen {
-+		base_dtb = "k3-am6232-pocketbeagle2.dts";
 +		base_dtb_timestamp = __TIMESTAMP__;
 +	};
 +
@@ -3267,6 +3274,18 @@ index 000000000000..2c634405370e
 +	};
 +};
 +
++&cpsw3g {
++	status = "disabled";
++};
++
++&cpsw_port1 {
++	status = "disabled";
++};
++
++&cpsw_port2 {
++	status = "disabled";
++};
++
 +&main_pmx0 {
 +	main_mmc0_pins_default: main-mmc0-default-pins {
 +		pinctrl-single,pins = <
@@ -3282,6 +3301,51 @@ index 000000000000..2c634405370e
 +			AM62X_IOPAD(0x1f8, PIN_INPUT, 0) /* (AC2/V4) MMC0_DAT7 */
 +		>;
 +		bootph-all;
++	};
++
++	main_gpio0_pins_default: main-gpio0-default-pins {
++		pinctrl-single,pins = <
++			AM62X_IOPAD(0x00c8, PIN_INPUT, 7) /* (Y25) VOUT0_DATA4.GPIO0_49 */
++			AM62X_IOPAD(0x00cc, PIN_INPUT, 7) /* (Y24) VOUT0_DATA5.GPIO0_50 */
++			AM62X_IOPAD(0x00d0, PIN_INPUT, 7) /* (Y23) VOUT0_DATA6.GPIO0_51 */
++			AM62X_IOPAD(0x00d4, PIN_INPUT, 7) /* (AA25) VOUT0_DATA7.GPIO0_52 */
++			AM62X_IOPAD(0x00d8, PIN_INPUT, 7) /* (V21) VOUT0_DATA8.GPIO0_53 */
++			AM62X_IOPAD(0x0100, PIN_INPUT, 7) /* (AC25) VOUT0_VSYNC.GPIO0_63 */
++		>;
++	};
++
++	main_gpio1_pins_default: main-gpio1-default-pins {
++		pinctrl-single,pins = <
++			AM62X_IOPAD(0x01a0, PIN_INPUT, 7) /* (E18) MCASP0_AXR0.GPIO1_10 */
++			AM62X_IOPAD(0x01a8, PIN_INPUT, 7) /* (D20) MCASP0_AFSX.GPIO1_12 */
++			AM62X_IOPAD(0x0180, PIN_INPUT, 7) /* (AD23) RGMII2_RXC.GPIO1_2 */
++		>;
++	};
++
++	main_spi2_pins_gpio: main-spi2-gpio-pins {
++		pinctrl-single,pins = <
++			AM62X_IOPAD(0x0194, PIN_INPUT, 7) /* (B19) MCASP0_AXR3.GPIO1_7 */
++			AM62X_IOPAD(0x0198, PIN_INPUT, 7) /* (A19) MCASP0_AXR2.GPIO1_8 */
++			AM62X_IOPAD(0x01ac, PIN_INPUT, 7) /* (E19) MCASP0_AFSR.GPIO1_13 */
++			AM62X_IOPAD(0x01b0, PIN_INPUT, 7) /* (A20) MCASP0_ACLKR.GPIO1_14 */
++		>;
++	};
++
++
++	ecap2_pins_default: ecap2-default-pins {
++		pinctrl-single,pins = <
++			AM62X_IOPAD(0x01a4, PIN_INPUT, 2) /* (B20) MCASP0_ACLKX.ECAP2_IN_APWM_OUT */
++			AM62X_IOPAD(0x0160, PIN_DISABLE, 7) /* (AD24) MDIO0_MDC.GPIO0_86 */
++		>;
++	};
++
++	main_spi0_pins_default: main-spi0-default-pins {
++		pinctrl-single,pins = <
++			AM62X_IOPAD(0x01bc, PIN_INPUT, 0) /* (A14) SPI0_CLK */
++			AM62X_IOPAD(0x01c0, PIN_OUTPUT, 0) /* (B13) SPI0_D0 */
++			AM62X_IOPAD(0x01c4, PIN_INPUT, 0) /* (B14) SPI0_D1 */
++			AM62X_IOPAD(0x01b4, PIN_OUTPUT, 0) /* (A13) SPI0_CS0 */
++		>;
 +	};
 +
 +	mspm0_nrst_pins_default: mspm0-nrst-default-pins {
@@ -3732,6 +3796,8 @@ index 000000000000..2c634405370e
 +};
 +
 +&main_gpio0 {
++	//pinctrl-names = "default";
++	//pinctrl-0 = <&main_gpio0_pins_default>;
 +	gpio-line-names = "", "", "",	/* 0-2 */
 +			  "USR_LED_4", "USR_LED_3", "USR_LED_2",	/* 3-5 */
 +			  "USR_LED_1", "", "",	/* 6-8 */
@@ -3763,9 +3829,12 @@ index 000000000000..2c634405370e
 +			  "", "P2.03(AB22)", "P2.01(AD24)",	/* 84-86 */
 +			  "P1.02(AA19)", "P1.35", "P1.04(Y18)",	/* 87-89 */
 +			  "P2.31(AA18)", "P2.10";	/* 90-91 */
++	status = "okay";
 +};
 +
 +&main_gpio1 {
++	//pinctrl-names = "default";
++	//pinctrl-0 = <&main_gpio1_pins_default>;
 +	gpio-line-names = "P2.19", "P1.19/AIN0", "P1.34",	/* 0-2 */
 +			  "P1.27/AIN4", "P1.25/AIN3", "P1.23/AIN2",	/* 3-5 */
 +			  "P1.21/AIN1", "P1.10(B19)", "P1.12(A19)",	/* 6-8 */
@@ -3777,9 +3846,11 @@ index 000000000000..2c634405370e
 +			  "P2.05(C15)", "P2.07(E15)", "",	/* 24-26 */
 +			  "", "P1.36(B17)", "P1.33(A17)",	/* 27-29 */
 +			  "P1.10(A18)", "";	/* 30-31 */
++	status = "okay";
 +};
 +
 +&mcu_gpio0 {
++	pinctrl-names = "default";
 +	gpio-line-names = "", "", "",   /* 0-2 */
 +			  "", "", "P2.05(B5)",   /* 3-5 */
 +			  "P2.07(A5)", "", "",   /* 6-8 */
@@ -3788,6 +3859,7 @@ index 000000000000..2c634405370e
 +			  "P2.11(E5)", "P2.09(D4)", "",   /* 15-17 */
 +			  "", "", "",   /* 18-20 */
 +			  "", "", "";   /* 21-23 */
++	status = "okay";
 +};
 +
 +&sdhci0 {
@@ -3808,6 +3880,196 @@ index 000000000000..2c634405370e
 +		pinctrl-0 = <&mspm0_bsl_pins_default &mspm0_nrst_pins_default>;
 +	};
 +};
++
++&main_i2c1 {
++	clock-frequency = <400000>;
++	bootph-all;
++	status = "okay";
++};
++
++&main_spi0 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_spi0_pins_default>;
++};
++
++&ecap2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&ecap2_pins_default>;
++};
+diff --git a/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-techlab-cape.dtso b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-techlab-cape.dtso
+new file mode 100644
+index 000000000000..99f876dd68bf
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-techlab-cape.dtso
+@@ -0,0 +1,126 @@
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/leds/common.h>
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++ */
++&{/chosen} {
++	overlays {
++		k3-am62-pocketbeagle2-techlab-cape.kernel = __TIMESTAMP__;
++	};
++};
++
++&main_spi0 {
++	status = "okay";
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	techlab_gpio: techlab-gpio@0 {
++		compatible = "microchip,mcp23s18";
++		reg = <0>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		spi-max-frequency = <1000000>;
++		microchip,spi-present-mask = <1>;
++		gpio-line-names = "LD4", "LD7", "LD8",	  /* 0-2 */
++				  "LD6", "LD3", "LD2",    /* 3-5 */
++				  "LD5", "", "LD11",      /* 6-8 */
++				  "LD14", "LD15", "LD13", /* 9-11 */
++				  "LD10", "LD9", "LD12",  /* 12-14 */
++				  "";                     /* 15 */
++	};
++};
++
++&{/} {
++	techlab-led {
++		compatible = "pwm-leds-multicolor";
++		pinctrl-names = "default";
++		pinctrl-0 = <&P1_33_A17_pwm>;
++
++		multi-led {
++			led-red {
++				pwms = <&epwm2 1 255 0>;
++				color = <LED_COLOR_ID_RED>;
++			};
++
++			led-blue {
++				pwms = <&epwm2 0 255 0>;
++				color = <LED_COLOR_ID_BLUE>;
++			};
++
++			led-green {
++				pwms = <&ecap2 0 255 0>;
++				color = <LED_COLOR_ID_GREEN>;
++			};
++		};
++	};
++
++	seven-segments-left {
++		compatible = "gpio-7-segment";
++		segment-gpios = <&techlab_gpio 0 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 1 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 2 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 3 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 4 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 5 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 6 GPIO_ACTIVE_LOW>;
++	};
++
++	seven-segments-right {
++		compatible = "gpio-7-segment";
++		segment-gpios = <&techlab_gpio 8 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 9 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 10 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 11 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 12 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 13 GPIO_ACTIVE_LOW>,
++				<&techlab_gpio 14 GPIO_ACTIVE_LOW>;
++	};
++
++	buzzer_pwm: buzzer-pwm {
++		#pwm-cells = <3>;
++		compatible = "pwm-gpio";
++		pinctrl-names = "default";
++		pinctrl-0 = <&P2_30_gpio>;
++		gpios = <&main_gpio0 58 GPIO_ACTIVE_HIGH>;
++	};
++
++
++	buttons {
++		compatible = "gpio-keys";
++		pinctrl-names = "default";
++		pinctrl-0 = <&P1_29_gpio &P2_33_gpio>;
++
++		left {
++			label = "GPIO Key Left";
++			gpios = <&main_gpio0 52 0>;
++			linux,code = <KEY_LEFT>;
++		};
++
++		right {
++			label = "GPIO Key Right";
++			gpios = <&main_gpio0 62 0>;
++			linux,code = <KEY_RIGHT>;
++		};
++	};
++
++	techlab-buzzer {
++		compatible = "pwm-beeper";
++		pwms = <&buzzer_pwm 0 50000 0>;
++	};
++};
++
++&main_i2c2 {
++	status = "okay";
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++        accel@1c {
++		compatible = "fsl,mma8453";
++		reg = <0x1c>;
++        };
++};
+diff --git a/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2.dts b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2.dts
+index 2e4cf65ee323..c06e1ce872c3 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2.dts
++++ b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2.dts
+@@ -12,6 +12,7 @@
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/input/input.h>
+ #include "k3-am625.dtsi"
++#include "k3-am62-pocketbeagle2-pinmux.dtsi"
+ 
+ / {
+ 	compatible = "beagle,am62-pocketbeagle2", "ti,am625";
+@@ -21,17 +22,26 @@ aliases {
+ 		serial0 = &wkup_uart0;
+ 		serial1 = &main_uart1;
+ 		serial2 = &main_uart6;
+-		serial3 = &main_uart0;
++		serial3 = &main_uart3;
++		serial4 = &main_uart4;
++		serial5 = &main_uart5;
++		serial6 = &main_uart2;
++		serial7 = &main_uart0;
++		mmc0 = &sdhci0;
+ 		mmc1 = &sdhci1;
+ 		usb0 = &usb0;
+ 		usb1 = &usb1;
+ 		i2c0 = &main_i2c0;
++		i2c1 = &main_i2c1;
+ 		i2c2 = &main_i2c2;
+ 		i2c3 = &wkup_i2c0;
++		spi0 = &main_spi0;
++		spi2 = &main_spi2;
+ 	};
+ 
+ 	chosen {
+ 		stdout-path = &main_uart6;
++		base_dtb = "k3-am62-pocketbeagle2.dts";
+ 	};
+ 
+ 	memory@80000000 {
 diff --git a/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2-techlab-cape.dtso b/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2-techlab-cape.dtso
 new file mode 100644
 index 000000000000..55c65db99d69
@@ -3942,16 +4204,16 @@ index 000000000000..55c65db99d69
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2.dts b/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2.dts
 new file mode 100644
-index 000000000000..65e3119b084c
+index 000000000000..913b00a898f8
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2.dts
-@@ -0,0 +1,601 @@
+@@ -0,0 +1,531 @@
 +// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
 + * https://www.beagleboard.org/boards/pocketbeagle-2
 + *
-+ * Copyright (C) 2024 Texas Instruments Incorporated - https://www.ti.com/
-+ * Copyright (C) 2024 Robert Nelson, BeagleBoard.org Foundation
++ * Copyright (C) 2025 Texas Instruments Incorporated - https://www.ti.com/
++ * Copyright (C) 2025 Robert Nelson, BeagleBoard.org Foundation
 + */
 +
 +/dts-v1/;
@@ -3960,10 +4222,10 @@ index 000000000000..65e3119b084c
 +#include <dt-bindings/gpio/gpio.h>
 +#include <dt-bindings/input/input.h>
 +#include "k3-am625.dtsi"
-+#include "k3-am6232-pocketbeagle2-pinmux.dtsi"
++#include "k3-am62-pocketbeagle2-pinmux.dtsi"
 +
 +/ {
-+	compatible = "beagle,am6232-pocketbeagle2", "ti,am625";
++	compatible = "beagle,am62-pocketbeagle2", "ti,am625";
 +	model = "BeagleBoard.org PocketBeagle2";
 +
 +	aliases {
@@ -3989,6 +4251,7 @@ index 000000000000..65e3119b084c
 +
 +	chosen {
 +		stdout-path = &main_uart6;
++		base_dtb = "k3-am6232-pocketbeagle2.dts";
 +	};
 +
 +	memory@80000000 {
@@ -4002,6 +4265,14 @@ index 000000000000..65e3119b084c
 +		#address-cells = <2>;
 +		#size-cells = <2>;
 +		ranges;
++
++		/* global cma region */
++		linux,cma {
++			compatible = "shared-dma-pool";
++			reusable;
++			size = <0x00 0x8000000>;
++			linux,cma-default;
++		};
 +
 +		mcu_m4fss_dma_memory_region: m4f-dma-memory@9cb00000 {
 +			compatible = "shared-dma-pool";
@@ -4017,11 +4288,13 @@ index 000000000000..65e3119b084c
 +
 +		secure_tfa_ddr: tfa@9e780000 {
 +			reg = <0x00 0x9e780000 0x00 0x80000>;
++			alignment = <0x1000>;
 +			no-map;
 +		};
 +
 +		secure_ddr: optee@9e800000 {
 +			reg = <0x00 0x9e800000 0x00 0x01800000>;
++			alignment = <0x1000>;
 +			no-map;
 +		};
 +
@@ -4092,40 +4365,43 @@ index 000000000000..65e3119b084c
 +	};
 +
 +	leds {
-+		bootph-all;
 +		compatible = "gpio-leds";
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&led_pins_default>;
++		bootph-all;
 +
 +		led-1 {
-+			bootph-all;
-+			gpios = <&main_gpio0 6 GPIO_ACTIVE_HIGH>;
++			function = LED_FUNCTION_HEARTBEAT;
 +			color = <LED_COLOR_ID_GREEN>;
 +			linux,default-trigger = "heartbeat";
-+			function = LED_FUNCTION_HEARTBEAT;
++			gpios = <&main_gpio0 6 GPIO_ACTIVE_HIGH>;
 +			default-state = "on";
++			bootph-all;
 +		};
 +
 +		led-2 {
-+			bootph-all;
-+			gpios = <&main_gpio0 5 GPIO_ACTIVE_HIGH>;
-+			color = <LED_COLOR_ID_GREEN>;
 +			function = LED_FUNCTION_DISK_ACTIVITY;
++			color = <LED_COLOR_ID_GREEN>;
 +			linux,default-trigger = "mmc1";
++			gpios = <&main_gpio0 5 GPIO_ACTIVE_HIGH>;
++			default-state = "on";
++			bootph-all;
 +		};
 +
 +		led-3 {
-+			bootph-all;
-+			gpios = <&main_gpio0 4 GPIO_ACTIVE_HIGH>;
++			function = LED_FUNCTION_INDICATOR;
 +			color = <LED_COLOR_ID_GREEN>;
++			gpios = <&main_gpio0 4 GPIO_ACTIVE_HIGH>;
++			default-state = "off";
++			bootph-all;
 +		};
 +
 +		led-4 {
-+			bootph-all;
-+			gpios = <&main_gpio0 3 GPIO_ACTIVE_HIGH>;
-+			color = <LED_COLOR_ID_GREEN>;
 +			function = LED_FUNCTION_INDICATOR;
++			color = <LED_COLOR_ID_GREEN>;
++			gpios = <&main_gpio0 3 GPIO_ACTIVE_HIGH>;
 +			default-state = "off";
++			bootph-all;
 +		};
 +	};
 +};
@@ -4149,7 +4425,7 @@ index 000000000000..65e3119b084c
 +		bootph-all;
 +	};
 +
-+	main_i2c2_pins_default: main_i2c2-default-pins {
++	main_i2c2_pins_default: main-i2c2-default-pins {
 +		pinctrl-single,pins = <
 +			AM62X_IOPAD(0x00b0, PIN_INPUT_PULLUP, 1) /* (K22) GPMC0_CSn2.I2C2_SCL */
 +			AM62X_IOPAD(0x00b4, PIN_INPUT_PULLUP, 1) /* (K24) GPMC0_CSn3.I2C2_SDA */
@@ -4223,84 +4499,24 @@ index 000000000000..65e3119b084c
 +		bootph-all;
 +	};
 +
-+	main_gpio0_pins_default: main-gpio0-default-pins {
-+		pinctrl-single,pins = <
-+			AM62X_IOPAD(0x00c8, PIN_INPUT, 7) /* (Y25) VOUT0_DATA4.GPIO0_49 */
-+			AM62X_IOPAD(0x00cc, PIN_INPUT, 7) /* (Y24) VOUT0_DATA5.GPIO0_50 */
-+			AM62X_IOPAD(0x00d0, PIN_INPUT, 7) /* (Y23) VOUT0_DATA6.GPIO0_51 */
-+			AM62X_IOPAD(0x00d4, PIN_INPUT, 7) /* (AA25) VOUT0_DATA7.GPIO0_52 */
-+			AM62X_IOPAD(0x00d8, PIN_INPUT, 7) /* (V21) VOUT0_DATA8.GPIO0_53 */
-+			AM62X_IOPAD(0x0100, PIN_INPUT, 7) /* (AC25) VOUT0_VSYNC.GPIO0_63 */
-+		>;
-+	};
-+
-+	main_gpio1_pins_default: main-gpio1-default-pins {
-+		pinctrl-single,pins = <
-+			AM62X_IOPAD(0x01a0, PIN_INPUT, 7) /* (E18) MCASP0_AXR0.GPIO1_10 */
-+			AM62X_IOPAD(0x01a8, PIN_INPUT, 7) /* (D20) MCASP0_AFSX.GPIO1_12 */
-+			AM62X_IOPAD(0x0180, PIN_INPUT, 7) /* (AD23) RGMII2_RXC.GPIO1_2 */
-+		>;
-+	};
-+
-+	main_spi2_pins_gpio: main-spi2-gpio-pins {
-+		pinctrl-single,pins = <
-+			AM62X_IOPAD(0x0194, PIN_INPUT, 7) /* (B19) MCASP0_AXR3.GPIO1_7 */
-+			AM62X_IOPAD(0x0198, PIN_INPUT, 7) /* (A19) MCASP0_AXR2.GPIO1_8 */
-+			AM62X_IOPAD(0x01ac, PIN_INPUT, 7) /* (E19) MCASP0_AFSR.GPIO1_13 */
-+			AM62X_IOPAD(0x01b0, PIN_INPUT, 7) /* (A20) MCASP0_ACLKR.GPIO1_14 */
-+		>;
-+	};
-+
 +	epwm2_pins_default: epwm2-default-pins {
 +		pinctrl-single,pins = <
 +			AM62X_IOPAD(0x01e8, PIN_OUTPUT, 8) /* (B17) I2C1_SCL.EHRPWM2_A */
 +		>;
 +	};
-+
-+	ecap2_pins_default: ecap2-default-pins {
-+		pinctrl-single,pins = <
-+			AM62X_IOPAD(0x01a4, PIN_INPUT, 2) /* (B20) MCASP0_ACLKX.ECAP2_IN_APWM_OUT */
-+			AM62X_IOPAD(0x0160, PIN_DISABLE, 7) /* (AD24) MDIO0_MDC.GPIO0_86 */
-+		>;
-+	};
-+
-+	main_spi0_pins_default: main-spi0-default-pins {
-+		pinctrl-single,pins = <
-+			AM62X_IOPAD(0x01bc, PIN_INPUT, 0) /* (A14) SPI0_CLK */
-+			AM62X_IOPAD(0x01c0, PIN_OUTPUT, 0) /* (B13) SPI0_D0 */
-+			AM62X_IOPAD(0x01c4, PIN_INPUT, 0) /* (B14) SPI0_D1 */
-+			AM62X_IOPAD(0x01b4, PIN_OUTPUT, 0) /* (A13) SPI0_CS0 */
-+		>;
-+	};
 +};
 +
-+&cpsw3g {
-+	status = "disabled";
-+};
-+
-+&cpsw_port1 {
-+	status = "disabled";
-+};
-+
-+&cpsw_port2 {
-+	status = "disabled";
-+};
-+
-+&main_gpio0 {
-+	//pinctrl-names = "default";
-+	//pinctrl-0 = <&main_gpio0_pins_default>;
++&epwm2 {
 +	status = "okay";
-+};
-+
-+&main_gpio1 {
-+	//pinctrl-names = "default";
-+	//pinctrl-0 = <&main_gpio1_pins_default>;
-+	status = "okay";
-+};
-+
-+&mcu_gpio0 {
 +	pinctrl-names = "default";
-+	status = "okay";
++	pinctrl-0 = <&epwm2_pins_default>;
++};
++
++&mailbox0_cluster0 {
++	mbox_m4_0: mbox-m4-0 {
++		ti,mbox-rx = <0 0 0>;
++		ti,mbox-tx = <1 0 0>;
++	};
 +};
 +
 +&main_uart0 {
@@ -4324,6 +4540,42 @@ index 000000000000..65e3119b084c
 +	status = "okay";
 +};
 +
++&main_i2c0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_i2c0_pins_default>;
++	clock-frequency = <400000>;
++	bootph-all;
++	status = "okay";
++
++	ad7291: adc@20 {
++		/* Emulated with MSPM0L1105 */
++		compatible = "adi,ad7291";
++		reg = <0x20>;
++		vref-supply = <&adc_vref>;
++	};
++
++	eeprom: eeprom@50 {
++		/* Emulated with MSPM0L1105 */
++		compatible = "atmel,24c32";
++		reg = <0x50>;
++	};
++};
++
++&main_i2c2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_i2c2_pins_default>;
++	clock-frequency = <400000>;
++	bootph-all;
++	status = "okay";
++};
++
++&mcu_m4fss {
++	mboxes = <&mailbox0_cluster0 &mbox_m4_0>;
++	memory-region = <&mcu_m4fss_dma_memory_region>,
++			<&mcu_m4fss_memory_region>;
++	status = "okay";
++};
++
 +&mcu_pmx0 {
 +	wkup_uart0_pins_default: wkup-uart0-default-pins {
 +		pinctrl-single,pins = <
@@ -4344,6 +4596,20 @@ index 000000000000..65e3119b084c
 +	};
 +};
 +
++&sdhci1 {
++	/* SD/MMC */
++	vmmc-supply = <&vdd_mmc1>;
++	vqmmc-supply = <&vdd_sd_dv>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_mmc1_pins_default>;
++	disable-wp;
++	cd-gpios = <&main_gpio1 48 GPIO_ACTIVE_LOW>;
++	cd-debounce-delay-ms = <100>;
++	bootph-all;
++	ti,fails-without-test-cd;
++	status = "okay";
++};
++
 +&usbss0 {
 +	bootph-all;
 +	ti,vbus-divider;
@@ -4351,8 +4617,9 @@ index 000000000000..65e3119b084c
 +};
 +
 +&usb0 {
-+	bootph-all;
++	/* This is a Type-C socket, but wired as USB 2.0 */
 +	dr_mode = "peripheral";
++	bootph-all;
 +};
 +
 +&usbss1 {
@@ -4361,6 +4628,10 @@ index 000000000000..65e3119b084c
 +};
 +
 +&usb1 {
++	/*
++	 * Default set here is compatible with original PocketBeagle,
++	 * Expansion boards assumed this was pre-setup as host.
++	 */
 +	dr_mode = "host";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&usb1_pins_default>;
@@ -4467,85 +4738,6 @@ index 000000000000..65e3119b084c
 +			};
 +		};
 +	};
-+};
-+
-+&sdhci1 {
-+	/* SD/MMC */
-+	vmmc-supply = <&vdd_mmc1>;
-+	vqmmc-supply = <&vdd_sd_dv>;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&main_mmc1_pins_default>;
-+	disable-wp;
-+	cd-gpios = <&main_gpio1 48 GPIO_ACTIVE_LOW>;
-+	cd-debounce-delay-ms = <100>;
-+	bootph-all;
-+	ti,fails-without-test-cd;
-+	status = "okay";
-+};
-+
-+&main_i2c0 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&main_i2c0_pins_default>;
-+	clock-frequency = <400000>;
-+	bootph-all;
-+	status = "okay";
-+
-+	ad7291: adc@20 {
-+		compatible = "adi,ad7291";
-+		reg = <0x20>;
-+		vref-supply = <&adc_vref>;
-+	};
-+
-+	eeprom: eeprom@50 {
-+		compatible = "atmel,24c32";
-+		reg = <0x50>;
-+	};
-+};
-+
-+&main_i2c1 {
-+	clock-frequency = <400000>;
-+	bootph-all;
-+	status = "okay";
-+};
-+
-+&main_i2c2 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&main_i2c2_pins_default>;
-+	clock-frequency = <400000>;
-+	bootph-all;
-+	status = "okay";
-+};
-+
-+&epwm2 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&epwm2_pins_default>;
-+};
-+
-+&ecap2 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&ecap2_pins_default>;
-+};
-+
-+&main_spi0 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&main_spi0_pins_default>;
-+};
-+
-+&mailbox0_cluster0 {
-+	mbox_m4_0: mbox-m4-0 {
-+		ti,mbox-rx = <0 0 0>;
-+		ti,mbox-tx = <1 0 0>;
-+	};
-+};
-+
-+&mcu_m4fss {
-+	mboxes = <&mailbox0_cluster0 &mbox_m4_0>;
-+	memory-region = <&mcu_m4fss_dma_memory_region>,
-+			<&mcu_m4fss_memory_region>;
-+	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay-pinmux.dtsi b/arch/arm64/boot/dts/ti/k3-am625-beagleplay-pinmux.dtsi
 new file mode 100644
