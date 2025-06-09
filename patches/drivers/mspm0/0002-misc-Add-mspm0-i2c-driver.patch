@@ -15,10 +15,10 @@ Signed-off-by: Ayush Singh <ayush@beagleboard.org>
  create mode 100644 drivers/misc/mspm0-i2c.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 515fd21db854..1d5f7ada86be 100644
+index c19b33a77ae2..3f644870800a 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -15975,6 +15975,7 @@ MSPM0 Driver
+@@ -16921,6 +16921,7 @@ MSPM0 Driver
  M:	Ayush Singh <ayush@beagleboard.org>
  S:	Maintained
  F:	Documentation/devicetree/bindings/misc/ti,mspm0l110x.yaml
@@ -27,10 +27,10 @@ index 515fd21db854..1d5f7ada86be 100644
  MSTAR INTERRUPT CONTROLLER DRIVER
  M:	Mark-PK Tsai <mark-pk.tsai@mediatek.com>
 diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 09cbe3f0ab1e..886b9c542c96 100644
+index b9ca56930003..c06047a96e6b 100644
 --- a/drivers/misc/Kconfig
 +++ b/drivers/misc/Kconfig
-@@ -634,6 +634,17 @@ config MCHP_LAN966X_PCI
+@@ -644,6 +644,17 @@ config MCHP_LAN966X_PCI
  	    - lan966x-miim (MDIO_MSCC_MIIM)
  	    - lan966x-switch (LAN966X_SWITCH)
  
@@ -49,17 +49,17 @@ index 09cbe3f0ab1e..886b9c542c96 100644
  source "drivers/misc/eeprom/Kconfig"
  source "drivers/misc/cb710/Kconfig"
 diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index 40bf953185c7..5e6149b7148a 100644
+index 917b9a7183aa..6c5edaecb660 100644
 --- a/drivers/misc/Makefile
 +++ b/drivers/misc/Makefile
-@@ -74,3 +74,4 @@ lan966x-pci-objs		:= lan966x_pci.o
- lan966x-pci-objs		+= lan966x_pci.dtbo.o
+@@ -75,3 +75,4 @@ lan966x-pci-objs		+= lan966x_pci.dtbo.o
  obj-$(CONFIG_MCHP_LAN966X_PCI)	+= lan966x-pci.o
  obj-y				+= keba/
+ obj-y				+= amd-sbi/
 +obj-$(CONFIG_MSPM0_I2C)		+= mspm0-i2c.o
 diff --git a/drivers/misc/mspm0-i2c.c b/drivers/misc/mspm0-i2c.c
 new file mode 100644
-index 000000000000..ffad57b37677
+index 000000000000..17d1651704c3
 --- /dev/null
 +++ b/drivers/misc/mspm0-i2c.c
 @@ -0,0 +1,762 @@
@@ -816,8 +816,8 @@ index 000000000000..ffad57b37677
 +	.probe = mspm0_i2c_probe,
 +	.remove = mspm0_i2c_remove,
 +	.driver = {
-+		.name = "mspm0_i2c", 
-+		.of_match_table = mspm0_i2c_of_match, 
++		.name = "mspm0_i2c",
++		.of_match_table = mspm0_i2c_of_match,
 +	},
 +};
 +module_i2c_driver(mspm0_i2c_driver);
@@ -826,5 +826,5 @@ index 000000000000..ffad57b37677
 +MODULE_AUTHOR("Ayush Singh <ayush@beagleboard.org>");
 +MODULE_DESCRIPTION("MSPM0 I2C driver");
 -- 
-2.45.2
+2.47.2
 

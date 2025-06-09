@@ -246,7 +246,7 @@ k3_makefile_patch_cleanup_overlays () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.15.x"
+	branch="v6.16.x"
 	https_repo="https://github.com/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -376,7 +376,7 @@ local_patch () {
 }
 
 #external_git
-mainline_patches
+#mainline_patches
 rt
 wireless_regdb
 beagleboard_dtbs
