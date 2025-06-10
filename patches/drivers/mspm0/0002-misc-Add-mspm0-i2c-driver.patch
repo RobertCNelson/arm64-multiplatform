@@ -816,8 +816,8 @@ index 000000000000..ffad57b37677
 +	.probe = mspm0_i2c_probe,
 +	.remove = mspm0_i2c_remove,
 +	.driver = {
-+		.name = "mspm0_i2c", 
-+		.of_match_table = mspm0_i2c_of_match, 
++		.name = "mspm0_i2c",
++		.of_match_table = mspm0_i2c_of_match,
 +	},
 +};
 +module_i2c_driver(mspm0_i2c_driver);
