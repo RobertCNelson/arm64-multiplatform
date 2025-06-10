@@ -446,6 +446,25 @@ post_rpibackports () {
 }
 
 backports () {
+	backport_tag="v6.15.1"
+
+	subsystem="tps65219"
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		pre_backports
+
+		cp -v ~/linux-src/drivers/input/misc/tps65219-pwrbutton.c ./drivers/input/misc/
+		cp -v ~/linux-src/drivers/mfd/tps65219.c ./drivers/mfd/
+		cp -v ~/linux-src/drivers/gpio/gpio-tps65219.c ./drivers/gpio/
+		cp -v ~/linux-src/drivers/regulator/tps65219-regulator.c ./drivers/regulator/
+		cp -v ~/linux-src/Documentation/devicetree/bindings/regulator/ti,tps65219.yaml ./Documentation/devicetree/bindings/regulator/
+		cp -v ~/linux-src/include/linux/mfd/tps65219.h ./include/linux/mfd/
+
+		post_backports
+	else
+		patch_backports
+	fi
+
 	backport_tag="rpi-6.15.y"
 
 	subsystem="edt-ft5x06"
@@ -455,8 +474,8 @@ backports () {
 
 		cp -v ~/linux-rpi/drivers/input/touchscreen/edt-ft5x06.c ./drivers/input/touchscreen/
 
-		post_rpibackports
-	else
+#		post_rpibackports
+#	else
 		patch_backports
 	fi
 }
@@ -473,7 +492,7 @@ drivers () {
 }
 
 ###
-#backports
+backports
 drivers
 
 echo "patch.sh ran successfully"
