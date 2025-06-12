@@ -494,7 +494,7 @@ drivers () {
 	${git} "${DIR}/patches/drivers/tps65219/0001-regulator-tps65219-Update-struct-names.patch"
 	${git} "${DIR}/patches/drivers/tps65219/0002-regulator-tps65219-Add-support-for-TPS65215-regulato.patch"
 	${git} "${DIR}/patches/drivers/tps65219/0003-regulator-tps65219-Add-support-for-TPS65215-Regulato.patch"
-	${git} "${DIR}/patches/drivers/tps65219/0004-regulator-tps65219-Add-TI-TPS65214-Regulator-Support.patch"
+	#${git} "${DIR}/patches/drivers/tps65219/0004-regulator-tps65219-Add-TI-TPS65214-Regulator-Support.patch"
 }
 
 ###
