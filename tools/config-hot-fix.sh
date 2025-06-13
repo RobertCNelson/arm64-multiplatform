@@ -174,6 +174,8 @@ cd ${DIR}/KERNEL/
 ./scripts/config --disable CONFIG_PCI_MESON
 ./scripts/config --disable CONFIG_PCI_HISI
 ./scripts/config --disable CONFIG_PCIE_KIRIN
+./scripts/config --enable CONFIG_PCI_KEYSTONE
+./scripts/config --enable CONFIG_PCI_KEYSTONE_HOST
 
 #
 # PCI Endpoint
@@ -250,13 +252,67 @@ cd ${DIR}/KERNEL/
 ./scripts/config --module CONFIG_EEPROM_93XX46
 
 # end of EEPROM support
+./scripts/config --disable CONFIG_CB710_CORE
 ./scripts/config --disable CONFIG_SENSORS_LIS3_I2C
 ./scripts/config --disable CONFIG_ALTERA_STAPL
 ./scripts/config --disable CONFIG_MISC_RTSX_USB
 
 #
-# Controllers with non-SFF native interface
+# SCSI device support
 #
+./scripts/config --disable CONFIG_SCSI
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+./scripts/config --enable CONFIG_BLK_DEV_SD
+
+# end of SCSI Transports
+./scripts/config --disable CONFIG_SCSI_CXGB3_ISCSI
+./scripts/config --disable CONFIG_SCSI_CXGB4_ISCSI
+./scripts/config --disable CONFIG_SCSI_BNX2_ISCSI
+./scripts/config --disable CONFIG_BE2ISCSI
+./scripts/config --disable CONFIG_BLK_DEV_3W_XXXX_RAID
+./scripts/config --disable CONFIG_SCSI_HPSA
+./scripts/config --disable CONFIG_SCSI_3W_9XXX
+./scripts/config --disable CONFIG_SCSI_3W_SAS
+./scripts/config --disable CONFIG_SCSI_ACARD
+./scripts/config --disable CONFIG_SCSI_AACRAID
+./scripts/config --disable CONFIG_SCSI_AIC7XXX
+./scripts/config --disable CONFIG_SCSI_AIC79XX
+./scripts/config --disable CONFIG_SCSI_AIC94XX
+./scripts/config --disable CONFIG_SCSI_HISI_SAS
+./scripts/config --disable CONFIG_SCSI_MVSAS
+./scripts/config --disable CONFIG_SCSI_MVUMI
+./scripts/config --disable CONFIG_SCSI_ADVANSYS
+./scripts/config --disable CONFIG_SCSI_ESAS2R
+./scripts/config --disable CONFIG_MEGARAID_SAS
+./scripts/config --disable CONFIG_SCSI_MPT3SAS
+./scripts/config --disable CONFIG_SCSI_MPT2SAS
+./scripts/config --disable CONFIG_SCSI_MPI3MR
+./scripts/config --disable CONFIG_SCSI_SMARTPQI
+./scripts/config --disable CONFIG_SCSI_HPTIOP
+./scripts/config --disable CONFIG_HYPERV_STORAGE
+./scripts/config --disable CONFIG_LIBFC
+./scripts/config --disable CONFIG_SCSI_SNIC
+./scripts/config --disable CONFIG_SCSI_DMX3191D
+./scripts/config --disable CONFIG_SCSI_STEX
+./scripts/config --disable CONFIG_SCSI_SYM53C8XX_2
+./scripts/config --disable CONFIG_SCSI_QLA_FC
+./scripts/config --disable CONFIG_SCSI_QLA_ISCSI
+./scripts/config --disable CONFIG_QEDI
+./scripts/config --disable CONFIG_SCSI_LPFC
+./scripts/config --disable CONFIG_SCSI_WD719X
+./scripts/config --disable CONFIG_SCSI_PMCRAID
+./scripts/config --disable CONFIG_SCSI_PM8001
+./scripts/config --disable CONFIG_SCSI_BFA_FC
+./scripts/config --disable CONFIG_SCSI_VIRTIO
+./scripts/config --disable CONFIG_SCSI_CHELSIO_FCOE
+./scripts/config --disable CONFIG_SCSI_DH
+
+# end of SCSI device support
+./scripts/config --disable CONFIG_ATA
+
 ./scripts/config --disable CONFIG_MD_RAID456
 ./scripts/config --disable CONFIG_DM_CLONE
 ./scripts/config --disable CONFIG_DM_RAID
@@ -265,19 +321,201 @@ cd ${DIR}/KERNEL/
 ./scripts/config --enable CONFIG_IPVLAN
 ./scripts/config --enable CONFIG_VXLAN
 
+./scripts/config --disable CONFIG_NETKIT
+./scripts/config --disable CONFIG_MHI_NET
+
+./scripts/config --disable CONFIG_ATM_DRIVERS
+./scripts/config --disable CONFIG_ATM_DUMMY
+
+./scripts/config --disable CONFIG_NET_VENDOR_3COM
+./scripts/config --disable CONFIG_NET_VENDOR_ADAPTEC
+./scripts/config --disable CONFIG_NET_VENDOR_AGERE
+./scripts/config --disable CONFIG_NET_VENDOR_ALACRITECH
+./scripts/config --disable CONFIG_NET_VENDOR_ALTEON
+./scripts/config --disable CONFIG_NET_VENDOR_AMAZON
+./scripts/config --disable CONFIG_NET_VENDOR_AMD
+./scripts/config --disable CONFIG_NET_VENDOR_AQUANTIA
+./scripts/config --disable CONFIG_NET_VENDOR_ARC
+./scripts/config --disable CONFIG_NET_VENDOR_ASIX
+./scripts/config --disable CONFIG_NET_VENDOR_ATHEROS
+./scripts/config --disable CONFIG_NET_VENDOR_BROADCOM
+./scripts/config --disable CONFIG_NET_VENDOR_CADENCE
+./scripts/config --disable CONFIG_NET_VENDOR_CAVIUM
+./scripts/config --disable CONFIG_NET_VENDOR_CHELSIO
+./scripts/config --disable CONFIG_NET_VENDOR_CISCO
+./scripts/config --disable CONFIG_NET_VENDOR_CORTINA
+./scripts/config --disable CONFIG_NET_VENDOR_DAVICOM
+./scripts/config --disable CONFIG_NET_VENDOR_DEC
+./scripts/config --disable CONFIG_NET_VENDOR_DLINK
+./scripts/config --disable CONFIG_NET_VENDOR_EMULEX
+./scripts/config --disable CONFIG_NET_VENDOR_ENGLEDER
+./scripts/config --disable CONFIG_NET_VENDOR_EZCHIP
+./scripts/config --disable CONFIG_NET_VENDOR_FUNGIBLE
+./scripts/config --disable CONFIG_NET_VENDOR_GOOGLE
+./scripts/config --disable CONFIG_NET_VENDOR_HISILICON
+./scripts/config --disable CONFIG_NET_VENDOR_HUAWEI
+./scripts/config --disable CONFIG_NET_VENDOR_I825XX
+./scripts/config --disable CONFIG_NET_VENDOR_INTEL
+./scripts/config --disable CONFIG_JME
+./scripts/config --disable CONFIG_NET_VENDOR_ADI
+./scripts/config --disable CONFIG_NET_VENDOR_LITEX
+./scripts/config --disable CONFIG_NET_VENDOR_MARVELL
+./scripts/config --disable CONFIG_NET_VENDOR_MELLANOX
+./scripts/config --disable CONFIG_NET_VENDOR_META
+./scripts/config --disable CONFIG_NET_VENDOR_MICREL
+./scripts/config --disable CONFIG_NET_VENDOR_MICROCHIP
+./scripts/config --disable CONFIG_NET_VENDOR_MICROSEMI
+./scripts/config --disable CONFIG_NET_VENDOR_MICROSOFT
+./scripts/config --disable CONFIG_NET_VENDOR_MYRI
+./scripts/config --disable CONFIG_NET_VENDOR_NI
+./scripts/config --disable CONFIG_NET_VENDOR_NATSEMI
+./scripts/config --disable CONFIG_NET_VENDOR_NETERION
+./scripts/config --disable CONFIG_NET_VENDOR_NETRONOME
+./scripts/config --disable CONFIG_NET_VENDOR_8390
+./scripts/config --disable CONFIG_NET_VENDOR_NVIDIA
+./scripts/config --disable CONFIG_NET_VENDOR_OKI
+./scripts/config --disable CONFIG_NET_VENDOR_PACKET_ENGINES
+./scripts/config --disable CONFIG_NET_VENDOR_PENSANDO
+./scripts/config --disable CONFIG_NET_VENDOR_QLOGIC
+./scripts/config --disable CONFIG_NET_VENDOR_BROCADE
+./scripts/config --disable CONFIG_NET_VENDOR_QUALCOMM
+./scripts/config --disable CONFIG_NET_VENDOR_RDC
+./scripts/config --disable CONFIG_NET_VENDOR_REALTEK
+./scripts/config --disable CONFIG_NET_VENDOR_RENESAS
+./scripts/config --disable CONFIG_NET_VENDOR_ROCKER
+./scripts/config --disable CONFIG_NET_VENDOR_SAMSUNG
+./scripts/config --disable CONFIG_NET_VENDOR_SILAN
+./scripts/config --disable CONFIG_NET_VENDOR_SIS
+./scripts/config --disable CONFIG_NET_VENDOR_SOLARFLARE
+./scripts/config --disable CONFIG_NET_VENDOR_SMSC
+./scripts/config --disable CONFIG_NET_VENDOR_SOCIONEXT
+./scripts/config --disable CONFIG_NET_VENDOR_STMICRO
+./scripts/config --disable CONFIG_NET_VENDOR_SUN
+./scripts/config --disable CONFIG_NET_VENDOR_SYNOPSYS
+./scripts/config --disable CONFIG_NET_VENDOR_TEHUTI
+./scripts/config --disable CONFIG_NET_VENDOR_VERTEXCOM
+./scripts/config --disable CONFIG_NET_VENDOR_VIA
+./scripts/config --disable CONFIG_NET_VENDOR_WANGXUN
+./scripts/config --disable CONFIG_VIA_VELOCITY
+./scripts/config --disable CONFIG_NET_VENDOR_XILINX
+
+./scripts/config --enable CONFIG_NET_VENDOR_TI
+./scripts/config --enable CONFIG_TI_DAVINCI_MDIO
+./scripts/config --enable CONFIG_TI_K3_CPPI_DESC_POOL
+./scripts/config --enable CONFIG_TI_K3_AM65_CPSW_NUSS
+./scripts/config --enable CONFIG_TI_K3_AM65_CPSW_SWITCHDEV
+./scripts/config --enable CONFIG_TI_K3_AM65_CPTS
+
+./scripts/config --module CONFIG_WIZNET_W5100
+./scripts/config --enable CONFIG_WIZNET_BUS_ANY
+./scripts/config --module CONFIG_WIZNET_W5100_SPI
+
+./scripts/config --enable CONFIG_PHYLINK
+./scripts/config --enable CONFIG_PHYLIB
+./scripts/config --enable CONFIG_FIXED_PHY
+./scripts/config --disable CONFIG_SFP
+
+#
+# MII PHY device drivers
+#
+
+./scripts/config --disable CONFIG_AMD_PHY
+./scripts/config --disable CONFIG_ADIN_PHY
+
+./scripts/config --disable CONFIG_BROADCOM_PHY
+./scripts/config --disable CONFIG_BCM54140_PHY
+./scripts/config --disable CONFIG_BCM7XXX_PHY
+./scripts/config --disable CONFIG_BCM87XX_PHY
+./scripts/config --disable CONFIG_BCM_NET_PHYLIB
+./scripts/config --disable CONFIG_BCM_NET_PHYPTP
+./scripts/config --disable CONFIG_CICADA_PHY
+./scripts/config --disable CONFIG_CORTINA_PHY
+./scripts/config --disable CONFIG_DAVICOM_PHY
+./scripts/config --disable CONFIG_ICPLUS_PHY
+./scripts/config --disable CONFIG_LXT_PHY
+
+./scripts/config --disable CONFIG_LSI_ET1011C_PHY
+./scripts/config --disable CONFIG_MARVELL_PHY
+./scripts/config --disable CONFIG_MARVELL_10G_PHY
+./scripts/config --disable CONFIG_MEDIATEK_GE_PHY
+./scripts/config --disable CONFIG_MOTORCOMM_PHY
+./scripts/config --disable CONFIG_NATIONAL_PHY
+./scripts/config --disable CONFIG_QSEMI_PHY
+./scripts/config --disable CONFIG_RENESAS_PHY
+./scripts/config --disable CONFIG_ROCKCHIP_PHY
+./scripts/config --disable CONFIG_VITESSE_PHY
+
+./scripts/config --enable CONFIG_REALTEK_PHY
+./scripts/config --enable CONFIG_DP83867_PHY
+
+./scripts/config --disable CONFIG_CAN_VCAN
+./scripts/config --disable CONFIG_CAN_VXCAN
+./scripts/config --disable CONFIG_CAN_CAN327
+./scripts/config --disable CONFIG_CAN_SLCAN
+./scripts/config --disable CONFIG_CAN_C_CAN
+./scripts/config --disable CONFIG_CAN_M_CAN
+./scripts/config --disable CONFIG_CAN_PEAK_PCIEFD
+./scripts/config --disable CONFIG_CAN_SJA1000
+./scripts/config --disable CONFIG_CAN_SOFTING
+
+# end of CAN USB interfaces
+./scripts/config --disable CONFIG_MDIO_CAVIUM
+./scripts/config --disable CONFIG_MDIO_BCM_UNIMAC
+./scripts/config --enable CONFIG_MDIO_GPIO
+./scripts/config --disable CONFIG_MDIO_HISI_FEMAC
+./scripts/config --disable CONFIG_MDIO_THUNDER
+
+#
+# MDIO Multiplexers
+#
+./scripts/config --enable CONFIG_MDIO_BUS_MUX
+./scripts/config --enable CONFIG_MDIO_BUS_MUX_GPIO
+./scripts/config --enable CONFIG_MDIO_BUS_MUX_MULTIPLEXER
+./scripts/config --enable CONFIG_MDIO_BUS_MUX_MMIOREG
+
+#
+# PCS device drivers
+#
+./scripts/config --disable CONFIG_PCS_XPCS
+
+./scripts/config --module CONFIG_ATH12K
+
 ./scripts/config --disable CONFIG_B43
 ./scripts/config --disable CONFIG_B43LEGACY
 ./scripts/config --disable CONFIG_BRCMSMAC
+./scripts/config --disable CONFIG_BRCMFMAC_SDIO
+scripts/config --module CONFIG_LIBERTAS_SPI
+./scripts/config --disable CONFIG_LIBERTAS_SDIO
+
+./scripts/config --disable CONFIG_MWIFIEX_SDIO
+./scripts/config --module CONFIG_MWIFIEX_USB
+
+./scripts/config --module CONFIG_MT7603E
+./scripts/config --module CONFIG_MT7921S
+
+./scripts/config --module CONFIG_WILC1000_SDIO
+./scripts/config --module CONFIG_WILC1000_SPI
 
 ./scripts/config --module CONFIG_RTL8192DU
+
+./scripts/config --disable CONFIG_RTW88_SDIO
+./scripts/config --disable CONFIG_RTW88_8822BS
+./scripts/config --disable CONFIG_RTW88_8822CS
+./scripts/config --disable CONFIG_RTW88_8723DS
+./scripts/config --disable CONFIG_RTW88_8723CS
+./scripts/config --disable CONFIG_RTW88_8821CS
 
 ./scripts/config --module CONFIG_RTW88_8821AU
 ./scripts/config --module CONFIG_RTW88_8812AU
 ./scripts/config --module CONFIG_RTW88_8814AE
 ./scripts/config --module CONFIG_RTW88_8814AU
 
+./scripts/config --module CONFIG_RTW89_8851BE
+./scripts/config --module CONFIG_RTW89_8852BTE
+
 ./scripts/config --module CONFIG_WFX
 
+./scripts/config --disable CONFIG_MAC80211_HWSIM
 ./scripts/config --disable CONFIG_IEEE802154_FAKELB
 
 #
@@ -294,6 +532,70 @@ cd ${DIR}/KERNEL/
 ./scripts/config --disable CONFIG_KEYBOARD_OPENCORES
 ./scripts/config --disable CONFIG_KEYBOARD_OMAP4
 ./scripts/config --disable CONFIG_MOUSE_PS2
+
+./scripts/config --module CONFIG_TOUCHSCREEN_AR1021_I2C
+./scripts/config --module CONFIG_TOUCHSCREEN_ILI210X
+
+./scripts/config --module CONFIG_INPUT_AD714X
+./scripts/config --module CONFIG_INPUT_AD714X_I2C
+./scripts/config --module CONFIG_INPUT_AD714X_SPI
+
+./scripts/config --module CONFIG_INPUT_GPIO_BEEPER
+./scripts/config --module CONFIG_INPUT_GPIO_DECODER
+
+./scripts/config --module CONFIG_INPUT_PWM_BEEPER
+
+#
+# Hardware I/O ports
+#
+./scripts/config --disable CONFIG_SERIO_LIBPS2
+./scripts/config --disable CONFIG_SERIO_ALTERA_PS2
+
+#
+# Serial drivers
+#
+./scripts/config --enable CONFIG_SERIAL_8250_DEPRECATED_OPTIONS
+./scripts/config --disable CONFIG_SERIAL_8250_EXAR
+./scripts/config --set-val CONFIG_SERIAL_8250_NR_UARTS 10
+./scripts/config --set-val CONFIG_SERIAL_8250_RUNTIME_UARTS 10
+./scripts/config --disable CONFIG_SERIAL_8250_FSL
+./scripts/config --disable CONFIG_SERIAL_8250_DW
+
+./scripts/config --enable CONFIG_SERIAL_8250_OMAP
+./scripts/config --enable CONFIG_SERIAL_8250_OMAP_TTYO_FIXUP
+
+#
+# Non-8250 serial port support
+#
+./scripts/config --disable CONFIG_SERIAL_AMBA_PL010
+./scripts/config --disable CONFIG_SERIAL_AMBA_PL011
+./scripts/config --module CONFIG_SERIAL_MAX3100
+./scripts/config --module CONFIG_SERIAL_MAX310X
+./scripts/config --disable CONFIG_SERIAL_XILINX_PS_UART
+./scripts/config --disable CONFIG_SERIAL_RP2
+./scripts/config --disable CONFIG_SERIAL_FSL_LPUART
+
+# end of Serial drivers
+./scripts/config --module CONFIG_RPMSG_TTY
+./scripts/config --disable CONFIG_IPMI_HANDLER
+./scripts/config --enable CONFIG_HW_RANDOM_OMAP
+
+#
+# I2C support
+#
+./scripts/config --enable CONFIG_I2C_CHARDEV
+./scripts/config --enable CONFIG_I2C_MUX
+
+#
+# Multiplexer I2C Chip support
+#
+./scripts/config --enable CONFIG_I2C_MUX_GPIO
+./scripts/config --enable CONFIG_I2C_MUX_PINCTRL
+
+#
+# PC SMBus host controller drivers
+#
+./scripts/config --disable CONFIG_I2C_ISCH
 
 #
 # I2C system bus drivers (mostly embedded / system-on-chip)
@@ -323,6 +625,7 @@ cd ${DIR}/KERNEL/
 # SPI Protocol Masters
 #
 ./scripts/config --module CONFIG_SPI_SPIDEV
+./scripts/config --enable CONFIG_SPI_SLAVE
 ./scripts/config --module CONFIG_SPI_SLAVE_TIME
 ./scripts/config --module CONFIG_SPI_SLAVE_SYSTEM_CONTROL
 
@@ -333,6 +636,33 @@ cd ${DIR}/KERNEL/
 ./scripts/config --disable CONFIG_SPMI
 
 #
+# PPS clients support
+#
+./scripts/config --module CONFIG_PPS_GENERATOR
+
+# end of PTP clock support
+./scripts/config --disable CONFIG_PINCTRL_AMD
+./scripts/config --module CONFIG_PINCTRL_MCP23S08_I2C
+./scripts/config --module CONFIG_PINCTRL_MCP23S08_SPI
+./scripts/config --module CONFIG_PINCTRL_MCP23S08
+
+#
+# Memory mapped GPIO drivers
+#
+./scripts/config --disable CONFIG_GPIO_MB86S7X
+./scripts/config --enable CONFIG_GPIO_SYSCON
+
+#
+# I2C GPIO expanders
+#
+./scripts/config --module CONFIG_GPIO_ADNP
+./scripts/config --module CONFIG_GPIO_MAX7300
+./scripts/config --module CONFIG_GPIO_MAX732X
+./scripts/config --module CONFIG_GPIO_PCA9570
+./scripts/config --module CONFIG_GPIO_PCF857X
+./scripts/config --module CONFIG_GPIO_TPIC2810
+
+#
 # SPI GPIO expanders
 #
 ./scripts/config --module CONFIG_GPIO_74X164
@@ -341,6 +671,13 @@ cd ${DIR}/KERNEL/
 ./scripts/config --module CONFIG_GPIO_MC33880
 ./scripts/config --module CONFIG_GPIO_PISOSR
 ./scripts/config --module CONFIG_GPIO_XRA1403
+
+#
+# USB GPIO expanders
+#
+./scripts/config --disable CONFIG_GPIO_MPSSE
+./scripts/config --disable CONFIG_GPIO_PCI_IDIO_16
+./scripts/config --disable CONFIG_GPIO_PCIE_IDIO_24
 
 #
 # Virtual GPIO drivers
@@ -360,6 +697,10 @@ cd ${DIR}/KERNEL/
 # end of 1-wire Slaves
 ./scripts/config --enable CONFIG_POWER_RESET_GPIO
 ./scripts/config --enable CONFIG_POWER_RESET_GPIO_RESTART
+./scripts/config --enable CONFIG_POWER_RESET_RESTART
+./scripts/config --module CONFIG_POWER_SEQUENCING
+./scripts/config --module CONFIG_GENERIC_ADC_BATTERY
+./scripts/config --module CONFIG_CHARGER_BQ2415X
 ./scripts/config --disable CONFIG_POWER_RESET_XGENE
 
 #
@@ -383,6 +724,7 @@ cd ${DIR}/KERNEL/
 ./scripts/config --module CONFIG_SENSORS_F71805F
 ./scripts/config --module CONFIG_SENSORS_GL518SM
 ./scripts/config --module CONFIG_SENSORS_GL520SM
+./scripts/config --enable CONFIG_SENSORS_GPIO_FAN
 ./scripts/config --module CONFIG_SENSORS_HIH6130
 ./scripts/config --module CONFIG_SENSORS_HTU31
 ./scripts/config --module CONFIG_SENSORS_ISL28022
@@ -496,6 +838,7 @@ cd ${DIR}/KERNEL/
 ./scripts/config --module CONFIG_SENSORS_SBTSI
 ./scripts/config --module CONFIG_SENSORS_SHT15
 ./scripts/config --module CONFIG_SENSORS_SHTC1
+./scripts/config --module CONFIG_SENSORS_SIS5595
 ./scripts/config --module CONFIG_SENSORS_EMC2305
 ./scripts/config --module CONFIG_SENSORS_SMSC47M1
 ./scripts/config --module CONFIG_SENSORS_SMSC47B397
@@ -520,6 +863,7 @@ cd ${DIR}/KERNEL/
 #
 # ACPI drivers
 #
+./scripts/config --enable CONFIG_THERMAL_NETLINK
 ./scripts/config --enable CONFIG_PCIE_THERMAL
 ./scripts/config --enable CONFIG_THERMAL_EMULATION
 ./scripts/config --enable CONFIG_K3_THERMAL
@@ -535,6 +879,8 @@ cd ${DIR}/KERNEL/
 ./scripts/config --disable CONFIG_DW_WATCHDOG
 ./scripts/config --disable CONFIG_ARM_SMC_WATCHDOG
 ./scripts/config --disable CONFIG_I6300ESB_WDT
+
+./scripts/config --enable CONFIG_K3_RTI_WATCHDOG
 
 #
 # USB-based Watchdog Cards
@@ -565,7 +911,6 @@ cd ${DIR}/KERNEL/
 ./scripts/config --enable CONFIG_MFD_TI_AM335X_TSCADC
 ./scripts/config --enable CONFIG_MFD_TPS65219
 
-
 # end of Multifunction device drivers
 ./scripts/config --disable CONFIG_REGULATOR_CROS_EC
 ./scripts/config --disable CONFIG_REGULATOR_DA9211
@@ -581,6 +926,9 @@ cd ${DIR}/KERNEL/
 ./scripts/config --enable CONFIG_REGULATOR_GPIO
 ./scripts/config --enable CONFIG_REGULATOR_PWM
 ./scripts/config --enable CONFIG_REGULATOR_TPS65219
+
+./scripts/config --disable CONFIG_RC_CORE
+./scripts/config --enable CONFIG_CEC_CORE
 
 #
 # Cadence media platform drivers
