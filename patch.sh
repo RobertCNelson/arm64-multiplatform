@@ -446,25 +446,6 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="v6.15.1"
-
-	subsystem="tps65219"
-	#regenerate="enable"
-	if [ "x${regenerate}" = "xenable" ] ; then
-		pre_backports
-
-		cp -v ~/linux-src/drivers/input/misc/tps65219-pwrbutton.c ./drivers/input/misc/
-		cp -v ~/linux-src/drivers/mfd/tps65219.c ./drivers/mfd/
-		cp -v ~/linux-src/drivers/gpio/gpio-tps65219.c ./drivers/gpio/
-		cp -v ~/linux-src/drivers/regulator/tps65219-regulator.c ./drivers/regulator/
-		cp -v ~/linux-src/Documentation/devicetree/bindings/regulator/ti,tps65219.yaml ./Documentation/devicetree/bindings/regulator/
-		cp -v ~/linux-src/include/linux/mfd/tps65219.h ./include/linux/mfd/
-
-		post_backports
-	else
-		patch_backports
-	fi
-
 	backport_tag="rpi-6.15.y"
 
 	subsystem="edt-ft5x06"
@@ -490,11 +471,8 @@ drivers () {
 	dir 'external/cadence'
 	dir 'external/gasket'
 
-	#These break PB2 and BeaglePlay... which specifically thou..
-	${git} "${DIR}/patches/drivers/tps65219/0001-regulator-tps65219-Update-struct-names.patch"
-	${git} "${DIR}/patches/drivers/tps65219/0002-regulator-tps65219-Add-support-for-TPS65215-regulato.patch"
-	${git} "${DIR}/patches/drivers/tps65219/0003-regulator-tps65219-Add-support-for-TPS65215-Regulato.patch"
-	#${git} "${DIR}/patches/drivers/tps65219/0004-regulator-tps65219-Add-TI-TPS65214-Regulator-Support.patch"
+	#regulator-tps65219-Add-TI-TPS65214-Regulator-Support breaks BeaglePlay/PB2...
+	dir 'revert/tps65219'
 }
 
 ###
