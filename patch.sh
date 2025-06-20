@@ -472,7 +472,9 @@ drivers () {
 	dir 'external/gasket'
 
 	#regulator-tps65219-Add-TI-TPS65214-Regulator-Support breaks BeaglePlay/PB2...
-	dir 'revert/tps65219'
+	#dir 'revert/tps65219'
+
+	dir 'fixes'
 }
 
 ###
