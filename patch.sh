@@ -446,7 +446,7 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="rpi-6.15.y"
+	backport_tag="rpi-6.16.y"
 
 	subsystem="edt-ft5x06"
 	#regenerate="enable"
@@ -455,8 +455,8 @@ backports () {
 
 		cp -v ~/linux-rpi/drivers/input/touchscreen/edt-ft5x06.c ./drivers/input/touchscreen/
 
-#		post_rpibackports
-#	else
+		post_rpibackports
+	else
 		patch_backports
 	fi
 }
