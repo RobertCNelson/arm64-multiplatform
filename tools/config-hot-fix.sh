@@ -112,6 +112,16 @@ cd ${DIR}/KERNEL/
 ./scripts/config --enable CONFIG_BLK_CGROUP_IOPRIO
 
 #
+# Slab allocator options
+#
+./scripts/config --disable CONFIG_DEVICE_PRIVATE
+
+#
+# Data Access Monitoring
+#
+./scripts/config --disable CONFIG_DAMON
+
+#
 # Networking options
 #
 ./scripts/config --enable CONFIG_IP_PNP
@@ -245,6 +255,7 @@ cd ${DIR}/KERNEL/
 ./scripts/config --module CONFIG_NSM
 ./scripts/config --enable CONFIG_MSPM0_I2C
 ./scripts/config --disable CONFIG_C2PORT
+./scripts/config --disable CONFIG_MISC_RTSX
 
 #
 # EEPROM support
@@ -256,6 +267,8 @@ cd ${DIR}/KERNEL/
 ./scripts/config --disable CONFIG_SENSORS_LIS3_I2C
 ./scripts/config --disable CONFIG_ALTERA_STAPL
 ./scripts/config --disable CONFIG_MISC_RTSX_USB
+./scripts/config --disable CONFIG_MISC_RTSX_PCI
+./scripts/config --disable CONFIG_UACCE
 
 #
 # SCSI device support
@@ -418,7 +431,6 @@ cd ${DIR}/KERNEL/
 #
 # MII PHY device drivers
 #
-
 ./scripts/config --disable CONFIG_AMD_PHY
 ./scripts/config --disable CONFIG_ADIN_PHY
 
@@ -445,15 +457,20 @@ cd ${DIR}/KERNEL/
 ./scripts/config --disable CONFIG_ROCKCHIP_PHY
 ./scripts/config --disable CONFIG_VITESSE_PHY
 
+./scripts/config --enable CONFIG_AQUANTIA_PHY
+./scripts/config --enable CONFIG_MICREL_PHY
+./scripts/config --enable CONFIG_MICROCHIP_PHY
+./scripts/config --enable CONFIG_QCOM_NET_PHYLIB
+./scripts/config --enable CONFIG_AT803X_PHY
 ./scripts/config --enable CONFIG_REALTEK_PHY
 ./scripts/config --enable CONFIG_DP83867_PHY
+./scripts/config --enable CONFIG_DP83869_PHY
+./scripts/config --enable CONFIG_DP83TD510_PHY
 
 ./scripts/config --disable CONFIG_CAN_VCAN
 ./scripts/config --disable CONFIG_CAN_VXCAN
-./scripts/config --disable CONFIG_CAN_CAN327
 ./scripts/config --disable CONFIG_CAN_SLCAN
 ./scripts/config --disable CONFIG_CAN_C_CAN
-./scripts/config --disable CONFIG_CAN_M_CAN
 ./scripts/config --disable CONFIG_CAN_PEAK_PCIEFD
 ./scripts/config --disable CONFIG_CAN_SJA1000
 ./scripts/config --disable CONFIG_CAN_SOFTING
@@ -535,6 +552,8 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 
 ./scripts/config --module CONFIG_TOUCHSCREEN_AR1021_I2C
 ./scripts/config --module CONFIG_TOUCHSCREEN_ILI210X
+./scripts/config --module CONFIG_TOUCHSCREEN_EDT_FT5X06
+./scripts/config --module CONFIG_TOUCHSCREEN_TI_AM335X_TSC
 
 ./scripts/config --module CONFIG_INPUT_AD714X
 ./scripts/config --module CONFIG_INPUT_AD714X_I2C
@@ -650,7 +669,9 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 # Memory mapped GPIO drivers
 #
 ./scripts/config --disable CONFIG_GPIO_MB86S7X
+./scripts/config --disable CONFIG_GPIO_PL061
 ./scripts/config --enable CONFIG_GPIO_SYSCON
+./scripts/config --disable CONFIG_GPIO_XGENE
 
 #
 # I2C GPIO expanders
@@ -699,6 +720,7 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --enable CONFIG_POWER_RESET_GPIO_RESTART
 ./scripts/config --enable CONFIG_POWER_RESET_RESTART
 ./scripts/config --module CONFIG_POWER_SEQUENCING
+./scripts/config --disable CONFIG_POWER_SEQUENCING_QCOM_WCN
 ./scripts/config --module CONFIG_GENERIC_ADC_BATTERY
 ./scripts/config --module CONFIG_CHARGER_BQ2415X
 ./scripts/config --disable CONFIG_POWER_RESET_XGENE
@@ -949,9 +971,27 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --module CONFIG_VIDEO_TI_J721E_CSI2RX
 
 #
+# Software defined radio USB devices
+#
+./scripts/config --disable CONFIG_MEDIA_PCI_SUPPORT
+
+#
 # MMC/SDIO DVB adapters
 #
 ./scripts/config --disable CONFIG_V4L_TEST_DRIVERS
+
+#
+# Media ancillary drivers
+#
+./scripts/config --module CONFIG_VIDEO_IMX219
+./scripts/config --module CONFIG_VIDEO_IMX290
+./scripts/config --module CONFIG_VIDEO_MT9P031
+./scripts/config --module CONFIG_VIDEO_OV2659
+./scripts/config --module CONFIG_VIDEO_OV5640
+./scripts/config --module CONFIG_VIDEO_OV5645
+./scripts/config --module CONFIG_VIDEO_OV5647
+./scripts/config --module CONFIG_VIDEO_OV7251
+
 
 #
 # Graphics support
@@ -993,6 +1033,38 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --disable CONFIG_DRM_QXL
 ./scripts/config --disable CONFIG_DRM_VIRTIO_GPU
 
+#
+# Display Panels
+#
+./scripts/config --enable CONFIG_DRM_PANEL_RASPBERRYPI_TOUCHSCREEN
+
+#
+# Display Interface Bridges
+#
+./scripts/config --enable CONFIG_DRM_DISPLAY_CONNECTOR
+./scripts/config --enable CONFIG_DRM_ITE_IT66121
+./scripts/config --disable CONFIG_DRM_LONTIUM_LT9611
+./scripts/config --enable CONFIG_DRM_LVDS_CODEC
+./scripts/config --disable CONFIG_DRM_NXP_PTN3460
+./scripts/config --disable CONFIG_DRM_PARADE_PS8640
+./scripts/config --enable CONFIG_DRM_SII902X
+./scripts/config --enable CONFIG_DRM_TI_TPD12S015
+./scripts/config --enable CONFIG_DRM_CDNS_DSI
+./scripts/config --enable CONFIG_DRM_CDNS_DSI_J721E
+./scripts/config --enable CONFIG_DRM_CDNS_MHDP8546
+
+./scripts/config --disable CONFIG_DRM_ANALOGIX_ANX6345
+./scripts/config --disable CONFIG_DRM_ANALOGIX_ANX7625
+./scripts/config --disable CONFIG_DRM_I2C_ADV7511
+./scripts/config --disable CONFIG_DRM_ANALOGIX_DP
+
+# end of Display Interface Bridges
+./scripts/config --disable CONFIG_DRM_ETNAVIV
+./scripts/config --disable CONFIG_DRM_HISI_HIBMC
+./scripts/config --disable CONFIG_DRM_HISI_KIRIN
+./scripts/config --disable CONFIG_DRM_BOCHS
+./scripts/config --disable CONFIG_DRM_CIRRUS_QEMU
+
 ./scripts/config --module CONFIG_DRM_GM12U320
 ./scripts/config --module CONFIG_TINYDRM_HX8357D
 ./scripts/config --module CONFIG_TINYDRM_ILI9163
@@ -1001,6 +1073,29 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --module CONFIG_TINYDRM_ILI9486
 ./scripts/config --module CONFIG_TINYDRM_MI0283QT
 ./scripts/config --module CONFIG_TINYDRM_REPAPER
+
+./scripts/config --disable CONFIG_DRM_LIMA
+./scripts/config --disable CONFIG_DRM_PANFROST
+./scripts/config --disable CONFIG_DRM_PANTHOR
+./scripts/config --enable CONFIG_DRM_TIDSS
+
+./scripts/config --module CONFIG_DRM_SSD130X
+./scripts/config --module CONFIG_DRM_SSD130X_I2C
+./scripts/config --module CONFIG_DRM_SSD130X_SPI
+./scripts/config --module CONFIG_DRM_POWERVR
+./scripts/config --disable CONFIG_DRM_HYPERV
+
+#
+# Frame buffer Devices
+#
+./scripts/config --disable CONFIG_FB_S3
+./scripts/config --disable CONFIG_FB_3DFX
+./scripts/config --disable CONFIG_FB_VT8623
+./scripts/config --disable CONFIG_FB_ARK
+./scripts/config --disable CONFIG_FB_PM3
+./scripts/config --disable CONFIG_FB_SMSCUFX
+./scripts/config --disable CONFIG_FB_MB862XX
+./scripts/config --module CONFIG_FB_SSD1307
 
 #
 # Backlight & LCD device support
@@ -1023,6 +1118,71 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 
 # end of Graphics support
 ./scripts/config --enable CONFIG_SOUND_OSS_CORE_PRECLAIM
+./scripts/config --module CONFIG_SND_DUMMY
+./scripts/config --module CONFIG_SND_VIRMIDI
+./scripts/config --module CONFIG_SND_MTPAV
+./scripts/config --module CONFIG_SND_SERIAL_U16550
+./scripts/config --module CONFIG_SND_MPU401
+./scripts/config --disable CONFIG_SND_PCI
+
+# end of HD-Audio
+./scripts/config --disable CONFIG_SND_DICE
+./scripts/config --disable CONFIG_SND_OXFW
+./scripts/config --disable CONFIG_SND_ISIGHT
+./scripts/config --disable CONFIG_SND_FIREWORKS
+./scripts/config --disable CONFIG_SND_BEBOB
+./scripts/config --disable CONFIG_SND_FIREWIRE_DIGI00X
+./scripts/config --disable CONFIG_SND_FIREWIRE_TASCAM
+./scripts/config --disable CONFIG_SND_FIREWIRE_MOTU
+./scripts/config --disable CONFIG_SND_FIREFACE
+
+#
+# Common SoC Audio options for Freescale CPUs:
+#
+./scripts/config --disable CONFIG_SND_SOC_FSL_SAI
+./scripts/config --disable CONFIG_SND_SOC_FSL_AUDMIX
+./scripts/config --disable CONFIG_SND_SOC_FSL_SSI
+./scripts/config --disable CONFIG_SND_SOC_FSL_SPDIF
+./scripts/config --disable CONFIG_SND_SOC_FSL_ESAI
+./scripts/config --disable CONFIG_SND_SOC_FSL_MICFIL
+./scripts/config --disable CONFIG_SND_SOC_IMX_AUDMUX
+./scripts/config --disable CONFIG_SND_I2S_HI6210_I2S
+./scripts/config --disable CONFIG_SND_SOC_SOF_TOPLEVEL
+
+./scripts/config --module CONFIG_SND_SOC_TI_EDMA_PCM
+./scripts/config --module CONFIG_SND_SOC_TI_SDMA_PCM
+./scripts/config --module CONFIG_SND_SOC_TI_UDMA_PCM
+./scripts/config --module CONFIG_SND_SOC_DAVINCI_MCASP
+./scripts/config --module CONFIG_SND_SOC_J721E_EVM
+
+#
+# CODEC drivers
+#
+./scripts/config --module CONFIG_SND_SOC_ADAU1701
+./scripts/config --module CONFIG_SND_SOC_ADAU7002
+./scripts/config --module CONFIG_SND_SOC_AK4554
+./scripts/config --module CONFIG_SND_SOC_CS4265
+./scripts/config --module CONFIG_SND_SOC_CS4271
+./scripts/config --module CONFIG_SND_SOC_CS4271_I2C
+./scripts/config --module CONFIG_SND_SOC_DMIC
+./scripts/config --module CONFIG_SND_SOC_ES8316
+./scripts/config --module CONFIG_SND_SOC_MAX98357A
+./scripts/config --module CONFIG_SND_SOC_PCM3168A
+./scripts/config --module CONFIG_SND_SOC_PCM3168A_I2C
+./scripts/config --module CONFIG_SND_SOC_PCM512x
+./scripts/config --module CONFIG_SND_SOC_PCM512x_I2C
+./scripts/config --module CONFIG_SND_SOC_SIGMADSP
+./scripts/config --module CONFIG_SND_SOC_SIGMADSP_I2C
+./scripts/config --module CONFIG_SND_SOC_SIMPLE_AMPLIFIER
+./scripts/config --module CONFIG_SND_SOC_TLV320AIC3X
+./scripts/config --module CONFIG_SND_SOC_TLV320AIC3X_I2C
+./scripts/config --module CONFIG_SND_SOC_WM8904
+./scripts/config --module CONFIG_SND_SOC_WM8960
+
+# end of CODEC drivers
+./scripts/config --enable CONFIG_HID
+./scripts/config --enable CONFIG_UHID
+./scripts/config --enable CONFIG_HID_GENERIC
 
 # end of HID-BPF support
 ./scripts/config --enable CONFIG_I2C_HID
@@ -1042,9 +1202,49 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --enable CONFIG_USB_OTG
 
 #
+# USB Host Controller Drivers
+#
+./scripts/config --enable CONFIG_USB_XHCI_HCD
+./scripts/config --enable CONFIG_USB_EHCI_HCD
+./scripts/config --disable CONFIG_USB_EHCI_FSL
+./scripts/config --enable CONFIG_USB_OHCI_HCD
+
+#
+# USB dual-mode controller drivers
+#
+./scripts/config --enable CONFIG_USB_CDNS_SUPPORT
+./scripts/config --enable CONFIG_USB_CDNS3
+./scripts/config --enable CONFIG_USB_CDNS3_TI
+
+#
+# MUSB DMA mode
+#
+./scripts/config --enable CONFIG_USB_DWC3
+./scripts/config --disable CONFIG_USB_DWC3_ULPI
+
+#
+# Platform Glue Driver Support
+#
+./scripts/config --enable CONFIG_USB_DWC3_PCI
+./scripts/config --enable CONFIG_USB_DWC3_HAPS
+./scripts/config --enable CONFIG_USB_DWC3_KEYSTONE
+./scripts/config --enable CONFIG_USB_DWC3_OF_SIMPLE
+./scripts/config --enable CONFIG_USB_DWC3_AM62
+
+./scripts/config --disable CONFIG_USB_DWC2
+./scripts/config --disable CONFIG_USB_CHIPIDEA
+./scripts/config --disable CONFIG_USB_ISP1760
+
+#
 # USB Miscellaneous drivers
 #
 ./scripts/config --enable CONFIG_USB_ONBOARD_DEV
+
+#
+# USB Physical Layer drivers
+#
+./scripts/config --enable CONFIG_NOP_USB_XCEIV
+./scripts/config --disable CONFIG_USB_ULPI
 
 # end of USB Physical Layer drivers
 ./scripts/config --enable CONFIG_USB_GADGET
@@ -1070,6 +1270,46 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --enable CONFIG_USB_F_HID
 ./scripts/config --enable CONFIG_USB_F_PRINTER
 ./scripts/config --enable CONFIG_USB_CONFIGFS
+
+# end of USB Gadget precomposed configurations
+./scripts/config --enable CONFIG_TYPEC
+./scripts/config --disable CONFIG_TYPEC_TCPCI
+./scripts/config --disable CONFIG_TYPEC_UCSI
+./scripts/config --disable CONFIG_TYPEC_WUSB3801
+
+#
+# MMC/SD/SDIO Host Controller Drivers
+#
+./scripts/config --disable CONFIG_MMC_ARMMMCI
+./scripts/config --enable CONFIG_MMC_SDHCI
+./scripts/config --disable CONFIG_MMC_SDHCI_PCI
+./scripts/config --enable CONFIG_MMC_SDHCI_ACPI
+./scripts/config --enable CONFIG_MMC_SDHCI_PLTFM
+./scripts/config --enable CONFIG_MMC_SDHCI_OF_ARASAN
+./scripts/config --disable CONFIG_MMC_SDHCI_OF_DWCMSHC
+./scripts/config --disable CONFIG_MMC_SDHCI_F_SDH30
+./scripts/config --disable CONFIG_MMC_TIFM_SD
+./scripts/config --enable CONFIG_MMC_SPI
+./scripts/config --disable CONFIG_MMC_CB710
+./scripts/config --disable CONFIG_MMC_VIA_SDMMC
+./scripts/config --disable CONFIG_MMC_DW
+./scripts/config --enable CONFIG_MMC_HSQ
+./scripts/config --disable CONFIG_MMC_TOSHIBA_PCI
+./scripts/config --disable CONFIG_MMC_MTK
+./scripts/config --disable CONFIG_MMC_SDHCI_XENON
+./scripts/config --enable CONFIG_MMC_SDHCI_AM654
+./scripts/config --disable CONFIG_MEMSTICK
+
+#
+# LED drivers
+#
+./scripts/config --module CONFIG_LEDS_LM3692X
+./scripts/config --module CONFIG_LEDS_PCA9532
+./scripts/config --enable CONFIG_LEDS_GPIO
+./scripts/config --module CONFIG_LEDS_LP55XX_COMMON
+./scripts/config --enable CONFIG_LEDS_PWM
+./scripts/config --enable CONFIG_LEDS_TLC591XX
+./scripts/config --enable CONFIG_LEDS_SYSCON
 
 #
 # RGB LED drivers
@@ -1178,8 +1418,33 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --disable CONFIG_RTC_DRV_PL031
 ./scripts/config --enable CONFIG_RTC_DRV_TI_K3
 
+#
+# DMA Devices
+#
+./scripts/config --enable CONFIG_DMA_VIRTUAL_CHANNELS
+./scripts/config --disable CONFIG_FSL_EDMA
+./scripts/config --disable CONFIG_FSL_QDMA
+./scripts/config --disable CONFIG_MV_XOR_V2
+./scripts/config --disable CONFIG_PL330_DMA
+./scripts/config --disable CONFIG_QCOM_HIDMA_MGMT
+./scripts/config --disable CONFIG_QCOM_HIDMA
+./scripts/config --enable CONFIG_TI_K3_UDMA
+./scripts/config --enable CONFIG_TI_K3_UDMA_GLUE_LAYER
+./scripts/config --enable CONFIG_TI_K3_PSIL
+
+#
+# DMABUF options
+#
+./scripts/config --enable CONFIG_DMABUF_HEAPS
+./scripts/config --enable CONFIG_DMABUF_HEAPS_SYSTEM
+./scripts/config --enable CONFIG_DMABUF_HEAPS_CMA
+
+# end of DMABUF options
+./scripts/config --disable CONFIG_UIO
+
 # end of Microsoft Hyper-V guest support
 ./scripts/config --module CONFIG_GREYBUS
+./scripts/config --module CONFIG_GREYBUS_BEAGLEPLAY
 ./scripts/config --module CONFIG_GREYBUS_ES2
 
 #
@@ -1263,7 +1528,25 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --module CONFIG_GREYBUS_UART
 ./scripts/config --module CONFIG_GREYBUS_USB
 
+#
+# Gasket devices
+#
+./scripts/config --module CONFIG_STAGING_GASKET_FRAMEWORK
+./scripts/config --module CONFIG_STAGING_APEX_DRIVER
+
 ./scripts/config --disable CONFIG_CHROME_PLATFORMS
+
+# end of Clock driver for ARM Reference designs
+./scripts/config --disable CONFIG_COMMON_CLK_SCMI
+./scripts/config --disable CONFIG_COMMON_CLK_SCPI
+./scripts/config --disable CONFIG_COMMON_CLK_SI5341
+./scripts/config --disable CONFIG_COMMON_CLK_XGENE
+./scripts/config --enable CONFIG_HWSPINLOCK_OMAP
+
+#
+# Clock Source drivers
+#
+
 
 #
 # Remoteproc drivers
@@ -1280,6 +1563,7 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --module CONFIG_RPMSG_CHAR
 ./scripts/config --module CONFIG_RPMSG_CTRL
 ./scripts/config --enable CONFIG_RPMSG_NS
+./scripts/config --enable CONFIG_RPMSG_VIRTIO
 
 
 # end of Rpmsg drivers
@@ -1383,6 +1667,7 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --module CONFIG_TI_ADS8344
 ./scripts/config --module CONFIG_TI_ADS8688
 ./scripts/config --enable CONFIG_TI_AM335X_ADC
+./scripts/config --module CONFIG_TI_LMP92064
 ./scripts/config --module CONFIG_TI_TLC4541
 ./scripts/config --module CONFIG_TI_TSC2046
 
@@ -1634,8 +1919,24 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --enable CONFIG_PWM_TIECAP
 ./scripts/config --enable CONFIG_PWM_TIEHRPWM
 
+#
+# IRQ chip support
+#
+./scripts/config --enable CONFIG_TI_SCI_INTR_IRQCHIP
+./scripts/config --enable CONFIG_TI_SCI_INTA_IRQCHIP
+
 # end of IRQ chip support
 ./scripts/config --enable CONFIG_RESET_TI_SYSCON
+
+# end of PHY drivers for Broadcom platforms
+./scripts/config --enable CONFIG_PHY_CADENCE_TORRENT
+./scripts/config --enable CONFIG_PHY_CADENCE_DPHY
+./scripts/config --module CONFIG_PHY_CADENCE_DPHY_RX
+./scripts/config --enable CONFIG_PHY_CADENCE_SIERRA
+./scripts/config --disable CONFIG_PHY_QCOM_USB_HS
+./scripts/config --disable CONFIG_PHY_QCOM_USB_HSIC
+./scripts/config --enable CONFIG_PHY_AM654_SERDES
+./scripts/config --enable CONFIG_PHY_J721E_WIZ
 
 #
 # Layout Types
@@ -1643,12 +1944,16 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --enable CONFIG_NVMEM_LAYOUT_U_BOOT_ENV
 ./scripts/config --enable CONFIG_NVMEM_U_BOOT_ENV
 
+# end of HW tracing support
+./scripts/config --disable CONFIG_FPGA
+
 #
 # Multiplexer drivers
 #
 ./scripts/config --module CONFIG_MUX_ADG792A
 ./scripts/config --module CONFIG_MUX_ADGS1408
 ./scripts/config --module CONFIG_MUX_GPIO
+./scripts/config --enable CONFIG_MUX_MMIO
 
 ./scripts/config --disable CONFIG_SLIMBUS
 ./scripts/config --disable CONFIG_INTERCONNECT
@@ -1728,6 +2033,11 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 # Library routines
 #
 ./scripts/config --disable CONFIG_RAID6_PQ_BENCHMARK
+
+#
+# Default contiguous memory area size:
+#
+./scripts/config --set-val CONFIG_CMA_SIZE_MBYTES 144
 
 #
 # Compile-time checks and compiler options
