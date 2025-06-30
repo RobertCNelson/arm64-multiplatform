@@ -105,7 +105,8 @@ external_git () {
 
 mainline_patches () {
 	#exit 2
-	dir 'mainline/pocketbeagle2'
+	#dir 'mainline/pocketbeagle2'
+	dir 'mainline/greenecho'
 	#exit 2
 }
 
@@ -376,7 +377,7 @@ local_patch () {
 }
 
 #external_git
-#mainline_patches
+mainline_patches
 rt
 wireless_regdb
 beagleboard_dtbs
@@ -470,9 +471,6 @@ drivers () {
 
 	dir 'external/cadence'
 	dir 'external/gasket'
-
-	#regulator-tps65219-Add-TI-TPS65214-Regulator-Support breaks BeaglePlay/PB2...
-	#dir 'revert/tps65219'
 
 	dir 'fixes'
 }
