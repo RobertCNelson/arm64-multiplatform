@@ -495,6 +495,7 @@ drivers () {
 	dir 'external/gasket'
 
 	dir 'drivers/tps65219'
+	dir 'drivers/cpufreq'
 }
 
 ###
