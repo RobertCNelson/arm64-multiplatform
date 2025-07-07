@@ -1,6 +1,6 @@
-From 0e8ac4c69cbd178a6deb36b8e5d5a878b19fa185 Mon Sep 17 00:00:00 2001
+From 8c77d0a9ea171ad5fabe4b480e3d71b0bde73226 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 27 Jun 2025 14:07:46 -0500
+Date: Mon, 7 Jul 2025 16:49:56 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v6.15.x
@@ -3043,7 +3043,7 @@ index 000000000000..1467d8ef5581
 +	symlink = "bone/i2c/3";
 +};
 diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
-index 4f8fcb69a2c1..909e484e1d1c 100644
+index 4f8fcb69a2c1..37adb50bb724 100644
 --- a/arch/arm64/boot/dts/ti/Makefile
 +++ b/arch/arm64/boot/dts/ti/Makefile
 @@ -251,6 +251,51 @@ dtb- += k3-am625-beagleplay-csi2-ov5640.dtb \
@@ -3054,9 +3054,9 @@ index 4f8fcb69a2c1..909e484e1d1c 100644
 +dtb-$(CONFIG_ARCH_K3) += BONE-I2C2.dtbo
 +dtb-$(CONFIG_ARCH_K3) += BONE-I2C3.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-am6232-pocketbeagle2.dtb
-+dtb-$(CONFIG_ARCH_K3) += k3-am6232-pocketbeagle2-techlab-cape.dtbo
-+dtb-$(CONFIG_ARCH_K3) += k3-am62-pocketbeagle2-techlab-cape.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-am62-pocketbeagle2-leds-off.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-am62-pocketbeagle2-techlab-cape.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-am6232-pocketbeagle2-techlab-cape.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-am67a-beagley-ai-pwm-ecap0-gpio12.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-am67a-beagley-ai-pwm-ecap1-gpio16.dtbo
 +dtb-$(CONFIG_ARCH_K3) += k3-am67a-beagley-ai-pwm-ecap1-gpio21.dtbo
