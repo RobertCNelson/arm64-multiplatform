@@ -1181,6 +1181,9 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --module CONFIG_SND_SOC_TLV320AIC3X_I2C
 ./scripts/config --module CONFIG_SND_SOC_WM8904
 ./scripts/config --module CONFIG_SND_SOC_WM8960
+./scripts/config --disable CONFIG_SND_SOC_MT6357
+./scripts/config --disable CONFIG_SND_SOC_MT6358
+./scripts/config --disable CONFIG_SND_SOC_NAU8315
 
 # end of CODEC drivers
 ./scripts/config --enable CONFIG_HID
@@ -1279,6 +1282,12 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --disable CONFIG_TYPEC_TCPCI
 ./scripts/config --disable CONFIG_TYPEC_UCSI
 ./scripts/config --disable CONFIG_TYPEC_WUSB3801
+
+#
+# USB Type-C Multiplexer/DeMultiplexer Switch support
+#
+./scripts/config --disable CONFIG_TYPEC_MUX_IT5205
+./scripts/config --disable CONFIG_TYPEC_MUX_NB7VPQ904M
 
 #
 # MMC/SD/SDIO Host Controller Drivers
@@ -1970,7 +1979,7 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 #
 ./scripts/config --enable CONFIG_VALIDATE_FS_PARSER
 ./scripts/config --enable CONFIG_EXT4_FS
-./scripts/config --disable CONFIG_XFS_FS
+./scripts/config --enable CONFIG_XFS_FS
 ./scripts/config --disable CONFIG_OCFS2_FS
 ./scripts/config --enable CONFIG_BTRFS_FS
 ./scripts/config --disable CONFIG_NILFS2_FS
