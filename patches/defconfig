@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.16.0-rc6 Kernel Configuration
+# Linux/arm64 6.16.0-rc7 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 15.1.0"
 CONFIG_CC_IS_GCC=y
@@ -7587,8 +7587,7 @@ CONFIG_RPMSG=y
 CONFIG_RPMSG_CHAR=m
 CONFIG_RPMSG_CTRL=m
 CONFIG_RPMSG_NS=y
-CONFIG_RPMSG_QCOM_GLINK=m
-CONFIG_RPMSG_QCOM_GLINK_RPM=m
+# CONFIG_RPMSG_QCOM_GLINK_RPM is not set
 CONFIG_RPMSG_VIRTIO=y
 # end of Rpmsg drivers
 

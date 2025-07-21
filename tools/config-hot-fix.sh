@@ -1567,6 +1567,8 @@ scripts/config --module CONFIG_LIBERTAS_SPI
 ./scripts/config --module CONFIG_RPMSG_CHAR
 ./scripts/config --module CONFIG_RPMSG_CTRL
 ./scripts/config --enable CONFIG_RPMSG_NS
+./scripts/config --disable CONFIG_RPMSG_QCOM_GLINK
+./scripts/config --disable CONFIG_RPMSG_QCOM_GLINK_RPM
 ./scripts/config --enable CONFIG_RPMSG_VIRTIO
 
 

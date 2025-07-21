@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.16.0-rc6 Kernel Configuration
+# Linux/arm64 6.16.0-rc7 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 15.1.0"
 CONFIG_CC_IS_GCC=y
@@ -8807,7 +8807,7 @@ CONFIG_MTK_CMDQ_MBOX=m
 CONFIG_ZYNQMP_IPI_MBOX=y
 CONFIG_SUN6I_MSGBOX=y
 # CONFIG_SPRD_MBOX is not set
-# CONFIG_QCOM_CPUCP_MBOX is not set
+CONFIG_QCOM_CPUCP_MBOX=m
 CONFIG_QCOM_IPCC=y
 CONFIG_IOMMU_IOVA=y
 CONFIG_IOMMU_API=y
