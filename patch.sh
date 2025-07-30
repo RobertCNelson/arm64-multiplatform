@@ -469,7 +469,7 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="v6.16-rc5"
+	backport_tag="v6.16"
 
 	subsystem="tps65219"
 	#regenerate="enable"
@@ -512,8 +512,6 @@ drivers () {
 	dir 'external/android'
 	dir 'external/cadence'
 	dir 'external/gasket'
-
-	dir 'drivers/tps65219'
 }
 
 ###
