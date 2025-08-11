@@ -231,23 +231,8 @@ k3_dtbo_makefile_append () {
 	fi
 }
 
-k3_makefile_patch_cleanup_overlays () {
-	cat arch/arm64/boot/dts/ti/Makefile | grep -v 'DTC_FLAGS_k3' | grep -v '# Enable' > arch/arm64/boot/dts/ti/Makefile.bak
-	cat arch/arm64/boot/dts/ti/Makefile | grep 'DTC_FLAGS_k3' > arch/arm64/boot/dts/ti/Makefile.dtc
-	rm arch/arm64/boot/dts/ti/Makefile
-	mv arch/arm64/boot/dts/ti/Makefile.bak arch/arm64/boot/dts/ti/Makefile
-	echo "" >> arch/arm64/boot/dts/ti/Makefile
-	echo "# Enable support for device-tree overlays" >> arch/arm64/boot/dts/ti/Makefile
-	cat arch/arm64/boot/dts/ti/Makefile.dtc >> arch/arm64/boot/dts/ti/Makefile
-	rm arch/arm64/boot/dts/ti/Makefile.dtc
-	echo "DTC_FLAGS_k3-am62-pocketbeagle2 += -@" >> arch/arm64/boot/dts/ti/Makefile
-	echo "DTC_FLAGS_k3-am6232-pocketbeagle2 += -@" >> arch/arm64/boot/dts/ti/Makefile
-	echo "DTC_FLAGS_k3-am67a-beagley-ai += -@" >> arch/arm64/boot/dts/ti/Makefile
-	echo "DTC_FLAGS_k3-j721e-beagleboneai64 += -@" >> arch/arm64/boot/dts/ti/Makefile
-}
-
 beagleboard_dtbs () {
-	branch="v6.16.x"
+	branch="v6.17.x"
 	https_repo="https://github.com/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -369,8 +354,6 @@ beagleboard_dtbs () {
 		device="k3-j721e-beagleboneai64-spi-mcspi6-cs1-no-miso" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-spi-mcspi7-cs0" ; k3_dtbo_makefile_append
 
-		k3_makefile_patch_cleanup_overlays
-
 		${git_bin} add -f arch/arm/boot/dts/
 		${git_bin} add -f arch/arm64/boot/dts/
 		${git_bin} add -f include/dt-bindings/
@@ -399,7 +382,7 @@ local_patch () {
 }
 
 #external_git
-mainline_patches
+#mainline_patches
 rt
 wireless_regdb
 beagleboard_dtbs
@@ -469,7 +452,7 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="rpi-6.16.y"
+	backport_tag="rpi-6.17.y"
 
 	subsystem="edt-ft5x06"
 	#regenerate="enable"
@@ -489,17 +472,17 @@ drivers () {
 
 	dir 'drivers/ite'
 	dir 'drivers/pcie'
-	dir 'drivers/mspm0'
+	#dir 'drivers/mspm0'
 
 	dir 'external/cadence'
 	dir 'external/gasket'
 
-	dir 'drivers/tps65219'
+	#dir 'drivers/tps65219'
 	dir 'drivers/cpufreq'
 }
 
 ###
-backports
+#backports
 drivers
 
 echo "patch.sh ran successfully"
