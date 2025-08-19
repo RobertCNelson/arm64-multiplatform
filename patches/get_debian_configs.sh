@@ -7,7 +7,7 @@
 #kernel="6.12.38-1"
 #
 abi="6.16"
-kernel="6.16-1~exp1"
+kernel="6.16.1-1~exp1"
 #
 #abi="6.16-rc7"
 #kernel="6.16~rc7-1~exp1"
