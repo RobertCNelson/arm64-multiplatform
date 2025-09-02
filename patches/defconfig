@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.15.10 Kernel Configuration
+# Linux/arm64 6.15.11 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 15.2.0"
 CONFIG_CC_IS_GCC=y
@@ -5933,7 +5933,7 @@ CONFIG_NOUVEAU_DEBUG_DEFAULT=3
 # CONFIG_NOUVEAU_DEBUG_MMU is not set
 # CONFIG_NOUVEAU_DEBUG_PUSH is not set
 CONFIG_DRM_NOUVEAU_BACKLIGHT=y
-# CONFIG_DRM_NOUVEAU_GSP_DEFAULT is not set
+CONFIG_DRM_NOUVEAU_GSP_DEFAULT=y
 CONFIG_DRM_NOUVEAU_CH7006=m
 CONFIG_DRM_NOUVEAU_SIL164=m
 # CONFIG_DRM_XE is not set
@@ -6785,7 +6785,7 @@ CONFIG_HID_MCP2221=m
 #
 # HID-BPF support
 #
-# CONFIG_HID_BPF is not set
+CONFIG_HID_BPF=y
 # end of HID-BPF support
 
 CONFIG_I2C_HID=y
