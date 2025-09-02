@@ -1,9 +1,9 @@
-From 0c23627890a4ac7d1916d4b8a09abfdb305d183f Mon Sep 17 00:00:00 2001
+From f32b7eda311a77bfead3d31352093e0da96915a8 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 15 Aug 2025 13:06:56 -0500
+Date: Tue, 2 Sep 2025 15:53:01 -0500
 Subject: [PATCH] backports: tps65219: from: linux.git
 
-Reference: v6.17-rc1
+Reference: v6.17-rc4
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  drivers/mfd/tps65219.c       | 15 ++++++++-------
@@ -102,5 +102,5 @@ index 3e8d29189267..55234e771ba7 100644
  
  #endif /* MFD_TPS65219_H */
 -- 
-2.47.2
+2.51.0
 
