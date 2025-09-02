@@ -477,12 +477,10 @@ drivers () {
 
 	dir 'drivers/ite'
 	dir 'drivers/pcie'
-	#dir 'drivers/mspm0'
 
 	dir 'external/cadence'
 	dir 'external/gasket'
 
-	#dir 'drivers/tps65219'
 	dir 'drivers/cpufreq'
 }
 
