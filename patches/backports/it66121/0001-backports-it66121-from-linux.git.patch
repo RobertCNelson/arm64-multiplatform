@@ -1,0 +1,27 @@
+From 49a4f6044bf86f1d6f6f06599a15888b82480f33 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Thu, 4 Sep 2025 13:08:49 -0500
+Subject: [PATCH] backports: it66121: from: linux.git
+
+Reference: v6.13.12
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+---
+ drivers/gpu/drm/bridge/ite-it66121.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/bridge/ite-it66121.c b/drivers/gpu/drm/bridge/ite-it66121.c
+index 0f8d3ab30daa..940083e5d2dd 100644
+--- a/drivers/gpu/drm/bridge/ite-it66121.c
++++ b/drivers/gpu/drm/bridge/ite-it66121.c
+@@ -770,8 +770,6 @@ void it66121_bridge_mode_set(struct drm_bridge *bridge,
+ 
+ 	mutex_lock(&ctx->lock);
+ 
+-	hdmi_avi_infoframe_init(&ctx->hdmi_avi_infoframe);
+-
+ 	ret = drm_hdmi_avi_infoframe_from_display_mode(&ctx->hdmi_avi_infoframe, ctx->connector,
+ 						       adjusted_mode);
+ 	if (ret) {
+-- 
+2.51.0
+

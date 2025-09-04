@@ -276,38 +276,48 @@ beagleboard_dtbs () {
 		cp -v ../${work_dir}/src/arm64/ti/*.h arch/arm64/boot/dts/ti/
 		cp -vr ../${work_dir}/include/dt-bindings/* ./include/dt-bindings/
 
+		#ls src/arm/overlays/ | grep dtso
+
 		device="AM335X-PRU-UIO-00A0" ; arm_dtbo_makefile_append
 		device="BB-ADC-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBBW-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBGG-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBGW-WL1835-00A0" ; arm_dtbo_makefile_append
-
 		device="BB-BONE-eMMC1-01-00A0" ; arm_dtbo_makefile_append
-
+		device="BB-HDMI-IT66121-00A0" ; arm_dtbo_makefile_append
+		device="BB-HDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
+		device="BB-I2C1-MCP7940X-00A0" ; arm_dtbo_makefile_append
+		device="BB-I2C1-RTC-DS3231" ; arm_dtbo_makefile_append
+		device="BB-I2C1-RTC-PCF8563" ; arm_dtbo_makefile_append
+		device="BB-I2C2-BME680" ; arm_dtbo_makefile_append
+		device="BB-I2C2-MPU6050" ; arm_dtbo_makefile_append
+		device="BB-NHDMI-IT66121-00A0" ; arm_dtbo_makefile_append
+		device="BB-NHDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
+		device="BBORG_COMMS-00A2" ; arm_dtbo_makefile_append
+		device="BBORG_FAN-A000" ; arm_dtbo_makefile_append
+		device="BBORG_RELAY-00A2" ; arm_dtbo_makefile_append
+		device="BB-SPIDEV0-00A0" ; arm_dtbo_makefile_append
+		device="BB-SPIDEV1-00A0" ; arm_dtbo_makefile_append
 		device="BB-UART1-00A0" ; arm_dtbo_makefile_append
 		device="BB-UART2-00A0" ; arm_dtbo_makefile_append
 		device="BB-UART4-00A0" ; arm_dtbo_makefile_append
-
-		device="BBORG_COMMS-00A2" ; arm_dtbo_makefile_append
-		device="BBORG_FAN-A000" ; arm_dtbo_makefile_append
-
 		device="BONE-ADC" ; arm_dtbo_makefile_append
+		device="BONE-LED-P9-42" ; arm_dtbo_makefile_append
+		device="M-BB-BBG-00A0" ; arm_dtbo_makefile_append
+		device="M-BB-BBGG-00A0" ; arm_dtbo_makefile_append
 
 		device="am335x-boneblack-uboot.dtb" ; arm_dtb_makefile_append
 		device="am335x-boneblack-revd.dtb" ; arm_dtb_makefile_append
-
-		device="BONE-I2C1" ; k3_dtbo_makefile_append
-		device="BONE-I2C2" ; k3_dtbo_makefile_append
-		device="BONE-I2C3" ; k3_dtbo_makefile_append
 
 		device="k3-am6232-pocketbeagle2.dtb" ; k3_dtb_makefile_append
 
 		#ls src/arm64/overlays/ | grep pocketbeagle2
 
+		device="k3-am6232-pocketbeagle2-techlab-cape" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-ardupilot-cape" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-leds-off" ; k3_dtbo_makefile_append
+		device="k3-am62-pocketbeagle2-mspm0swd" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-techlab-cape" ; k3_dtbo_makefile_append
-		device="k3-am6232-pocketbeagle2-techlab-cape" ; k3_dtbo_makefile_append
 
 		#ls src/arm64/overlays/ | grep beagleplay
 
@@ -473,7 +483,7 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="v6.16.1"
+	backport_tag="v6.16.5"
 
 	subsystem="tps65219"
 	#regenerate="enable"
@@ -490,6 +500,22 @@ backports () {
 		post_backports
 	else
 		patch_backports
+	fi
+
+	backport_tag="v6.13.12"
+
+	subsystem="it66121"
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		pre_backports
+
+		cp -v ~/linux-src/drivers/gpu/drm/bridge/ite-it66121.c ./drivers/gpu/drm/bridge/
+
+		post_backports
+	else
+		patch_backports
+
+		${git} "${DIR}/patches/mainline/ite-it66121/0022-drm-Use-of_property_present-for-non-boolean-properti.patch"
 	fi
 
 	backport_tag="rpi-6.12.y"
