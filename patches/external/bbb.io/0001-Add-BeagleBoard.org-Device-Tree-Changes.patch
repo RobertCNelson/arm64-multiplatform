@@ -1,11 +1,11 @@
-From 616cd9023ca7542b1f986425e7dbb2503251d621 Mon Sep 17 00:00:00 2001
+From 0bfc0518fce2e5639e92c1da19aa13c357f90395 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Thu, 4 Sep 2025 13:07:31 -0500
+Date: Thu, 4 Sep 2025 14:43:25 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v6.12.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/92e43bc49377b05a30ff37a0d1e9e2506014863d
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/51b16262386ab0c6887544ab6718d130bf2b7e9d
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  .../boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso |  28 +
@@ -14,6 +14,8 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../boot/dts/ti/omap/BB-BBGG-WL1835-00A0.dtso | 249 +++++
  .../boot/dts/ti/omap/BB-BBGW-WL1835-00A0.dtso | 217 ++++
  .../dts/ti/omap/BB-BONE-eMMC1-01-00A0.dtso    |  61 ++
+ .../dts/ti/omap/BB-EHRPWM1-P9_14-P9_16.dtso   |  37 +
+ .../dts/ti/omap/BB-EHRPWM2-P8_13-P8_19.dtso   |  37 +
  .../dts/ti/omap/BB-HDMI-IT66121-00A0.dtso     | 228 +++++
  .../dts/ti/omap/BB-HDMI-TDA998x-00A0.dtso     | 188 ++++
  .../dts/ti/omap/BB-I2C1-MCP7940X-00A0.dtso    |  81 ++
@@ -35,7 +37,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm/boot/dts/ti/omap/BONE-LED-P9-42.dtso |  39 +
  arch/arm/boot/dts/ti/omap/M-BB-BBG-00A0.dtso  |  21 +
  arch/arm/boot/dts/ti/omap/M-BB-BBGG-00A0.dtso |  24 +
- arch/arm/boot/dts/ti/omap/Makefile            |  35 +-
+ arch/arm/boot/dts/ti/omap/Makefile            |  37 +-
  .../dts/ti/omap/am335x-bbb-bone-buses.dtsi    |  69 ++
  .../boot/dts/ti/omap/am335x-bone-common.dtsi  |  40 +-
  arch/arm/boot/dts/ti/omap/am335x-bone.dts     |   5 +
@@ -159,13 +161,15 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |  29 +
  .../dt-bindings/clock/thead,th1520-clk-ap.h   |  34 +
  include/uapi/linux/input-event-codes.h        |   8 +
- 151 files changed, 10687 insertions(+), 188 deletions(-)
+ 153 files changed, 10763 insertions(+), 188 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBGG-WL1835-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBGW-WL1835-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BONE-eMMC1-01-00A0.dtso
+ create mode 100644 arch/arm/boot/dts/ti/omap/BB-EHRPWM1-P9_14-P9_16.dtso
+ create mode 100644 arch/arm/boot/dts/ti/omap/BB-EHRPWM2-P8_13-P8_19.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-HDMI-IT66121-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-HDMI-TDA998x-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-I2C1-MCP7940X-00A0.dtso
@@ -1080,6 +1084,93 @@ index 000000000000..edc70070f278
 +	bus-width = <8>;
 +	status = "okay";
 +	non-removable;
++};
+diff --git a/arch/arm/boot/dts/ti/omap/BB-EHRPWM1-P9_14-P9_16.dtso b/arch/arm/boot/dts/ti/omap/BB-EHRPWM1-P9_14-P9_16.dtso
+new file mode 100644
+index 000000000000..3a322f75bc1e
+--- /dev/null
++++ b/arch/arm/boot/dts/ti/omap/BB-EHRPWM1-P9_14-P9_16.dtso
+@@ -0,0 +1,37 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2025 Robert Nelson <robertcnelson@gmail.com>
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/pinctrl/am33xx.h>
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++ */
++&{/chosen} {
++	overlays {
++		BB-EHRPWM1-P9_14-P9_16.kernel = __TIMESTAMP__;
++	};
++};
++
++&am33xx_pinmux {
++	epwmss1_pins: pinmux_epwmss1_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A2, PIN_OUTPUT, MUX_MODE6) /* P9_14 (U14) gpmc_a2.ehrpwm1A */
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A3, PIN_OUTPUT, MUX_MODE6) /* P9_16 (T14) gpmc_a3.ehrpwm1B */
++		>;
++	};
++};
++
++&epwmss1 {
++	status = "okay";
++};
++
++&ehrpwm1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&epwmss1_pins>;
++};
+\ No newline at end of file
+diff --git a/arch/arm/boot/dts/ti/omap/BB-EHRPWM2-P8_13-P8_19.dtso b/arch/arm/boot/dts/ti/omap/BB-EHRPWM2-P8_13-P8_19.dtso
+new file mode 100644
+index 000000000000..b71adff4232d
+--- /dev/null
++++ b/arch/arm/boot/dts/ti/omap/BB-EHRPWM2-P8_13-P8_19.dtso
+@@ -0,0 +1,37 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2025 Robert Nelson <robertcnelson@gmail.com>
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/pinctrl/am33xx.h>
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++ */
++&{/chosen} {
++	overlays {
++		BB-EHRPWM2-P8_13-P8_19.kernel = __TIMESTAMP__;
++	};
++};
++
++&am33xx_pinmux {
++	epwmss2_pins: pinmux_epwmss2_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_GPMC_AD9, PIN_OUTPUT, MUX_MODE4) /* P8_13 (T10) gpmc_ad9.ehrpwm2B */
++			AM33XX_PADCONF(AM335X_PIN_GPMC_AD8, PIN_OUTPUT, MUX_MODE4) /* P8_19 (U10) gpmc_ad8.ehrpwm2A */
++		>;
++	};
++};
++
++&epwmss2 {
++	status = "okay";
++};
++
++&ehrpwm2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&epwmss2_pins>;
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/BB-HDMI-IT66121-00A0.dtso b/arch/arm/boot/dts/ti/omap/BB-HDMI-IT66121-00A0.dtso
 new file mode 100644
@@ -2752,7 +2843,7 @@ index 000000000000..6dc003082c03
 +	model = "SeeedStudio BeagleBone Green Gateway";
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/Makefile b/arch/arm/boot/dts/ti/omap/Makefile
-index 1aef60eef671..1718f011831f 100644
+index 1aef60eef671..2c8f72a53b9f 100644
 --- a/arch/arm/boot/dts/ti/omap/Makefile
 +++ b/arch/arm/boot/dts/ti/omap/Makefile
 @@ -1,4 +1,9 @@
@@ -2765,7 +2856,7 @@ index 1aef60eef671..1718f011831f 100644
  dtb-$(CONFIG_ARCH_OMAP2) += \
  	omap2420-h4.dtb \
  	omap2420-n800.dtb \
-@@ -89,6 +94,35 @@ dtb-$(CONFIG_SOC_AM33XX) += \
+@@ -89,6 +94,37 @@ dtb-$(CONFIG_SOC_AM33XX) += \
  	am335x-base0033.dtb \
  	am335x-bone.dtb \
  	am335x-boneblack.dtb \
@@ -2792,6 +2883,8 @@ index 1aef60eef671..1718f011831f 100644
 +	BB-I2C1-MCP7940X-00A0.dtbo \
 +	BB-HDMI-TDA998x-00A0.dtbo \
 +	BB-HDMI-IT66121-00A0.dtbo \
++	BB-EHRPWM2-P8_13-P8_19.dtbo \
++	BB-EHRPWM1-P9_14-P9_16.dtbo \
 +	BB-BONE-eMMC1-01-00A0.dtbo \
 +	BB-BBGW-WL1835-00A0.dtbo \
 +	BB-BBGG-WL1835-00A0.dtbo \
@@ -2801,7 +2894,7 @@ index 1aef60eef671..1718f011831f 100644
  	am335x-boneblack-wireless.dtb \
  	am335x-boneblue.dtb \
  	am335x-bonegreen.dtb \
-@@ -137,7 +171,6 @@ am571x-idk-overlays-dtbs := am571x-idk.dtb \
+@@ -137,7 +173,6 @@ am571x-idk-overlays-dtbs := am571x-idk.dtb \
  am572x-idk-overlays-dtbs := am572x-idk.dtb \
  	am572x-idk-touchscreen.dtbo am57xx-idk-lcd-osd101t2045.dtbo
  

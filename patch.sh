@@ -284,6 +284,8 @@ beagleboard_dtbs () {
 		device="BB-BBGG-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBGW-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BONE-eMMC1-01-00A0" ; arm_dtbo_makefile_append
+		device="BB-EHRPWM1-P9_14-P9_16" ; arm_dtbo_makefile_append
+		device="BB-EHRPWM2-P8_13-P8_19" ; arm_dtbo_makefile_append
 		device="BB-HDMI-IT66121-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-MCP7940X-00A0" ; arm_dtbo_makefile_append
