@@ -308,6 +308,7 @@ beagleboard_dtbs () {
 
 		device="k3-am6232-pocketbeagle2-techlab-cape" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-ardupilot-cape" ; k3_dtbo_makefile_append
+		device="k3-am62-pocketbeagle2-led-all" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-leds-off" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-mspm0swd" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-techlab-cape" ; k3_dtbo_makefile_append
@@ -474,7 +475,7 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="rpi-6.17.y"
+	backport_tag="rpi-6.18.y"
 
 	subsystem="edt-ft5x06"
 	#regenerate="enable"
@@ -502,7 +503,7 @@ drivers () {
 }
 
 ###
-#backports
+backports
 drivers
 
 echo "patch.sh ran successfully"
