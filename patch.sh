@@ -493,7 +493,7 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="v6.16.9"
+	backport_tag="v6.16.12"
 
 	subsystem="tps65219"
 	#regenerate="enable"
