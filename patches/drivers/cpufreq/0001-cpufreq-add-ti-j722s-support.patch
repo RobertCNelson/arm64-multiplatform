@@ -10,10 +10,10 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  2 files changed, 34 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index a010da0f6337..967144ba8d89 100644
+index 015dd393eaba..eba77035eb91 100644
 --- a/drivers/cpufreq/cpufreq-dt-platdev.c
 +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -188,6 +188,7 @@ static const struct of_device_id blocklist[] __initconst = {
+@@ -189,6 +189,7 @@ static const struct of_device_id blocklist[] __initconst = {
  	{ .compatible = "ti,am625", },
  	{ .compatible = "ti,am62a7", },
  	{ .compatible = "ti,am62p5", },
@@ -22,7 +22,7 @@ index a010da0f6337..967144ba8d89 100644
  	{ .compatible = "qcom,ipq5332", },
  	{ .compatible = "qcom,ipq6018", },
 diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-index 5a5147277cd0..53a789c9d411 100644
+index 9a912d309315..d56e38de3784 100644
 --- a/drivers/cpufreq/ti-cpufreq.c
 +++ b/drivers/cpufreq/ti-cpufreq.c
 @@ -48,6 +48,12 @@
@@ -61,15 +61,15 @@ index 5a5147277cd0..53a789c9d411 100644
  static struct ti_cpufreq_soc_data am3x_soc_data = {
  	.efuse_xlate = amx3_efuse_xlate,
  	.efuse_fallback = AM33XX_800M_ARM_MPU_MAX_FREQ,
-@@ -310,6 +332,7 @@ static const struct soc_device_attribute k3_cpufreq_soc[] = {
- 	{ .family = "AM62X", .revision = "SR1.0" },
+@@ -311,6 +333,7 @@ static const struct soc_device_attribute k3_cpufreq_soc[] = {
  	{ .family = "AM62AX", .revision = "SR1.0" },
  	{ .family = "AM62PX", .revision = "SR1.0" },
+ 	{ .family = "AM62DX", .revision = "SR1.0" },
 +	{ .family = "J722S", .revision = "SR1.0" },
  	{ /* sentinel */ }
  };
  
-@@ -338,6 +361,15 @@ static struct ti_cpufreq_soc_data am62p5_soc_data = {
+@@ -339,6 +362,15 @@ static struct ti_cpufreq_soc_data am62p5_soc_data = {
  	.multi_regulator = false,
  };
  
@@ -85,14 +85,14 @@ index 5a5147277cd0..53a789c9d411 100644
  /**
   * ti_cpufreq_get_efuse() - Parse and return efuse value present on SoC
   * @opp_data: pointer to ti_cpufreq_data context
-@@ -458,6 +490,7 @@ static const struct of_device_id ti_cpufreq_of_match[]  __maybe_unused = {
- 	{ .compatible = "ti,am625", .data = &am625_soc_data, },
+@@ -460,6 +492,7 @@ static const struct of_device_id ti_cpufreq_of_match[]  __maybe_unused = {
  	{ .compatible = "ti,am62a7", .data = &am62a7_soc_data, },
+ 	{ .compatible = "ti,am62d2", .data = &am62a7_soc_data, },
  	{ .compatible = "ti,am62p5", .data = &am62p5_soc_data, },
 +	{ .compatible = "ti,j722s", .data = &j722s_soc_data, },
  	/* legacy */
  	{ .compatible = "ti,omap3430", .data = &omap34xx_soc_data, },
  	{ .compatible = "ti,omap3630", .data = &omap36xx_soc_data, },
 -- 
-2.47.2
+2.51.0
 
