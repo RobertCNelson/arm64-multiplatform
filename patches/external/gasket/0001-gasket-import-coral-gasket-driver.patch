@@ -1,6 +1,6 @@
-From 0f0f17871312b5f66686896c7db1cc0642c69f4a Mon Sep 17 00:00:00 2001
+From 2d2470bc837674258d107ae102657dd0629bf0d5 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 6 Dec 2024 16:16:39 -0600
+Date: Sun, 14 Dec 2025 16:47:18 -0600
 Subject: [PATCH] gasket: import coral gasket driver
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
@@ -43,12 +43,12 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  create mode 100644 drivers/staging/gasket/gasket_sysfs.h
 
 diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
-index 075e775d3868..86b52398f72a 100644
+index 2f92cd698bef..573ebb2f328e 100644
 --- a/drivers/staging/Kconfig
 +++ b/drivers/staging/Kconfig
-@@ -50,4 +50,6 @@ source "drivers/staging/vme_user/Kconfig"
+@@ -48,4 +48,6 @@ source "drivers/staging/axis-fifo/Kconfig"
  
- source "drivers/staging/gpib/Kconfig"
+ source "drivers/staging/vme_user/Kconfig"
  
 +source "drivers/staging/gasket/Kconfig"
 +
@@ -7942,5 +7942,5 @@ index 000000000000..e8f29a3a0f2d
 +
 +#endif /* __GASKET_SYSFS_H__ */
 -- 
-2.45.2
+2.51.0
 

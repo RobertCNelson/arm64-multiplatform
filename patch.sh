@@ -236,7 +236,7 @@ k3_dtbo_makefile_append () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.18.x"
+	branch="v6.19.x"
 	https_repo="https://github.com/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -488,7 +488,7 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="rpi-6.18.y"
+	backport_tag="rpi-6.19.y"
 
 	subsystem="edt-ft5x06"
 	#regenerate="enable"
@@ -516,7 +516,7 @@ drivers () {
 }
 
 ###
-backports
+#backports
 drivers
 
 echo "patch.sh ran successfully"
