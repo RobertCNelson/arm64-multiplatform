@@ -1,6 +1,6 @@
-From 9199a044bd64f7082149dfb867b1ab0d425dfafa Mon Sep 17 00:00:00 2001
+From f590d591240c951a26c92042117c9e75845107b2 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 10 Nov 2025 17:04:05 -0600
+Date: Tue, 18 Nov 2025 17:28:01 -0600
 Subject: [PATCH] backports: tps65219: from: linux.git
 
 Reference: v6.16.12

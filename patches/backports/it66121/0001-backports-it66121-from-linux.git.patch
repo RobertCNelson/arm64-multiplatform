@@ -1,6 +1,6 @@
-From bcab05195456057856367007d925814e083be2bf Mon Sep 17 00:00:00 2001
+From 5cd8e3d1b396829e248334b46612fa1469e9b398 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 10 Nov 2025 17:04:53 -0600
+Date: Tue, 18 Nov 2025 17:28:30 -0600
 Subject: [PATCH] backports: it66121: from: linux.git
 
 Reference: v6.13.12
