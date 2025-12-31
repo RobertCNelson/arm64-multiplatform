@@ -1,11 +1,11 @@
-From a7cf7a904e07f19e480882ac1b689326cee5642d Mon Sep 17 00:00:00 2001
+From 724a28282a0b00f5f6d0536564b0608bde9e7ea1 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Sun, 14 Dec 2025 16:36:38 -0600
+Date: Wed, 31 Dec 2025 09:38:48 -0600
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v6.19.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/f6f102cd736f1cde05aed4becff2bad5706a1cc7
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/15dd659d7affa25b1563cfe4c2c9931365c0f04e
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso    | 112 ++

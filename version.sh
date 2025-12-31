@@ -55,11 +55,11 @@ linux_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/li
 linux_stable_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git"
 #
 KERNEL_REL=6.19
-KERNEL_TAG=${KERNEL_REL}-rc1
+KERNEL_TAG=${KERNEL_REL}-rc2
 #https://mirrors.edge.kernel.org/pub/linux/kernel/projects/rt/6.18/
 kernel_rt="-rc4-rt3"
 #Kernel Build
-BUILD=${build_prefix}1.1
+BUILD=${build_prefix}1.2
 
 #v6.X-rcX + upto SHA
 #prev_KERNEL_SHA=""
@@ -69,4 +69,4 @@ BUILD=${build_prefix}1.1
 BRANCH="${branch_prefix}${KERNEL_REL}${branch_postfix}"
 
 DISTRO=xross
-##
+#
