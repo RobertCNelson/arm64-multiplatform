@@ -506,9 +506,11 @@ backports () {
 drivers () {
 	dir 'branding/boris'
 
+	dir 'drivers/davinci-mcasp'
 	dir 'drivers/ite'
 	dir 'drivers/pcie'
 
+	dir 'external/android'
 	dir 'external/cadence'
 	dir 'external/gasket'
 
