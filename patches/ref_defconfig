@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.19.0-rc4 Kernel Configuration
+# Linux/arm64 6.19.0-rc5 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 15.2.0"
 CONFIG_CC_IS_GCC=y
@@ -1761,7 +1761,7 @@ CONFIG_PCI_IOV=y
 CONFIG_PCI_PASID=y
 # CONFIG_PCIE_TPH is not set
 CONFIG_PCI_LABEL=y
-CONFIG_PCI_DYNAMIC_OF_NODES=y
+# CONFIG_PCI_DYNAMIC_OF_NODES is not set
 CONFIG_VGA_ARB=y
 CONFIG_VGA_ARB_MAX_GPUS=16
 CONFIG_HOTPLUG_PCI=y
