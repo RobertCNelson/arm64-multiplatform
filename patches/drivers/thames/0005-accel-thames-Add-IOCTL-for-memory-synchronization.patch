@@ -1,0 +1,112 @@
+From 5ee16d228f82851d3867fd64d9c9f2980f9572c3 Mon Sep 17 00:00:00 2001
+From: Tomeu Vizoso <tomeu@tomeuvizoso.net>
+Date: Tue, 13 Jan 2026 18:44:39 +0100
+Subject: [PATCH 5/5] accel/thames: Add IOCTL for memory synchronization
+
+The DSP cores have their own access to the memory bus, and it isn't
+cache coherent with the CPUs.
+
+Add IOCTLs so userspace can mark when the caches need to be flushed, and
+also when a writer job needs to be waited for before the buffer can be
+accessed from the CPU.
+
+Initially based on the same IOCTLs from the Etnaviv driver.
+
+Signed-off-by: Tomeu Vizoso <tomeu@tomeuvizoso.net>
+---
+ drivers/accel/thames/thames_drv.c |  2 ++
+ drivers/accel/thames/thames_gem.c | 52 +++++++++++++++++++++++++++++++
+ drivers/accel/thames/thames_gem.h |  4 +++
+ 3 files changed, 58 insertions(+)
+
+diff --git a/drivers/accel/thames/thames_drv.c b/drivers/accel/thames/thames_drv.c
+index bf7355832241..9b72db433fbb 100644
+--- a/drivers/accel/thames/thames_drv.c
++++ b/drivers/accel/thames/thames_drv.c
+@@ -76,6 +76,8 @@ static const struct drm_ioctl_desc thames_drm_driver_ioctls[] = {
+ 	THAMES_IOCTL(BO_CREATE, bo_create),
+ 	THAMES_IOCTL(BO_MMAP_OFFSET, bo_mmap_offset),
+ 	THAMES_IOCTL(SUBMIT, submit),
++	THAMES_IOCTL(BO_PREP, bo_prep),
++	THAMES_IOCTL(BO_FINI, bo_fini),
+ };
+ 
+ DEFINE_DRM_ACCEL_FOPS(thames_accel_driver_fops);
+diff --git a/drivers/accel/thames/thames_gem.c b/drivers/accel/thames/thames_gem.c
+index a153e73a1525..2ad5a62bea27 100644
+--- a/drivers/accel/thames/thames_gem.c
++++ b/drivers/accel/thames/thames_gem.c
+@@ -353,3 +353,55 @@ int thames_ioctl_bo_mmap_offset(struct drm_device *ddev, void *data, struct drm_
+ 
+ 	return 0;
+ }
++
++int thames_ioctl_bo_prep(struct drm_device *ddev, void *data, struct drm_file *file)
++{
++	struct drm_thames_bo_prep *args = data;
++	struct drm_gem_object *gem_obj;
++	struct drm_gem_shmem_object *shmem_obj;
++	unsigned long timeout = drm_timeout_abs_to_jiffies(args->timeout_ns);
++	long ret = 0;
++
++	if (args->reserved != 0)
++		return -EINVAL;
++
++	gem_obj = drm_gem_object_lookup(file, args->handle);
++	if (!gem_obj)
++		return -ENOENT;
++
++	ret = dma_resv_wait_timeout(gem_obj->resv, DMA_RESV_USAGE_WRITE, true, timeout);
++	if (!ret)
++		ret = timeout ? -ETIMEDOUT : -EBUSY;
++
++	shmem_obj = &to_thames_bo(gem_obj)->base;
++
++	dma_sync_sgtable_for_cpu(ddev->dev, shmem_obj->sgt, DMA_FROM_DEVICE);
++
++	drm_gem_object_put(gem_obj);
++
++	return ret;
++}
++
++int thames_ioctl_bo_fini(struct drm_device *ddev, void *data, struct drm_file *file)
++{
++	struct drm_thames_bo_fini *args = data;
++	struct drm_gem_shmem_object *shmem_obj;
++	struct thames_gem_object *thames_obj;
++	struct drm_gem_object *gem_obj;
++
++	if (args->reserved != 0)
++		return -EINVAL;
++
++	gem_obj = drm_gem_object_lookup(file, args->handle);
++	if (!gem_obj)
++		return -ENOENT;
++
++	thames_obj = to_thames_bo(gem_obj);
++	shmem_obj = &thames_obj->base;
++
++	dma_sync_sgtable_for_device(ddev->dev, shmem_obj->sgt, DMA_TO_DEVICE);
++
++	drm_gem_object_put(gem_obj);
++
++	return 0;
++}
+diff --git a/drivers/accel/thames/thames_gem.h b/drivers/accel/thames/thames_gem.h
+index 785843c40a89..e5a8278e98c5 100644
+--- a/drivers/accel/thames/thames_gem.h
++++ b/drivers/accel/thames/thames_gem.h
+@@ -29,6 +29,10 @@ int thames_ioctl_bo_create(struct drm_device *ddev, void *data, struct drm_file
+ 
+ int thames_ioctl_bo_mmap_offset(struct drm_device *ddev, void *data, struct drm_file *file);
+ 
++int thames_ioctl_bo_prep(struct drm_device *ddev, void *data, struct drm_file *file);
++
++int thames_ioctl_bo_fini(struct drm_device *ddev, void *data, struct drm_file *file);
++
+ int thames_context_create(struct thames_file_priv *priv);
+ 
+ void thames_context_destroy(struct thames_file_priv *priv);
+-- 
+2.51.0
+

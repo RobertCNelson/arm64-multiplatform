@@ -1,0 +1,52 @@
+From 3e1ce2f84f2ce45e9e11ef7727b61ec914cf048d Mon Sep 17 00:00:00 2001
+From: Tomeu Vizoso <tomeu@tomeuvizoso.net>
+Date: Tue, 13 Jan 2026 18:44:35 +0100
+Subject: [PATCH 1/5] arm64: dts: ti: k3-j722s-ti-ipc-firmware: Add memory pool
+ for DSP i/o buffers
+
+This memory region is used by the DRM/accel driver to allocate addresses
+for buffers that are used for communication with the DSP cores and for
+their intermediate results.
+
+Signed-off-by: Tomeu Vizoso <tomeu@tomeuvizoso.net>
+---
+ arch/arm64/boot/dts/ti/k3-j722s-ti-ipc-firmware.dtsi | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/ti/k3-j722s-ti-ipc-firmware.dtsi b/arch/arm64/boot/dts/ti/k3-j722s-ti-ipc-firmware.dtsi
+index cb7cd385a165..bc838673652c 100644
+--- a/arch/arm64/boot/dts/ti/k3-j722s-ti-ipc-firmware.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-j722s-ti-ipc-firmware.dtsi
+@@ -42,6 +42,11 @@ c7x_0_memory_region: memory@a3100000 {
+ 		no-map;
+ 	};
+ 
++	c7x_iova_pool: iommu-pool@a7000000 {
++		reg = <0x00 0xa7000000 0x00 0x18200000>;
++		no-map;
++	};
++
+ 	c7x_1_dma_memory_region: memory@a4000000 {
+ 		compatible = "shared-dma-pool";
+ 		reg = <0x00 0xa4000000 0x00 0x100000>;
+@@ -151,13 +156,15 @@ &main_r5fss0_core0 {
+ &c7x_0 {
+ 	mboxes = <&mailbox0_cluster2 &mbox_c7x_0>;
+ 	memory-region = <&c7x_0_dma_memory_region>,
+-			<&c7x_0_memory_region>;
++			<&c7x_0_memory_region>,
++			<&c7x_iova_pool>;
+ 	status = "okay";
+ };
+ 
+ &c7x_1 {
+ 	mboxes = <&mailbox0_cluster3 &mbox_c7x_1>;
+ 	memory-region = <&c7x_1_dma_memory_region>,
+-			<&c7x_1_memory_region>;
++			<&c7x_1_memory_region>,
++			<&c7x_iova_pool>;
+ 	status = "okay";
+ };
+-- 
+2.51.0
+
