@@ -1,0 +1,92 @@
+From 9fe78ac77efeae1343a7a5aa66b4f749e18b6505 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Tue, 13 Jan 2026 14:11:28 -0600
+Subject: [PATCH] backports: imagination: from: linux.git
+
+Reference: v6.19-rc5
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+---
+ drivers/gpu/drm/imagination/pvr_ccb.c      | 1 +
+ drivers/gpu/drm/imagination/pvr_fw.c       | 1 +
+ drivers/gpu/drm/imagination/pvr_fw_meta.c  | 2 ++
+ drivers/gpu/drm/imagination/pvr_fw_trace.c | 1 +
+ drivers/gpu/drm/imagination/pvr_power.c    | 1 +
+ drivers/gpu/drm/imagination/pvr_vm.c       | 1 +
+ 6 files changed, 7 insertions(+)
+
+diff --git a/drivers/gpu/drm/imagination/pvr_ccb.c b/drivers/gpu/drm/imagination/pvr_ccb.c
+index 2bbdc05a3b97..9294b4ba1de7 100644
+--- a/drivers/gpu/drm/imagination/pvr_ccb.c
++++ b/drivers/gpu/drm/imagination/pvr_ccb.c
+@@ -10,6 +10,7 @@
+ #include "pvr_power.h"
+ 
+ #include <drm/drm_managed.h>
++#include <drm/drm_print.h>
+ #include <linux/compiler.h>
+ #include <linux/delay.h>
+ #include <linux/jiffies.h>
+diff --git a/drivers/gpu/drm/imagination/pvr_fw.c b/drivers/gpu/drm/imagination/pvr_fw.c
+index b2f8cba77346..779a58fe6ee8 100644
+--- a/drivers/gpu/drm/imagination/pvr_fw.c
++++ b/drivers/gpu/drm/imagination/pvr_fw.c
+@@ -17,6 +17,7 @@
+ #include <drm/drm_drv.h>
+ #include <drm/drm_managed.h>
+ #include <drm/drm_mm.h>
++#include <drm/drm_print.h>
+ #include <linux/clk.h>
+ #include <linux/firmware.h>
+ #include <linux/math.h>
+diff --git a/drivers/gpu/drm/imagination/pvr_fw_meta.c b/drivers/gpu/drm/imagination/pvr_fw_meta.c
+index 60db3668ad3c..9ff03bc60a08 100644
+--- a/drivers/gpu/drm/imagination/pvr_fw_meta.c
++++ b/drivers/gpu/drm/imagination/pvr_fw_meta.c
+@@ -16,6 +16,8 @@
+ #include <linux/ktime.h>
+ #include <linux/types.h>
+ 
++#include <drm/drm_print.h>
++
+ #define ROGUE_FW_HEAP_META_SHIFT 25 /* 32 MB */
+ 
+ #define POLL_TIMEOUT_USEC 1000000
+diff --git a/drivers/gpu/drm/imagination/pvr_fw_trace.c b/drivers/gpu/drm/imagination/pvr_fw_trace.c
+index a1098b521485..8a56952f6730 100644
+--- a/drivers/gpu/drm/imagination/pvr_fw_trace.c
++++ b/drivers/gpu/drm/imagination/pvr_fw_trace.c
+@@ -9,6 +9,7 @@
+ 
+ #include <drm/drm_drv.h>
+ #include <drm/drm_file.h>
++#include <drm/drm_print.h>
+ 
+ #include <linux/build_bug.h>
+ #include <linux/dcache.h>
+diff --git a/drivers/gpu/drm/imagination/pvr_power.c b/drivers/gpu/drm/imagination/pvr_power.c
+index c6e7ff9e935d..b9f801c63260 100644
+--- a/drivers/gpu/drm/imagination/pvr_power.c
++++ b/drivers/gpu/drm/imagination/pvr_power.c
+@@ -10,6 +10,7 @@
+ 
+ #include <drm/drm_drv.h>
+ #include <drm/drm_managed.h>
++#include <drm/drm_print.h>
+ #include <linux/cleanup.h>
+ #include <linux/clk.h>
+ #include <linux/interrupt.h>
+diff --git a/drivers/gpu/drm/imagination/pvr_vm.c b/drivers/gpu/drm/imagination/pvr_vm.c
+index 3d97990170bf..48e52c5561be 100644
+--- a/drivers/gpu/drm/imagination/pvr_vm.c
++++ b/drivers/gpu/drm/imagination/pvr_vm.c
+@@ -13,6 +13,7 @@
+ #include <drm/drm_exec.h>
+ #include <drm/drm_gem.h>
+ #include <drm/drm_gpuvm.h>
++#include <drm/drm_print.h>
+ 
+ #include <linux/bug.h>
+ #include <linux/container_of.h>
+-- 
+2.51.0
+

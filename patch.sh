@@ -502,6 +502,20 @@ backports () {
 	else
 		patch_backports
 	fi
+
+	backport_tag="v6.19-rc5"
+
+	subsystem="imagination"
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		pre_backports
+
+		cp -rv ~/linux-src/drivers/gpu/drm/imagination/* ./drivers/gpu/drm/imagination/
+
+		post_backports
+	else
+		patch_backports
+	fi
 }
 
 drivers () {
