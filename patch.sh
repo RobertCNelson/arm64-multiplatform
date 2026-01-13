@@ -515,7 +515,7 @@ drivers () {
 	dir 'external/gasket'
 
 	dir 'drivers/cpufreq'
-	dir 'drivers/thames'
+	#dir 'drivers/thames'
 }
 
 ###
