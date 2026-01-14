@@ -1,6 +1,6 @@
-From a8752782e4a7a300a8c53f4362615a608f992daa Mon Sep 17 00:00:00 2001
+From dced36e95fad605cf3767a8b2b6223427ca5ad26 Mon Sep 17 00:00:00 2001
 From: Tomeu Vizoso <tomeu@tomeuvizoso.net>
-Date: Tue, 13 Jan 2026 18:44:37 +0100
+Date: Wed, 14 Jan 2026 09:46:50 +0100
 Subject: [PATCH 3/5] accel/thames: Add IOCTLs for BO creation and mapping
 
 Uses the SHMEM DRM helpers, mapping on creation to the device as all
@@ -13,16 +13,21 @@ contains a MMU.
 Buffers belong to a context, which is used by the DSP to switch to the
 page table that mapped the buffers for the user of the job to execute.
 
+v2:
+- Add thames_accel.h UAPI header (Robert Nelson).
+
 Signed-off-by: Tomeu Vizoso <tomeu@tomeuvizoso.net>
 ---
  drivers/accel/thames/Makefile       |   1 +
- drivers/accel/thames/thames_drv.c   |   5 +-
- drivers/accel/thames/thames_gem.c   | 355 ++++++++++++++++++++++++++++
+ drivers/accel/thames/thames_drv.c   |   6 +-
+ drivers/accel/thames/thames_gem.c   | 353 ++++++++++++++++++++++++++++
  drivers/accel/thames/thames_gem.h   |  41 ++++
  drivers/accel/thames/thames_rpmsg.c |  69 ++++++
- 5 files changed, 470 insertions(+), 1 deletion(-)
+ include/uapi/drm/thames_accel.h     | 104 ++++++++
+ 6 files changed, 573 insertions(+), 1 deletion(-)
  create mode 100644 drivers/accel/thames/thames_gem.c
  create mode 100644 drivers/accel/thames/thames_gem.h
+ create mode 100644 include/uapi/drm/thames_accel.h
 
 diff --git a/drivers/accel/thames/Makefile b/drivers/accel/thames/Makefile
 index 7ccd8204f0f5..0051e319f2e4 100644
@@ -35,10 +40,18 @@ index 7ccd8204f0f5..0051e319f2e4 100644
 +	thames_gem.o \
  	thames_rpmsg.o
 diff --git a/drivers/accel/thames/thames_drv.c b/drivers/accel/thames/thames_drv.c
-index a288e6ef05d7..29a80b9747ae 100644
+index 473498dd6f01..d9ea2cab80e8 100644
 --- a/drivers/accel/thames/thames_drv.c
 +++ b/drivers/accel/thames/thames_drv.c
-@@ -13,6 +13,7 @@
+@@ -5,6 +5,7 @@
+ #include <drm/drm_drv.h>
+ #include <drm/drm_gem.h>
+ #include <drm/drm_ioctl.h>
++#include <uapi/drm/thames_accel.h>
+ #include <linux/err.h>
+ #include <linux/platform_device.h>
+ #include <linux/remoteproc.h>
+@@ -12,6 +13,7 @@
  
  #include "thames_drv.h"
  #include "thames_core.h"
@@ -46,7 +59,7 @@ index a288e6ef05d7..29a80b9747ae 100644
  #include "thames_ipc.h"
  
  static struct platform_device *drm_dev;
-@@ -54,7 +55,8 @@ static void thames_postclose(struct drm_device *dev, struct drm_file *file)
+@@ -53,7 +55,8 @@ static void thames_postclose(struct drm_device *dev, struct drm_file *file)
  
  static const struct drm_ioctl_desc thames_drm_driver_ioctls[] = {
  #define THAMES_IOCTL(n, func) DRM_IOCTL_DEF_DRV(THAMES_##n, thames_ioctl_##func, 0)
@@ -56,7 +69,7 @@ index a288e6ef05d7..29a80b9747ae 100644
  };
  
  DEFINE_DRM_ACCEL_FOPS(thames_accel_driver_fops);
-@@ -63,6 +65,7 @@ static const struct drm_driver thames_drm_driver = {
+@@ -62,6 +65,7 @@ static const struct drm_driver thames_drm_driver = {
  	.driver_features = DRIVER_COMPUTE_ACCEL | DRIVER_GEM,
  	.open = thames_open,
  	.postclose = thames_postclose,
@@ -66,10 +79,10 @@ index a288e6ef05d7..29a80b9747ae 100644
  	.fops = &thames_accel_driver_fops,
 diff --git a/drivers/accel/thames/thames_gem.c b/drivers/accel/thames/thames_gem.c
 new file mode 100644
-index 000000000000..a153e73a1525
+index 000000000000..5a01ddaeb244
 --- /dev/null
 +++ b/drivers/accel/thames/thames_gem.c
-@@ -0,0 +1,355 @@
+@@ -0,0 +1,353 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/* Copyright 2026 Texas Instruments Incorporated - https://www.ti.com/ */
 +
@@ -86,8 +99,6 @@ index 000000000000..a153e73a1525
 +#include "thames_device.h"
 +#include "thames_drv.h"
 +#include "thames_rpmsg.h"
-+
-+#define THAMES_BO_FLAGS DRM_THAMES_BO_NO_MMAP
 +
 +/*
 + * DSP MMU permission flags for buffer object mappings.
@@ -368,7 +379,7 @@ index 000000000000..a153e73a1525
 +		goto err_exit;
 +	}
 +
-+	if (!args->size || (args->flags & ~THAMES_BO_FLAGS)) {
++	if (!args->size) {
 +		ret = -EINVAL;
 +		goto err_exit;
 +	}
@@ -559,6 +570,116 @@ index ebc34f49353e..a25465295a17 100644
  int thames_rpmsg_ping_test(struct thames_core *core)
  {
  	const u32 test_data = THAMES_PING_TEST_PATTERN;
+diff --git a/include/uapi/drm/thames_accel.h b/include/uapi/drm/thames_accel.h
+new file mode 100644
+index 000000000000..0a5a5e5f6637
+--- /dev/null
++++ b/include/uapi/drm/thames_accel.h
+@@ -0,0 +1,104 @@
++/* SPDX-License-Identifier: MIT */
++/* Copyright (C) 2026 Texas Instruments Incorporated - https://www.ti.com/ */
++#ifndef _THAMES_DRM_H_
++#define _THAMES_DRM_H_
++
++#include "drm.h"
++
++#if defined(__cplusplus)
++extern "C" {
++#endif
++
++/**
++ * DOC: IOCTL IDs
++ *
++ * enum drm_thames_ioctl_id - IOCTL IDs
++ *
++ * Place new ioctls at the end, don't re-order, don't replace or remove entries.
++ *
++ * These IDs are not meant to be used directly. Use the DRM_IOCTL_THAMES_xxx
++ * definitions instead.
++ */
++enum drm_thames_ioctl_id {
++	/** @DRM_THAMES_BO_CREATE: Create a buffer object. */
++	DRM_THAMES_BO_CREATE,
++
++	/**
++	 * @DRM_THAMES_BO_MMAP_OFFSET: Get the file offset to pass to
++	 * mmap to map a GEM object.
++	 */
++	DRM_THAMES_BO_MMAP_OFFSET,
++};
++
++/**
++ * DOC: IOCTL arguments
++ */
++
++/**
++ * struct drm_thames_bo_create - Arguments passed to DRM_IOCTL_THAMES_BO_CREATE.
++ */
++struct drm_thames_bo_create {
++	/**
++	 * @size: Requested size for the object
++	 *
++	 * The (page-aligned) allocated size for the object will be returned.
++	 */
++	__u64 size;
++
++	/**
++	 * @iova: Returned IOVA for the object, in the DSPs' address space.
++	 */
++	__u64 iova;
++
++	/**
++	 * @handle: Returned handle for the object.
++	 *
++	 * Object handles are nonzero.
++	 */
++	__u32 handle;
++
++	/** @pad: MBZ. */
++	__u32 pad;
++};
++
++/**
++ * struct drm_thames_bo_mmap_offset - Arguments passed to DRM_IOCTL_THAMES_BO_MMAP_OFFSET.
++ */
++struct drm_thames_bo_mmap_offset {
++	/** @handle: Handle of the object we want an mmap offset for. */
++	__u32 handle;
++
++	/** @pad: MBZ. */
++	__u32 pad;
++
++	/** @offset: The fake offset to use for subsequent mmap calls. */
++	__u64 offset;
++};
++
++/**
++ * DRM_IOCTL_THAMES() - Build a thames IOCTL number
++ * @__access: Access type. Must be R, W or RW.
++ * @__id: One of the DRM_THAMES_xxx id.
++ * @__type: Suffix of the type being passed to the IOCTL.
++ *
++ * Don't use this macro directly, use the DRM_IOCTL_THAMES_xxx
++ * values instead.
++ *
++ * Return: An IOCTL number to be passed to ioctl() from userspace.
++ */
++#define DRM_IOCTL_THAMES(__access, __id, __type) \
++	DRM_IO ## __access(DRM_COMMAND_BASE + DRM_THAMES_ ## __id, \
++			   struct drm_thames_ ## __type)
++
++enum {
++	DRM_IOCTL_THAMES_BO_CREATE =
++		DRM_IOCTL_THAMES(WR, BO_CREATE, bo_create),
++	DRM_IOCTL_THAMES_BO_MMAP_OFFSET =
++		DRM_IOCTL_THAMES(WR, BO_MMAP_OFFSET, bo_mmap_offset),
++};
++
++#if defined(__cplusplus)
++}
++#endif
++
++#endif /* _THAMES_DRM_H_ */
 -- 
 2.51.0
 

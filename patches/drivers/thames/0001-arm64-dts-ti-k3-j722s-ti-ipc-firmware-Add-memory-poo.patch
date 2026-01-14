@@ -1,6 +1,6 @@
-From 3e1ce2f84f2ce45e9e11ef7727b61ec914cf048d Mon Sep 17 00:00:00 2001
+From 9174f08a62b640c80eabc663e60f857d5ca83129 Mon Sep 17 00:00:00 2001
 From: Tomeu Vizoso <tomeu@tomeuvizoso.net>
-Date: Tue, 13 Jan 2026 18:44:35 +0100
+Date: Wed, 14 Jan 2026 09:46:48 +0100
 Subject: [PATCH 1/5] arm64: dts: ti: k3-j722s-ti-ipc-firmware: Add memory pool
  for DSP i/o buffers
 

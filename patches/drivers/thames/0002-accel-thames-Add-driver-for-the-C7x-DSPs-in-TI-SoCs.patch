@@ -1,6 +1,6 @@
-From 481f849d88268a7936e73758fb6a8b46641f22cc Mon Sep 17 00:00:00 2001
+From 7b1988c25f2cdf79657828a9b5ccceb8e0f6248a Mon Sep 17 00:00:00 2001
 From: Tomeu Vizoso <tomeu@tomeuvizoso.net>
-Date: Tue, 13 Jan 2026 18:44:36 +0100
+Date: Wed, 14 Jan 2026 09:46:49 +0100
 Subject: [PATCH 2/5] accel/thames: Add driver for the C7x DSPs in TI SoCs
 
 Some SoCs from Texas Instruments contain DSPs that can be used for
@@ -21,12 +21,12 @@ Signed-off-by: Tomeu Vizoso <tomeu@tomeuvizoso.net>
  drivers/accel/thames/thames_core.h   |  53 +++++++
  drivers/accel/thames/thames_device.c |  93 ++++++++++++
  drivers/accel/thames/thames_device.h |  46 ++++++
- drivers/accel/thames/thames_drv.c    | 156 ++++++++++++++++++++
+ drivers/accel/thames/thames_drv.c    | 155 ++++++++++++++++++++
  drivers/accel/thames/thames_drv.h    |  21 +++
  drivers/accel/thames/thames_ipc.h    | 204 +++++++++++++++++++++++++++
  drivers/accel/thames/thames_rpmsg.c  | 155 ++++++++++++++++++++
  drivers/accel/thames/thames_rpmsg.h  |  27 ++++
- 15 files changed, 985 insertions(+), 1 deletion(-)
+ 15 files changed, 984 insertions(+), 1 deletion(-)
  create mode 100644 Documentation/accel/thames/index.rst
  create mode 100644 drivers/accel/thames/Kconfig
  create mode 100644 drivers/accel/thames/Makefile
@@ -538,10 +538,10 @@ index 000000000000..c7d8e521d432
 +#endif /* __THAMES_DEVICE_H__ */
 diff --git a/drivers/accel/thames/thames_drv.c b/drivers/accel/thames/thames_drv.c
 new file mode 100644
-index 000000000000..a288e6ef05d7
+index 000000000000..473498dd6f01
 --- /dev/null
 +++ b/drivers/accel/thames/thames_drv.c
-@@ -0,0 +1,156 @@
+@@ -0,0 +1,155 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/* Copyright 2026 Texas Instruments Incorporated - https://www.ti.com/ */
 +
@@ -549,7 +549,6 @@ index 000000000000..a288e6ef05d7
 +#include <drm/drm_drv.h>
 +#include <drm/drm_gem.h>
 +#include <drm/drm_ioctl.h>
-+#include <drm/thames_accel.h>
 +#include <linux/err.h>
 +#include <linux/platform_device.h>
 +#include <linux/remoteproc.h>

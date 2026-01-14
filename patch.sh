@@ -530,7 +530,11 @@ drivers () {
 	dir 'external/gasket'
 
 	dir 'drivers/cpufreq'
-	#dir 'drivers/thames'
+
+	#b4 am https://lore.kernel.org/all/20260114-thames-v2-2-e94a6636e050@tomeuvizoso.net/#t
+	#git am ./v2_20260114_tomeu_new_drm_accel_driver_for_texas_instruments_c7x_dsps.mbx
+	#exit 2
+	dir 'drivers/thames'
 }
 
 ###

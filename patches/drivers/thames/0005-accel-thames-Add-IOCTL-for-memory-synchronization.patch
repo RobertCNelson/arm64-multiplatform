@@ -1,6 +1,6 @@
-From 5ee16d228f82851d3867fd64d9c9f2980f9572c3 Mon Sep 17 00:00:00 2001
+From ef9eb97c361a516716295402639760f4e988a768 Mon Sep 17 00:00:00 2001
 From: Tomeu Vizoso <tomeu@tomeuvizoso.net>
-Date: Tue, 13 Jan 2026 18:44:39 +0100
+Date: Wed, 14 Jan 2026 09:46:52 +0100
 Subject: [PATCH 5/5] accel/thames: Add IOCTL for memory synchronization
 
 The DSP cores have their own access to the memory bus, and it isn't
@@ -12,15 +12,19 @@ accessed from the CPU.
 
 Initially based on the same IOCTLs from the Etnaviv driver.
 
+v2:
+- Add thames_accel.h UAPI header (Robert Nelson).
+
 Signed-off-by: Tomeu Vizoso <tomeu@tomeuvizoso.net>
 ---
  drivers/accel/thames/thames_drv.c |  2 ++
  drivers/accel/thames/thames_gem.c | 52 +++++++++++++++++++++++++++++++
  drivers/accel/thames/thames_gem.h |  4 +++
- 3 files changed, 58 insertions(+)
+ include/uapi/drm/thames_accel.h   | 31 ++++++++++++++++++
+ 4 files changed, 89 insertions(+)
 
 diff --git a/drivers/accel/thames/thames_drv.c b/drivers/accel/thames/thames_drv.c
-index bf7355832241..9b72db433fbb 100644
+index 1ff01428e6c8..6993d503139d 100644
 --- a/drivers/accel/thames/thames_drv.c
 +++ b/drivers/accel/thames/thames_drv.c
 @@ -76,6 +76,8 @@ static const struct drm_ioctl_desc thames_drm_driver_ioctls[] = {
@@ -33,10 +37,10 @@ index bf7355832241..9b72db433fbb 100644
  
  DEFINE_DRM_ACCEL_FOPS(thames_accel_driver_fops);
 diff --git a/drivers/accel/thames/thames_gem.c b/drivers/accel/thames/thames_gem.c
-index a153e73a1525..2ad5a62bea27 100644
+index 5a01ddaeb244..4ded8fab0f3f 100644
 --- a/drivers/accel/thames/thames_gem.c
 +++ b/drivers/accel/thames/thames_gem.c
-@@ -353,3 +353,55 @@ int thames_ioctl_bo_mmap_offset(struct drm_device *ddev, void *data, struct drm_
+@@ -351,3 +351,55 @@ int thames_ioctl_bo_mmap_offset(struct drm_device *ddev, void *data, struct drm_
  
  	return 0;
  }
@@ -107,6 +111,62 @@ index 785843c40a89..e5a8278e98c5 100644
  int thames_context_create(struct thames_file_priv *priv);
  
  void thames_context_destroy(struct thames_file_priv *priv);
+diff --git a/include/uapi/drm/thames_accel.h b/include/uapi/drm/thames_accel.h
+index 5b35e50826ed..07477087211c 100644
+--- a/include/uapi/drm/thames_accel.h
++++ b/include/uapi/drm/thames_accel.h
+@@ -31,6 +31,12 @@ enum drm_thames_ioctl_id {
+ 
+ 	/** @DRM_THAMES_SUBMIT: Submit a job and BOs to run. */
+ 	DRM_THAMES_SUBMIT,
++
++	/** @DRM_THAMES_BO_PREP: Prepare a BO for CPU access after DSP writes. */
++	DRM_THAMES_BO_PREP,
++
++	/** @DRM_THAMES_BO_FINI: Finish CPU access and prepare BO for DSP access. */
++	DRM_THAMES_BO_FINI,
+ };
+ 
+ /**
+@@ -127,6 +133,27 @@ struct drm_thames_submit {
+ 	__u32 pad;
+ };
+ 
++/**
++ * struct drm_thames_bo_prep - ioctl argument for preparing a BO for CPU access.
++ *
++ * This invalidates CPU caches and waits for pending DSP operations to complete.
++ */
++struct drm_thames_bo_prep {
++	__u32 handle;
++	__u32 reserved;
++	__s64 timeout_ns;	/* absolute */
++};
++
++/**
++ * struct drm_thames_bo_fini - ioctl argument for finishing CPU access to a BO.
++ *
++ * This flushes CPU caches to make CPU writes visible to the DSP.
++ */
++struct drm_thames_bo_fini {
++	__u32 handle;
++	__u32 reserved;
++};
++
+ /**
+  * DRM_IOCTL_THAMES() - Build a thames IOCTL number
+  * @__access: Access type. Must be R, W or RW.
+@@ -149,6 +176,10 @@ enum {
+ 		DRM_IOCTL_THAMES(WR, BO_MMAP_OFFSET, bo_mmap_offset),
+ 	DRM_IOCTL_THAMES_SUBMIT =
+ 		DRM_IOCTL_THAMES(WR, SUBMIT, submit),
++	DRM_IOCTL_THAMES_BO_PREP =
++		DRM_IOCTL_THAMES(WR, BO_PREP, bo_prep),
++	DRM_IOCTL_THAMES_BO_FINI =
++		DRM_IOCTL_THAMES(WR, BO_FINI, bo_fini),
+ };
+ 
+ #if defined(__cplusplus)
 -- 
 2.51.0
 
