@@ -561,7 +561,7 @@ drivers () {
 	dir 'branding/boris'
 
 	dir 'drivers/ite'
-	dir 'drivers/pcie'
+	#dir 'drivers/pcie'
 
 	dir 'external/android'
 	dir 'external/cadence'
