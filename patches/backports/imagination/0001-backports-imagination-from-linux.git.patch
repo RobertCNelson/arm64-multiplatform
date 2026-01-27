@@ -1,18 +1,18 @@
-From 9fe78ac77efeae1343a7a5aa66b4f749e18b6505 Mon Sep 17 00:00:00 2001
+From a4280dffa8e9702512b458b8ecb5aa4faf4e1844 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 13 Jan 2026 14:11:28 -0600
+Date: Tue, 27 Jan 2026 11:23:32 -0600
 Subject: [PATCH] backports: imagination: from: linux.git
 
-Reference: v6.19-rc5
+Reference: v6.19-rc7
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  drivers/gpu/drm/imagination/pvr_ccb.c      | 1 +
  drivers/gpu/drm/imagination/pvr_fw.c       | 1 +
  drivers/gpu/drm/imagination/pvr_fw_meta.c  | 2 ++
- drivers/gpu/drm/imagination/pvr_fw_trace.c | 1 +
+ drivers/gpu/drm/imagination/pvr_fw_trace.c | 9 ++++++++-
  drivers/gpu/drm/imagination/pvr_power.c    | 1 +
  drivers/gpu/drm/imagination/pvr_vm.c       | 1 +
- 6 files changed, 7 insertions(+)
+ 6 files changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/imagination/pvr_ccb.c b/drivers/gpu/drm/imagination/pvr_ccb.c
 index 2bbdc05a3b97..9294b4ba1de7 100644
@@ -52,7 +52,7 @@ index 60db3668ad3c..9ff03bc60a08 100644
  
  #define POLL_TIMEOUT_USEC 1000000
 diff --git a/drivers/gpu/drm/imagination/pvr_fw_trace.c b/drivers/gpu/drm/imagination/pvr_fw_trace.c
-index a1098b521485..8a56952f6730 100644
+index a1098b521485..99d681413eff 100644
 --- a/drivers/gpu/drm/imagination/pvr_fw_trace.c
 +++ b/drivers/gpu/drm/imagination/pvr_fw_trace.c
 @@ -9,6 +9,7 @@
@@ -63,6 +63,29 @@ index a1098b521485..8a56952f6730 100644
  
  #include <linux/build_bug.h>
  #include <linux/dcache.h>
+@@ -136,6 +137,7 @@ update_logtype(struct pvr_device *pvr_dev, u32 group_mask)
+ 	struct rogue_fwif_kccb_cmd cmd;
+ 	int idx;
+ 	int err;
++	int slot;
+ 
+ 	if (group_mask)
+ 		fw_trace->tracebuf_ctrl->log_type = ROGUE_FWIF_LOG_TYPE_TRACE | group_mask;
+@@ -153,8 +155,13 @@ update_logtype(struct pvr_device *pvr_dev, u32 group_mask)
+ 	cmd.cmd_type = ROGUE_FWIF_KCCB_CMD_LOGTYPE_UPDATE;
+ 	cmd.kccb_flags = 0;
+ 
+-	err = pvr_kccb_send_cmd(pvr_dev, &cmd, NULL);
++	err = pvr_kccb_send_cmd(pvr_dev, &cmd, &slot);
++	if (err)
++		goto err_drm_dev_exit;
++
++	err = pvr_kccb_wait_for_completion(pvr_dev, slot, HZ, NULL);
+ 
++err_drm_dev_exit:
+ 	drm_dev_exit(idx);
+ 
+ err_up_read:
 diff --git a/drivers/gpu/drm/imagination/pvr_power.c b/drivers/gpu/drm/imagination/pvr_power.c
 index c6e7ff9e935d..b9f801c63260 100644
 --- a/drivers/gpu/drm/imagination/pvr_power.c

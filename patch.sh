@@ -487,7 +487,7 @@ backports () {
 		patch_backports
 	fi
 
-	backport_tag="v6.19-rc5"
+	backport_tag="v6.19-rc7"
 
 	subsystem="imagination"
 	#regenerate="enable"
