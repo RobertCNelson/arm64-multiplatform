@@ -1,8 +1,14 @@
 #!/bin/sh -e
 
+# SPDX-FileCopyrightText: Robert Nelson <robertcnelson@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 DIR=$PWD
 
 cd ${DIR}/KERNEL/
+
+./scripts/config --module CONFIG_INPUT_TPS65219_PWRBUTTON
 
 #Docker.io
 ./scripts/config --enable CONFIG_NETFILTER_XT_MATCH_IPVS
