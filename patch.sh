@@ -1,24 +1,8 @@
 #!/bin/bash -e
+
+# SPDX-FileCopyrightText: 2009 Robert Nelson <robertcnelson@gmail.com>
 #
-# Copyright (c) 2009-2025 Robert Nelson <robertcnelson@gmail.com>
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# SPDX-License-Identifier: MIT
 
 # Split out, so build_kernel.sh and build_deb.sh can share..
 
@@ -282,6 +266,7 @@ beagleboard_dtbs () {
 		cp -vr ../${work_dir}/include/dt-bindings/* ./include/dt-bindings/
 
 		ls ../${work_dir}/src/arm/overlays/ | grep dtso
+		#exit 2
 
 		device="AM335X-PRU-UIO-00A0" ; arm_dtbo_makefile_append
 		device="BB-ADC-00A0" ; arm_dtbo_makefile_append
@@ -289,16 +274,26 @@ beagleboard_dtbs () {
 		device="BB-BBGG-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBGW-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BONE-eMMC1-01-00A0" ; arm_dtbo_makefile_append
+		device="BB-CAN0-00A0" ; arm_dtbo_makefile_append
+		device="BB-CAN1-00A0" ; arm_dtbo_makefile_append
+		device="BB-EHRPWM0-P9_29-P9_31" ; arm_dtbo_makefile_append
 		device="BB-EHRPWM1-P9_14-P9_16" ; arm_dtbo_makefile_append
 		device="BB-EHRPWM2-P8_13-P8_19" ; arm_dtbo_makefile_append
+		device="BB-EQEP0" ; arm_dtbo_makefile_append
+		device="BB-EQEP1" ; arm_dtbo_makefile_append
+		device="BB-EQEP2B" ; arm_dtbo_makefile_append
+		device="BB-EQEP2" ; arm_dtbo_makefile_append
 		device="BB-HDMI-IT66121-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-IT66122-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
+		device="BB-I2C1-FAST-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-MCP7940X-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-RTC-DS3231" ; arm_dtbo_makefile_append
 		device="BB-I2C1-RTC-PCF8563" ; arm_dtbo_makefile_append
 		device="BB-I2C2-BME680" ; arm_dtbo_makefile_append
+		device="BB-I2C2-FAST-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C2-MPU6050" ; arm_dtbo_makefile_append
+		device="BB-I2C2-RTC-DS3231" ; arm_dtbo_makefile_append
 		device="BB-NHDMI-IT66121-00A0" ; arm_dtbo_makefile_append
 		device="BB-NHDMI-IT66122-00A0" ; arm_dtbo_makefile_append
 		device="BB-NHDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
@@ -310,6 +305,7 @@ beagleboard_dtbs () {
 		device="BB-UART1-00A0" ; arm_dtbo_makefile_append
 		device="BB-UART2-00A0" ; arm_dtbo_makefile_append
 		device="BB-UART4-00A0" ; arm_dtbo_makefile_append
+		device="BB-UART5-00A0" ; arm_dtbo_makefile_append
 		device="BB-W1-P9.12-00A0" ; arm_dtbo_makefile_append
 		device="BONE-ADC" ; arm_dtbo_makefile_append
 		device="BONE-LED-P8-37" ; arm_dtbo_makefile_append
