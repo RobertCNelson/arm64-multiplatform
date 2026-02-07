@@ -1,11 +1,11 @@
-From 407eaebdbe7e04ba2575932e6d40c5b3473dcd0f Mon Sep 17 00:00:00 2001
+From 4702b7655557157d6f168c11803c187455265b7d Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 2 Feb 2026 12:21:26 -0600
+Date: Sat, 7 Feb 2026 11:48:19 -0600
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v6.19.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/7fc8f3b1a17057ed59093b4e1bbbf413f7d3ba18
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/530fa3fcedefdbf02d85757022af785b4b32c07a
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso    |  112 ++
@@ -47,9 +47,9 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm/boot/dts/ti/omap/BBORG_FAN-A000.dtso |   16 +
  .../boot/dts/ti/omap/BBORG_RELAY-00A2.dtso    |   74 ++
  arch/arm/boot/dts/ti/omap/BONE-ADC.dtso       |   28 +
- arch/arm/boot/dts/ti/omap/BONE-LED-P8-37.dtso |   39 +
- arch/arm/boot/dts/ti/omap/BONE-LED-P9-19.dtso |   44 +
- arch/arm/boot/dts/ti/omap/BONE-LED-P9-42.dtso |   39 +
+ arch/arm/boot/dts/ti/omap/BONE-LED-P8-37.dtso |   42 +
+ arch/arm/boot/dts/ti/omap/BONE-LED-P9-19.dtso |   47 +
+ arch/arm/boot/dts/ti/omap/BONE-LED-P9-42.dtso |   42 +
  arch/arm/boot/dts/ti/omap/M-BB-BBG-00A0.dtso  |   21 +
  arch/arm/boot/dts/ti/omap/M-BB-BBGG-00A0.dtso |   24 +
  arch/arm/boot/dts/ti/omap/Makefile            |   52 +-
@@ -83,27 +83,27 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm/boot/dts/ti/omap/omap5-l4.dtsi       |    2 +-
  arch/arm64/boot/dts/ti/Makefile               |   57 +
  .../k3-am62-pocketbeagle2-ardupilot-cape.dtso |  235 ++++
- .../dts/ti/k3-am62-pocketbeagle2-led-all.dtso |  454 +++++++
- .../ti/k3-am62-pocketbeagle2-leds-off.dtso    |   41 +
+ .../dts/ti/k3-am62-pocketbeagle2-led-all.dtso |  459 +++++++
+ .../ti/k3-am62-pocketbeagle2-leds-off.dtso    |   46 +
  .../ti/k3-am62-pocketbeagle2-mspm0swd.dtso    |   30 +
  .../dts/ti/k3-am62-pocketbeagle2-pinmux.dtsi  |  682 ++++++++++
- .../k3-am62-pocketbeagle2-techlab-cape.dtso   |  128 ++
+ .../k3-am62-pocketbeagle2-techlab-cape.dtso   |  133 ++
  .../boot/dts/ti/k3-am62-pocketbeagle2.dts     |   12 +-
- .../k3-am6232-pocketbeagle2-techlab-cape.dtso |  128 ++
+ .../k3-am6232-pocketbeagle2-techlab-cape.dtso |  133 ++
  .../boot/dts/ti/k3-am6232-pocketbeagle2.dts   |  531 ++++++++
- ...m625-beagleplay-bcfserial-no-firmware.dtso |    8 +
+ ...m625-beagleplay-bcfserial-no-firmware.dtso |   22 +
  .../dts/ti/k3-am625-beagleplay-pinmux.dtsi    |  130 ++
  .../arm64/boot/dts/ti/k3-am625-beagleplay.dts |   13 +-
  .../boot/dts/ti/k3-am625-sancloud-bbe-2.dts   | 1119 +++++++++++++++++
  .../dts/ti/k3-am62p-j722s-common-main.dtsi    |   30 +
  arch/arm64/boot/dts/ti/k3-am62p-main.dtsi     |   13 +
  arch/arm64/boot/dts/ti/k3-am62p.dtsi          |    1 +
- .../ti/k3-am67a-beagley-ai-i2c1-400000.dtso   |   27 +
- .../ti/k3-am67a-beagley-ai-i2c1-ads1115.dtso  |   59 +
+ .../ti/k3-am67a-beagley-ai-i2c1-400000.dtso   |   24 +
+ .../ti/k3-am67a-beagley-ai-i2c1-ads1115.dtso  |   54 +
  .../k3-am67a-beagley-ai-i2c1-rtc-rv3028.dtso  |   39 +
- .../ti/k3-am67a-beagley-ai-i2c1-ssd1306.dtso  |   30 +
- .../ti/k3-am67a-beagley-ai-mikroe-eth.dtso    |   51 +
- .../k3-am67a-beagley-ai-mikroe-microsd.dtso   |   50 +
+ .../ti/k3-am67a-beagley-ai-i2c1-ssd1306.dtso  |   32 +
+ .../ti/k3-am67a-beagley-ai-mikroe-eth.dtso    |   48 +
+ .../k3-am67a-beagley-ai-mikroe-microsd.dtso   |   47 +
  .../dts/ti/k3-am67a-beagley-ai-pinmux.dtsi    |  964 ++++++++++++++
  .../ti/k3-am67a-beagley-ai-pps-gpio18.dtso    |   31 +
  .../k3-am67a-beagley-ai-pwm-ecap0-gpio12.dtso |   38 +
@@ -127,9 +127,9 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  ...67a-beagley-ai-pwm-epwm1-gpio6-gpio13.dtso |   41 +
  ...67a-beagley-ai-pwm-epwm1-gpio6-gpio20.dtso |   41 +
  .../k3-am67a-beagley-ai-pwm-epwm1-gpio6.dtso  |   38 +
- .../dts/ti/k3-am67a-beagley-ai-spi0-1cs.dtso  |   46 +
- .../dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso  |   53 +
- .../dts/ti/k3-am67a-beagley-ai-spidev0.dtso   |   55 +
+ .../dts/ti/k3-am67a-beagley-ai-spi0-1cs.dtso  |   43 +
+ .../dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso  |   50 +
+ .../dts/ti/k3-am67a-beagley-ai-spidev0.dtso   |   52 +
  .../ti/k3-am67a-beagley-ai-uart-ttyama0.dtso  |   29 +
  .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  157 +++
  .../k3-j721e-beagleboneai64-BBORG_MOTOR.dtso  |   95 ++
@@ -159,7 +159,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |    2 +
  .../dt-bindings/clock/thead,th1520-clk-ap.h   |    1 +
  include/dt-bindings/phy/phy.h                 |    5 +
- 151 files changed, 11926 insertions(+), 43 deletions(-)
+ 151 files changed, 11948 insertions(+), 43 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBGG-WL1835-00A0.dtso
@@ -3675,11 +3675,14 @@ index 000000000000..dafd8a26fbe0
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/BONE-LED-P8-37.dtso b/arch/arm/boot/dts/ti/omap/BONE-LED-P8-37.dtso
 new file mode 100644
-index 000000000000..5e531933f7ca
+index 000000000000..8dfd7460fe6b
 --- /dev/null
 +++ b/arch/arm/boot/dts/ti/omap/BONE-LED-P8-37.dtso
-@@ -0,0 +1,39 @@
-+// SPDX-License-Identifier: GPL-2.0-only
+@@ -0,0 +1,42 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Copyright (C) Robert Nelson, BeagleBoard.org Foundation
++ */
 +
 +/dts-v1/;
 +/plugin/;
@@ -3720,11 +3723,14 @@ index 000000000000..5e531933f7ca
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/BONE-LED-P9-19.dtso b/arch/arm/boot/dts/ti/omap/BONE-LED-P9-19.dtso
 new file mode 100644
-index 000000000000..ba1cfe8499f1
+index 000000000000..7dea9a6472a3
 --- /dev/null
 +++ b/arch/arm/boot/dts/ti/omap/BONE-LED-P9-19.dtso
-@@ -0,0 +1,44 @@
-+// SPDX-License-Identifier: GPL-2.0-only
+@@ -0,0 +1,47 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Copyright (C) Robert Nelson, BeagleBoard.org Foundation
++ */
 +
 +/dts-v1/;
 +/plugin/;
@@ -3770,11 +3776,14 @@ index 000000000000..ba1cfe8499f1
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/BONE-LED-P9-42.dtso b/arch/arm/boot/dts/ti/omap/BONE-LED-P9-42.dtso
 new file mode 100644
-index 000000000000..c60bdae069c3
+index 000000000000..6c2e7a1528de
 --- /dev/null
 +++ b/arch/arm/boot/dts/ti/omap/BONE-LED-P9-42.dtso
-@@ -0,0 +1,39 @@
-+// SPDX-License-Identifier: GPL-2.0-only
+@@ -0,0 +1,42 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Copyright (C) Robert Nelson, BeagleBoard.org Foundation
++ */
 +
 +/dts-v1/;
 +/plugin/;
@@ -5883,10 +5892,15 @@ index 000000000000..7e05e526d940
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-led-all.dtso b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-led-all.dtso
 new file mode 100644
-index 000000000000..19865629d367
+index 000000000000..5cd886fadeeb
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-led-all.dtso
-@@ -0,0 +1,454 @@
+@@ -0,0 +1,459 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Copyright (C) 2025 Robert Nelson, BeagleBoard.org Foundation
++ */
++
 +/dts-v1/;
 +/plugin/;
 +
@@ -6343,10 +6357,15 @@ index 000000000000..19865629d367
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-leds-off.dtso b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-leds-off.dtso
 new file mode 100644
-index 000000000000..b7a4aedd5c94
+index 000000000000..e6f014454065
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-leds-off.dtso
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,46 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Copyright (C) 2025 Ayush Singh, BeagleBoard.org Foundation
++ */
++
 +/dts-v1/;
 +/plugin/;
 +
@@ -6390,7 +6409,7 @@ index 000000000000..b7a4aedd5c94
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-mspm0swd.dtso b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-mspm0swd.dtso
 new file mode 100644
-index 000000000000..8f91bd69ab71
+index 000000000000..10b6e891b537
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-mspm0swd.dtso
 @@ -0,0 +1,30 @@
@@ -6406,7 +6425,7 @@ index 000000000000..8f91bd69ab71
 +
 +/*
 + * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
-+*/
++ */
 +&{/chosen} {
 +	overlays {
 +		k3-am62-pocketbeagle2-mspm0swd.kernel = __TIMESTAMP__;
@@ -7114,10 +7133,15 @@ index 000000000000..fcda483c56d9
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-techlab-cape.dtso b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-techlab-cape.dtso
 new file mode 100644
-index 000000000000..0bd86c4dc7ef
+index 000000000000..9a1658996bd6
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am62-pocketbeagle2-techlab-cape.dtso
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,133 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Copyright (C) 2025 Ayush Singh, BeagleBoard.org Foundation
++ */
++
 +/dts-v1/;
 +/plugin/;
 +
@@ -7288,10 +7312,15 @@ index 7a4cffc27bda..a5222cb4d5a5 100644
  	memory@80000000 {
 diff --git a/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2-techlab-cape.dtso b/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2-techlab-cape.dtso
 new file mode 100644
-index 000000000000..da5b100591ca
+index 000000000000..18182265d371
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am6232-pocketbeagle2-techlab-cape.dtso
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,133 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Copyright (C) 2025 Ayush Singh, BeagleBoard.org Foundation
++ */
++
 +/dts-v1/;
 +/plugin/;
 +
@@ -7959,17 +7988,31 @@ index 000000000000..913b00a898f8
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay-bcfserial-no-firmware.dtso b/arch/arm64/boot/dts/ti/k3-am625-beagleplay-bcfserial-no-firmware.dtso
 new file mode 100644
-index 000000000000..f19178db08e4
+index 000000000000..2bdb4f9230db
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am625-beagleplay-bcfserial-no-firmware.dtso
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,22 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Copyright (C) BeagleBoard.org Foundation
++ */
++
 +/dts-v1/;
 +/plugin/;
 +
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++ */
++&{/chosen} {
++	overlays {
++		k3-am625-beagleplay-bcfserial-no-firmware.kernel = __TIMESTAMP__;
++	};
++};
++
 +&main_uart6 {
-+    mcu {
-+        status = "disabled";
-+    };
++	mcu {
++		status = "disabled";
++	};
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am625-beagleplay-pinmux.dtsi b/arch/arm64/boot/dts/ti/k3-am625-beagleplay-pinmux.dtsi
 new file mode 100644
@@ -9358,16 +9401,13 @@ index e2c01328eb29..9d6266d6ddb8 100644
  			 <0x00 0x48000000 0x00 0x48000000 0x00 0x06408000>, /* DMSS */
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-i2c1-400000.dtso b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-i2c1-400000.dtso
 new file mode 100644
-index 000000000000..6116e021bc19
+index 000000000000..b6002155be4e
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-i2c1-400000.dtso
-@@ -0,0 +1,27 @@
-+// SPDX-License-Identifier: GPL-2.0
+@@ -0,0 +1,24 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
-+ * DT Overlay for I2C1 at 400000 within the expansion header.
-+ *
-+ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
-+ *
++ * Copyright (C) BeagleBoard.org Foundation
 + */
 +
 +/dts-v1/;
@@ -9391,18 +9431,13 @@ index 000000000000..6116e021bc19
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-i2c1-ads1115.dtso b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-i2c1-ads1115.dtso
 new file mode 100644
-index 000000000000..292614463687
+index 000000000000..a2aad6590339
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-i2c1-ads1115.dtso
-@@ -0,0 +1,59 @@
-+// SPDX-License-Identifier: GPL-2.0
+@@ -0,0 +1,54 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
-+ * DT Overlay for I2C1 with Gravity: I2C ADS1115 16-Bit ADC Module
-+ * https://www.dfrobot.com/product-1730.html
-+ * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/iio/adc/ti,ads1015.yaml
-+ *
-+ * Copyright (C) 2024 Robert Nelson, BeagleBoard.org Foundation
-+ *
++ * Copyright (C) BeagleBoard.org Foundation
 + */
 +
 +/dts-v1/;
@@ -9501,12 +9536,14 @@ index 000000000000..bf5b7f0fcc71
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-i2c1-ssd1306.dtso b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-i2c1-ssd1306.dtso
 new file mode 100644
-index 000000000000..85f9130ec9de
+index 000000000000..5472dbf0d036
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-i2c1-ssd1306.dtso
-@@ -0,0 +1,30 @@
-+/dts-v1/;
-+/plugin/;
+@@ -0,0 +1,32 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Copyright (C) BeagleBoard.org Foundation
++ */
 +
 +/dts-v1/;
 +/plugin/;
@@ -9515,9 +9552,9 @@ index 000000000000..85f9130ec9de
 + * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
 + */
 +&{/chosen} {
-+        overlays {
-+                k3-am67a-beagley-ai-i2c1-ssd1306.kernel = __TIMESTAMP__;
-+        };
++	overlays {
++		k3-am67a-beagley-ai-i2c1-ssd1306.kernel = __TIMESTAMP__;
++	};
 +};
 +
 +&mcu_i2c0 {
@@ -9526,27 +9563,24 @@ index 000000000000..85f9130ec9de
 +	#address-cells = <1>;
 +	#size-cells = <0>;
 +
-+        ssd1306@3c {
-+                compatible = "solomon,ssd1306fb-i2c";
-+                reg = <0x3c>;
-+                solomon,height = <64>;
-+                solomon,width = <128>;
-+                solomon,com-invdir;
-+                solomon,page-offset = <0>;
-+        };
++	ssd1306@3c {
++		compatible = "solomon,ssd1306fb-i2c";
++		reg = <0x3c>;
++		solomon,height = <64>;
++		solomon,width = <128>;
++		solomon,com-invdir;
++		solomon,page-offset = <0>;
++	};
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-mikroe-eth.dtso b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-mikroe-eth.dtso
 new file mode 100644
-index 000000000000..d3ad0c6becdf
+index 000000000000..86d4fb979a26
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-mikroe-eth.dtso
-@@ -0,0 +1,51 @@
-+// SPDX-License-Identifier: GPL-2.0
+@@ -0,0 +1,48 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
-+ * DT Overlay for mikroe on BeagleY-AI board.
-+ *
-+ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
-+ *
++ * Copyright (C) BeagleBoard.org Foundation
 + */
 +
 +/dts-v1/;
@@ -9594,16 +9628,13 @@ index 000000000000..d3ad0c6becdf
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-mikroe-microsd.dtso b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-mikroe-microsd.dtso
 new file mode 100644
-index 000000000000..a2703fffca05
+index 000000000000..d6e02c011e21
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-mikroe-microsd.dtso
-@@ -0,0 +1,50 @@
-+// SPDX-License-Identifier: GPL-2.0
+@@ -0,0 +1,47 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
-+ * DT Overlay for mikroe on BeagleY-AI board.
-+ *
-+ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
-+ *
++ * Copyright (C) BeagleBoard.org Foundation
 + */
 +
 +/dts-v1/;
@@ -11605,16 +11636,13 @@ index 000000000000..a6e3247c89dc
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-spi0-1cs.dtso b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-spi0-1cs.dtso
 new file mode 100644
-index 000000000000..13a05817833d
+index 000000000000..9b98ebc6b4c2
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-spi0-1cs.dtso
-@@ -0,0 +1,46 @@
-+// SPDX-License-Identifier: GPL-2.0
+@@ -0,0 +1,43 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
-+ * DT Overlay for spi0-1cs on BeagleY-AI board.
-+ *
-+ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
-+ *
++ * Copyright (C) BeagleBoard.org Foundation
 + */
 +
 +/dts-v1/;
@@ -11657,16 +11685,13 @@ index 000000000000..13a05817833d
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso
 new file mode 100644
-index 000000000000..f7331edca584
+index 000000000000..c8b5eb0224ca
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso
-@@ -0,0 +1,53 @@
-+// SPDX-License-Identifier: GPL-2.0
+@@ -0,0 +1,50 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
-+ * DT Overlay for spi0-2cs on BeagleY-AI board.
-+ *
-+ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
-+ *
++ * Copyright (C) BeagleBoard.org Foundation
 + */
 +
 +/dts-v1/;
@@ -11716,16 +11741,13 @@ index 000000000000..f7331edca584
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-spidev0.dtso b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-spidev0.dtso
 new file mode 100644
-index 000000000000..c169e45c6a34
+index 000000000000..6ac940097691
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-spidev0.dtso
-@@ -0,0 +1,55 @@
-+// SPDX-License-Identifier: GPL-2.0
+@@ -0,0 +1,52 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
-+ * DT Overlay for spidev0.0 & spidev0.1 on BeagleY-AI board.
-+ *
-+ * Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
-+ *
++ * Copyright (C) BeagleBoard.org Foundation
 + */
 +
 +/dts-v1/;
