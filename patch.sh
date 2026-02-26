@@ -220,7 +220,7 @@ k3_dtbo_makefile_append () {
 }
 
 beagleboard_dtbs () {
-	branch="v6.19.x"
+	branch="v7.0.x"
 	https_repo="https://github.com/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -494,9 +494,9 @@ backports () {
 }
 
 drivers () {
-	dir 'branding/boris'
+	#dir 'branding/boris'
 
-	dir 'drivers/davinci-mcasp'
+	#dir 'drivers/davinci-mcasp'
 	dir 'drivers/ite'
 	dir 'drivers/pcie'
 	dir 'drivers/mspm0'
@@ -505,7 +505,7 @@ drivers () {
 	dir 'external/cadence'
 	dir 'external/gasket'
 
-	dir 'drivers/cpufreq'
+	#dir 'drivers/cpufreq'
 }
 
 ###
