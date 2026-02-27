@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.18.10 Kernel Configuration
+# Linux/arm64 6.18.14 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 15.2.0"
 CONFIG_CC_IS_GCC=y
@@ -8672,7 +8672,7 @@ CONFIG_AS3935=m
 #
 # Proximity and distance sensors
 #
-# CONFIG_D3323AA is not set
+CONFIG_D3323AA=m
 CONFIG_HX9023S=m
 CONFIG_IRSD200=m
 CONFIG_ISL29501=m
