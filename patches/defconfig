@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.19.0 Kernel Configuration
+# Linux/arm64 6.19.4 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 15.2.0"
 CONFIG_CC_IS_GCC=y
@@ -5254,7 +5254,7 @@ CONFIG_VIDEO_CAFE_CCIC=m
 #
 # Raspberry Pi media platform drivers
 #
-# CONFIG_VIDEO_RP1_CFE is not set
+CONFIG_VIDEO_RP1_CFE=m
 
 #
 # Renesas media platform drivers
@@ -6043,6 +6043,7 @@ CONFIG_DRM_PANEL_SIMPLE=m
 
 CONFIG_DRM_BRIDGE=y
 CONFIG_DRM_PANEL_BRIDGE=y
+CONFIG_DRM_AUX_BRIDGE=m
 
 #
 # Display Interface Bridges
@@ -7255,13 +7256,13 @@ CONFIG_TYPEC_FUSB302=m
 #
 # USB Type-C Multiplexer/DeMultiplexer Switch support
 #
-# CONFIG_TYPEC_MUX_FSA4480 is not set
+CONFIG_TYPEC_MUX_FSA4480=m
 CONFIG_TYPEC_MUX_GPIO_SBU=m
 # CONFIG_TYPEC_MUX_PI3USB30532 is not set
 # CONFIG_TYPEC_MUX_IT5205 is not set
 # CONFIG_TYPEC_MUX_NB7VPQ904M is not set
-# CONFIG_TYPEC_MUX_PS883X is not set
-# CONFIG_TYPEC_MUX_PTN36502 is not set
+CONFIG_TYPEC_MUX_PS883X=m
+CONFIG_TYPEC_MUX_PTN36502=m
 # CONFIG_TYPEC_MUX_TUSB1046 is not set
 # CONFIG_TYPEC_MUX_WCD939X_USBSS is not set
 # end of USB Type-C Multiplexer/DeMultiplexer Switch support
@@ -8714,7 +8715,7 @@ CONFIG_AS3935=m
 #
 # Proximity and distance sensors
 #
-# CONFIG_D3323AA is not set
+CONFIG_D3323AA=m
 CONFIG_HX9023S=m
 CONFIG_IRSD200=m
 CONFIG_ISL29501=m
@@ -8800,7 +8801,7 @@ CONFIG_TI_PRUSS_INTC=m
 
 # CONFIG_IPACK_BUS is not set
 CONFIG_RESET_CONTROLLER=y
-# CONFIG_RESET_GPIO is not set
+CONFIG_RESET_GPIO=m
 CONFIG_RESET_SCMI=y
 CONFIG_RESET_SIMPLE=y
 CONFIG_RESET_TI_SCI=y

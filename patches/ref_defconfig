@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.19.0 Kernel Configuration
+# Linux/arm64 6.19.4 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 15.2.0"
 CONFIG_CC_IS_GCC=y
@@ -5102,6 +5102,7 @@ CONFIG_MFD_CROS_EC_DEV=y
 # CONFIG_MFD_CS42L43_SDW is not set
 # CONFIG_MFD_LOCHNAGAR is not set
 # CONFIG_MFD_MADERA is not set
+# CONFIG_MFD_TN48M_CPLD is not set
 # CONFIG_PMIC_DA903X is not set
 # CONFIG_MFD_DA9052_SPI is not set
 # CONFIG_MFD_DA9052_I2C is not set
@@ -10637,8 +10638,8 @@ CONFIG_NVMEM_UNIPHIER_EFUSE=y
 # HW tracing support
 #
 CONFIG_STM=m
-# CONFIG_STM_PROTO_BASIC is not set
-# CONFIG_STM_PROTO_SYS_T is not set
+CONFIG_STM_PROTO_BASIC=m
+CONFIG_STM_PROTO_SYS_T=m
 # CONFIG_STM_DUMMY is not set
 # CONFIG_STM_SOURCE_CONSOLE is not set
 # CONFIG_STM_SOURCE_HEARTBEAT is not set
