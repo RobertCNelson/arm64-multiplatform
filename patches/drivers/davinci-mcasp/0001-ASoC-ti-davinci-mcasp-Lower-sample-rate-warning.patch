@@ -15,10 +15,10 @@ Signed-off-by: Nishanth Menon <nm@ti.com>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/sound/soc/ti/davinci-mcasp.c b/sound/soc/ti/davinci-mcasp.c
-index 621a9d5f9377..143a3841aa45 100644
+index 2d260fbc9b83..f27ca5f49c13 100644
 --- a/sound/soc/ti/davinci-mcasp.c
 +++ b/sound/soc/ti/davinci-mcasp.c
-@@ -1155,8 +1155,8 @@ static int davinci_mcasp_calc_clk_div(struct davinci_mcasp *mcasp,
+@@ -1379,8 +1379,8 @@ static int davinci_mcasp_calc_clk_div(struct davinci_mcasp *mcasp,
  
  	if (set) {
  		if (error_ppm)
@@ -27,8 +27,8 @@ index 621a9d5f9377..143a3841aa45 100644
 +			dev_dbg(mcasp->dev, "Sample-rate is off by %d PPM\n",
 +				error_ppm);
  
- 		__davinci_mcasp_set_clkdiv(mcasp, MCASP_CLKDIV_BCLK, div, 0);
- 		if (reg & AHCLKXE)
+ 		__davinci_mcasp_set_clkdiv(mcasp, bclk_div_id, div, false);
+ 		if (auxclk_enabled)
 -- 
-2.51.0
+2.53.0
 

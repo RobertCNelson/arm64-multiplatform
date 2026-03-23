@@ -1,4 +1,4 @@
-From 0ac02bd2c70b9fad8fc8e1ea59f01931067d3312 Mon Sep 17 00:00:00 2001
+From b3074aa80d4b033e32e09df7a98be0ef13a8645c Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 13 Jan 2026 13:57:29 -0600
 Subject: [PATCH 3/3] [nfm] quiet ASoC by default
@@ -22,5 +22,5 @@ index c8adfff826bd..5674874470d3 100644
  
  	return ret;
 -- 
-2.51.0
+2.53.0
 
