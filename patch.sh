@@ -249,7 +249,7 @@ beagleboard_dtbs () {
 		cp -v ../${work_dir}/src/arm64/ti/*.h arch/arm64/boot/dts/ti/
 		cp -vr ../${work_dir}/include/dt-bindings/* ./include/dt-bindings/
 
-		ls ../${work_dir}/src/arm/overlays/ | grep dtso
+		#ls ../${work_dir}/src/arm/overlays/ | grep dtso
 		#exit 2
 
 		device="AM3359-PWM012" ; arm_dtbo_makefile_append
@@ -267,6 +267,7 @@ beagleboard_dtbs () {
 		device="BB-EQEP1" ; arm_dtbo_makefile_append
 		device="BB-EQEP2B" ; arm_dtbo_makefile_append
 		device="BB-EQEP2" ; arm_dtbo_makefile_append
+		device="BB-GREEN-HDMI-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-IT66121-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-IT66122-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
