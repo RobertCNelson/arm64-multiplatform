@@ -1,0 +1,64 @@
+From 1d5982f7f69621fffbdf368faf71e7602300e490 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Fri, 3 Apr 2026 12:08:30 -0500
+Subject: [PATCH 1/2] Revert "spi: fix statistics allocation"
+
+This reverts commit f13100b1f5f111989f0750540a795fdef47492af.
+
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+---
+ drivers/spi/spi.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index 91da4cae011c..180fd72bce5d 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -2777,8 +2777,6 @@ static void spi_controller_release(struct device *dev)
+ 	struct spi_controller *ctlr;
+ 
+ 	ctlr = container_of(dev, struct spi_controller, dev);
+-
+-	free_percpu(ctlr->pcpu_statistics);
+ 	kfree(ctlr);
+ }
+ 
+@@ -2930,12 +2928,6 @@ struct spi_controller *__spi_alloc_controller(struct device *dev,
+ 	if (!ctlr)
+ 		return NULL;
+ 
+-	ctlr->pcpu_statistics = spi_alloc_pcpu_stats(NULL);
+-	if (!ctlr->pcpu_statistics) {
+-		kfree(ctlr);
+-		return NULL;
+-	}
+-
+ 	device_initialize(&ctlr->dev);
+ 	INIT_LIST_HEAD(&ctlr->queue);
+ 	spin_lock_init(&ctlr->queue_lock);
+@@ -3224,6 +3216,13 @@ int spi_register_controller(struct spi_controller *ctlr)
+ 		if (status)
+ 			goto del_ctrl;
+ 	}
++	/* Add statistics */
++	ctlr->pcpu_statistics = spi_alloc_pcpu_stats(dev);
++	if (!ctlr->pcpu_statistics) {
++		dev_err(dev, "Error allocating per-cpu statistics\n");
++		status = -ENOMEM;
++		goto destroy_queue;
++	}
+ 
+ 	mutex_lock(&board_lock);
+ 	list_add_tail(&ctlr->list, &spi_controller_list);
+@@ -3236,6 +3235,8 @@ int spi_register_controller(struct spi_controller *ctlr)
+ 	acpi_register_spi_devices(ctlr);
+ 	return status;
+ 
++destroy_queue:
++	spi_destroy_queue(ctlr);
+ del_ctrl:
+ 	device_del(&ctlr->dev);
+ free_bus_id:
+-- 
+2.53.0
+

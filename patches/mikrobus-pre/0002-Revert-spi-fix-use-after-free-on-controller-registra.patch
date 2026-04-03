@@ -1,0 +1,42 @@
+From 72581f2fa70e8b672371ad21bfc038f7cfc3b883 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Fri, 3 Apr 2026 12:08:30 -0500
+Subject: [PATCH 2/2] Revert "spi: fix use-after-free on controller
+ registration failure"
+
+This reverts commit 6bbd385b30c7fb6c7ee0669e9ada91490938c051.
+
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+---
+ drivers/spi/spi.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index 180fd72bce5d..5adba36255a1 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -3213,8 +3213,10 @@ int spi_register_controller(struct spi_controller *ctlr)
+ 		dev_info(dev, "controller is unqueued, this is deprecated\n");
+ 	} else if (ctlr->transfer_one || ctlr->transfer_one_message) {
+ 		status = spi_controller_initialize_queue(ctlr);
+-		if (status)
+-			goto del_ctrl;
++		if (status) {
++			device_del(&ctlr->dev);
++			goto free_bus_id;
++		}
+ 	}
+ 	/* Add statistics */
+ 	ctlr->pcpu_statistics = spi_alloc_pcpu_stats(dev);
+@@ -3237,8 +3239,6 @@ int spi_register_controller(struct spi_controller *ctlr)
+ 
+ destroy_queue:
+ 	spi_destroy_queue(ctlr);
+-del_ctrl:
+-	device_del(&ctlr->dev);
+ free_bus_id:
+ 	mutex_lock(&board_lock);
+ 	idr_remove(&spi_master_idr, ctlr->bus_num);
+-- 
+2.53.0
+
