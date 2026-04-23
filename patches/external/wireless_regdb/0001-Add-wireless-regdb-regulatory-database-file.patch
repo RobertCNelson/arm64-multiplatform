@@ -1,6 +1,6 @@
-From 0cf24e6236441160ea0dce8a1deac8ca8514ac91 Mon Sep 17 00:00:00 2001
+From da15e2d00570c53927ec07731ef7ec37e9818698 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Sat, 7 Feb 2026 11:47:41 -0600
+Date: Thu, 23 Apr 2026 16:32:01 -0500
 Subject: [PATCH] Add wireless-regdb regulatory database file
 
 https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/tag/?h=master-2026-02-04
@@ -105,5 +105,5 @@ literal 0
 HcmV?d00001
 
 -- 
-2.51.0
+2.53.0
 
