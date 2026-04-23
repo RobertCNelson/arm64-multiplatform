@@ -1,0 +1,29 @@
+From 35a721a686e1fc1e1f79367e89739f5979779db3 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Mon, 20 Apr 2026 15:54:13 +0300
+Subject: [PATCH 06/15] drm/tidss: Remove extra pm_runtime_mark_last_busy
+
+pm_runtime_put_autosuspend() calls pm_runtime_mark_last_busy(), so no
+need to call pm_runtime_mark_last_busy() explicitly in the driver.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_drv.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_drv.c b/drivers/gpu/drm/tidss/tidss_drv.c
+index 1c8cc18bc53c..5cb3e746aeb3 100644
+--- a/drivers/gpu/drm/tidss/tidss_drv.c
++++ b/drivers/gpu/drm/tidss/tidss_drv.c
+@@ -42,8 +42,6 @@ void tidss_runtime_put(struct tidss_device *tidss)
+ {
+ 	int r;
+ 
+-	pm_runtime_mark_last_busy(tidss->dev);
+-
+ 	r = pm_runtime_put_autosuspend(tidss->dev);
+ 	WARN_ON(r < 0);
+ }
+-- 
+2.53.0
+

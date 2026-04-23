@@ -88,10 +88,9 @@ external_git () {
 }
 
 mainline_patches () {
-	#exit 2
-	#dir 'mainline/pocketbeagle2'
-	dir 'mainline/greenecho'
-	#exit 2
+	exit 2
+	dir 'drivers/drm/tidss'
+	exit 2
 }
 
 rt_cleanup () {
@@ -518,6 +517,7 @@ drivers () {
 
 	#dir 'drivers/cpufreq'
 	dir 'drivers/drm/imagination'
+	dir 'drivers/drm/tidss'
 #exit 2
 }
 

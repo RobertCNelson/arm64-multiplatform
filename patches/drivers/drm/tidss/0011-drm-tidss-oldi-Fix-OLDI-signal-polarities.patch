@@ -1,0 +1,135 @@
+From a4341c1d746443ed08698aa024ccf7092b8d7fca Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Mon, 20 Apr 2026 15:54:18 +0300
+Subject: [PATCH 11/15] drm/tidss: oldi: Fix OLDI signal polarities
+
+OLDI has a few issues with how it handles the signal polarities:
+
+- It always sets OLDI_DEPOL, which means DE active low
+- It sets DRM_BUS_FLAG_DE_HIGH in struct drm_bridge_timings, i.e.
+  reverse to the OLDI_DEPOL
+- It sets DRM_BUS_FLAG_SYNC_SAMPLE_NEGEDGE in struct drm_bridge_timings,
+  but the TRM says "The DSS interface is clocked on the rising edge of
+  OLDI_FWD_P_CLK pixel clock", which I read as "OLDI samples on rising
+  edge".
+- But the defined drm_bridge_timings is not actually used anywhere, even
+  if it is set to bridge->timings, so the bus flags are just ignored.
+
+However, based on my testing, OLDI_DEPOL bit or the edge on which data
+and syncs are driven doesn't seem to affect the OLDI output. Possibly
+it's not as robust, but I did not see any effect with an oscilloscope.
+
+However, the code is still quite broken, so let's fix it:
+- Remove drm_bridge_timings
+- Set the correct input_bus_cfg.flags in tidss_oldi_atomic_check()
+- Set OLDI_DEPOL based on the DE bus flag
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_oldi.c | 38 ++++++++++++++++++++++--------
+ 1 file changed, 28 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.c b/drivers/gpu/drm/tidss/tidss_oldi.c
+index 17c535bfa057..e925ddaa4fd6 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.c
++++ b/drivers/gpu/drm/tidss/tidss_oldi.c
+@@ -164,7 +164,8 @@ static void tidss_oldi_tx_power(struct tidss_oldi *oldi, bool enable)
+ 	regmap_update_bits(oldi->io_ctrl, OLDI_PD_CTRL, mask, enable ? 0 : mask);
+ }
+ 
+-static int tidss_oldi_config(struct tidss_oldi *oldi)
++static int tidss_oldi_config(struct tidss_oldi *oldi,
++			     struct drm_bridge_state *bridge_state)
+ {
+ 	const struct oldi_bus_format *bus_fmt = NULL;
+ 	u32 oldi_cfg = 0;
+@@ -183,7 +184,8 @@ static int tidss_oldi_config(struct tidss_oldi *oldi)
+ 			 "OLDI%u: DSS port width %d not supported\n",
+ 			 oldi->oldi_instance, bus_fmt->data_width);
+ 
+-	oldi_cfg |= OLDI_DEPOL;
++	if (bridge_state->input_bus_cfg.flags & DRM_BUS_FLAG_DE_LOW)
++		oldi_cfg |= OLDI_DEPOL; /* 1 = active low */
+ 
+ 	oldi_cfg = (oldi_cfg & (~OLDI_MAP)) | (bus_fmt->oldi_mode_reg_val << 1);
+ 
+@@ -220,6 +222,22 @@ static int tidss_oldi_config(struct tidss_oldi *oldi)
+ 	return ret;
+ }
+ 
++static int tidss_oldi_atomic_check(struct drm_bridge *bridge,
++				   struct drm_bridge_state *bridge_state,
++				   struct drm_crtc_state *crtc_state,
++				   struct drm_connector_state *conn_state)
++{
++	bridge_state->input_bus_cfg.flags &=
++		~(DRM_BUS_FLAG_PIXDATA_SAMPLE_NEGEDGE |
++		  DRM_BUS_FLAG_SYNC_SAMPLE_NEGEDGE);
++
++	bridge_state->input_bus_cfg.flags |=
++		DRM_BUS_FLAG_PIXDATA_SAMPLE_POSEDGE |
++		DRM_BUS_FLAG_SYNC_SAMPLE_POSEDGE;
++
++	return 0;
++}
++
+ static void tidss_oldi_atomic_pre_enable(struct drm_bridge *bridge,
+ 					 struct drm_atomic_state *state)
+ {
+@@ -228,6 +246,7 @@ static void tidss_oldi_atomic_pre_enable(struct drm_bridge *bridge,
+ 	struct drm_connector_state *conn_state;
+ 	struct drm_crtc_state *crtc_state;
+ 	struct drm_display_mode *mode;
++	struct drm_bridge_state *bridge_state;
+ 
+ 	if (oldi->link_type == OLDI_MODE_SECONDARY_CLONE_SINGLE_LINK)
+ 		return;
+@@ -245,10 +264,14 @@ static void tidss_oldi_atomic_pre_enable(struct drm_bridge *bridge,
+ 	if (WARN_ON(!crtc_state))
+ 		return;
+ 
++	bridge_state = drm_atomic_get_new_bridge_state(state, bridge);
++	if (WARN_ON(!bridge_state))
++		return;
++
+ 	mode = &crtc_state->adjusted_mode;
+ 
+ 	/* Configure the OLDI params*/
+-	tidss_oldi_config(oldi);
++	tidss_oldi_config(oldi, bridge_state);
+ 
+ 	/* Set the OLDI serial clock (7 times the pixel clock) */
+ 	tidss_oldi_set_serial_clk(oldi, mode->clock * 7 * 1000);
+@@ -329,7 +352,8 @@ tidss_oldi_mode_valid(struct drm_bridge *bridge,
+ }
+ 
+ static const struct drm_bridge_funcs tidss_oldi_bridge_funcs = {
+-	.attach	= tidss_oldi_bridge_attach,
++	.attach = tidss_oldi_bridge_attach,
++	.atomic_check = tidss_oldi_atomic_check,
+ 	.atomic_pre_enable = tidss_oldi_atomic_pre_enable,
+ 	.atomic_post_disable = tidss_oldi_atomic_post_disable,
+ 	.atomic_get_input_bus_fmts = tidss_oldi_atomic_get_input_bus_fmts,
+@@ -440,11 +464,6 @@ static int get_parent_dss_vp(struct device_node *oldi_tx, u32 *parent_vp)
+ 	return -ENODEV;
+ }
+ 
+-static const struct drm_bridge_timings default_tidss_oldi_timings = {
+-	.input_bus_flags = DRM_BUS_FLAG_SYNC_SAMPLE_NEGEDGE
+-			 | DRM_BUS_FLAG_DE_HIGH,
+-};
+-
+ void tidss_oldi_deinit(struct tidss_device *tidss)
+ {
+ 	for (int i = 0; i < tidss->num_oldis; i++) {
+@@ -598,7 +617,6 @@ int tidss_oldi_init(struct tidss_device *tidss)
+ 		/* Register the bridge. */
+ 		oldi->bridge.of_node = child;
+ 		oldi->bridge.driver_private = oldi;
+-		oldi->bridge.timings = &default_tidss_oldi_timings;
+ 
+ 		tidss->oldis[tidss->num_oldis++] = oldi;
+ 		tidss->is_ext_vp_clk[oldi->parent_vp] = true;
+-- 
+2.53.0
+
