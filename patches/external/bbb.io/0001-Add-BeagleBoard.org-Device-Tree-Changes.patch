@@ -1,11 +1,11 @@
-From 1ce60d5b6c983475709661d178ba2db421a8f29f Mon Sep 17 00:00:00 2001
+From f7dfff708c5f3de90465c75ba4333cf94fc0a80b Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 24 Apr 2026 11:25:44 -0500
+Date: Fri, 24 Apr 2026 11:52:43 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v7.0.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/7b1c05f135eb7f7ac942052c12e5f510244241e8
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/4f6de516e4980a0fb4f6c646ebb19a46a3377561
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso  |   80 ++
@@ -133,7 +133,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso  |   50 +
  .../dts/ti/k3-am67a-beagley-ai-spidev0.dtso   |   52 +
  .../ti/k3-am67a-beagley-ai-uart-ttyama0.dtso  |   29 +
- .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  439 +++++++
+ .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  440 +++++++
  .../k3-j721e-beagleboneai64-BBORG_MOTOR.dtso  |   95 ++
  .../dts/ti/k3-j721e-beagleboneai64-ecap0.dtso |   40 +
  .../dts/ti/k3-j721e-beagleboneai64-ecap1.dtso |   40 +
@@ -160,7 +160,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/k3-j721e-main.dtsi     |   23 +-
  arch/arm64/boot/dts/ti/k3-j722s.dtsi          |   70 ++
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |    2 +
- 152 files changed, 13018 insertions(+), 23 deletions(-)
+ 152 files changed, 13019 insertions(+), 23 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso
@@ -12422,7 +12422,7 @@ index 000000000000..bf41c0488af1
 +	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
-index 5255e04b9ac7..73a908170805 100644
+index 5255e04b9ac7..bbea983fa0a8 100644
 --- a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 @@ -10,7 +10,11 @@
@@ -12437,7 +12437,7 @@ index 5255e04b9ac7..73a908170805 100644
  
  / {
  	compatible = "beagle,am67a-beagley-ai", "ti,j722s";
-@@ -19,8 +23,11 @@ / {
+@@ -19,8 +23,12 @@ / {
  	aliases {
  		serial0 = &wkup_uart0;
  		serial2 = &main_uart0;
@@ -12445,11 +12445,12 @@ index 5255e04b9ac7..73a908170805 100644
 +		serial6 = &main_uart6;
  		mmc1 = &sdhci1;
  		rtc0 = &rtc;
++		rtc1 = &wkup_rtc0;
 +		i2c1 = &mcu_i2c0;
  	};
  
  	chosen {
-@@ -146,6 +153,50 @@ led-1 {
+@@ -146,6 +154,50 @@ led-1 {
  			default-state = "on";
  		};
  	};
@@ -12500,7 +12501,7 @@ index 5255e04b9ac7..73a908170805 100644
  };
  
  &main_pmx0 {
-@@ -165,6 +216,14 @@ J722S_IOPAD(0x01cc, PIN_OUTPUT, 0)	/* (B22) UART0_TXD */
+@@ -165,6 +217,14 @@ J722S_IOPAD(0x01cc, PIN_OUTPUT, 0)	/* (B22) UART0_TXD */
  		bootph-all;
  	};
  
@@ -12515,7 +12516,7 @@ index 5255e04b9ac7..73a908170805 100644
  	vdd_sd_dv_pins_default: vdd-sd-dv-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x0244, PIN_OUTPUT, 7) /* (A24) MMC1_SDWP.GPIO1_49 */
-@@ -185,6 +244,20 @@ J722S_IOPAD(0x0240, PIN_INPUT, 7) /* (B24) MMC1_SDCD.GPIO1_48 */
+@@ -185,6 +245,20 @@ J722S_IOPAD(0x0240, PIN_INPUT, 7) /* (B24) MMC1_SDCD.GPIO1_48 */
  		bootph-all;
  	};
  
@@ -12536,7 +12537,7 @@ index 5255e04b9ac7..73a908170805 100644
  	mdio_pins_default: mdio-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x0160, PIN_OUTPUT, 0) /* (AC24) MDIO0_MDC */
-@@ -209,6 +282,18 @@ J722S_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AF25) RGMII1_TX_CTL */
+@@ -209,6 +283,18 @@ J722S_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AF25) RGMII1_TX_CTL */
  		>;
  	};
  
@@ -12555,7 +12556,7 @@ index 5255e04b9ac7..73a908170805 100644
  	led_pins_default: led-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x002c, PIN_OUTPUT, 7) /* (K26) OSPI0_CSn0.GPIO0_11 */
-@@ -227,6 +312,87 @@ vdd_3v3_sd_pins_default: vdd-3v3-sd-default-pins {
+@@ -227,6 +313,87 @@ vdd_3v3_sd_pins_default: vdd-3v3-sd-default-pins {
  			J722S_IOPAD(0x0254, PIN_OUTPUT, 7) /* (E25) USB0_DRVVBUS.GPIO1_50 */
  		>;
  	};
@@ -12643,7 +12644,7 @@ index 5255e04b9ac7..73a908170805 100644
  };
  
  &cpsw3g {
-@@ -254,11 +420,19 @@ &cpsw_port1 {
+@@ -254,11 +421,19 @@ &cpsw_port1 {
  	status = "okay";
  };
  
@@ -12663,7 +12664,7 @@ index 5255e04b9ac7..73a908170805 100644
  &main_uart0 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&main_uart0_pins_default>;
-@@ -266,7 +440,55 @@ &main_uart0 {
+@@ -266,7 +441,55 @@ &main_uart0 {
  	status = "okay";
  };
  
@@ -12719,7 +12720,7 @@ index 5255e04b9ac7..73a908170805 100644
  	wkup_uart0_pins_default: wkup-uart0-default-pins {
  		pinctrl-single,pins = <
  			J722S_MCU_IOPAD(0x02c, PIN_INPUT, 0)	/* (C7) WKUP_UART0_CTSn */
-@@ -284,6 +506,36 @@ J722S_MCU_IOPAD(0x050, PIN_INPUT_PULLUP, 0)	/* (C6) WKUP_I2C1_SDA */
+@@ -284,6 +507,36 @@ J722S_MCU_IOPAD(0x050, PIN_INPUT_PULLUP, 0)	/* (C6) WKUP_I2C1_SDA */
  		>;
  		bootph-all;
  	};
@@ -12756,7 +12757,7 @@ index 5255e04b9ac7..73a908170805 100644
  };
  
  &wkup_uart0 {
-@@ -294,6 +546,15 @@ &wkup_uart0 {
+@@ -294,6 +547,15 @@ &wkup_uart0 {
  	status = "reserved";
  };
  
@@ -12772,7 +12773,7 @@ index 5255e04b9ac7..73a908170805 100644
  &wkup_i2c0 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&wkup_i2c0_pins_default>;
-@@ -385,6 +646,63 @@ rtc: rtc@68 {
+@@ -385,6 +647,63 @@ rtc: rtc@68 {
  	};
  };
  
@@ -12836,7 +12837,7 @@ index 5255e04b9ac7..73a908170805 100644
  &sdhci1 {
  	/* SD/MMC */
  	vmmc-supply = <&vdd_mmc1>;
-@@ -399,4 +717,125 @@ &sdhci1 {
+@@ -399,4 +718,125 @@ &sdhci1 {
  	status = "okay";
  };
  
