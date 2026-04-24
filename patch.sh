@@ -566,6 +566,10 @@ drivers () {
 	dir 'external/android'
 	dir 'external/cadence'
 	dir 'external/gasket'
+
+	echo "dir: drivers/cc33xx-b4"
+	#b4 am https://lore.kernel.org/linux-wireless/20241107125209.1736277-1-michael.nemanov@ti.com/
+	${git} "${DIR}/patches/drivers/cc33xx-b4/v5_20241107_michael_nemanov_wifi_cc33xx_add_driver_for_new_ti_cc33xx_wireless_device_family.mbx"
 }
 
 ###
