@@ -1,11 +1,11 @@
-From 79c87e193e7ad98677be33be29883de02f67eb92 Mon Sep 17 00:00:00 2001
+From 140eeca5a1f10f7d16759f1137504754f5add135 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 27 Apr 2026 16:22:15 -0500
+Date: Tue, 28 Apr 2026 13:59:15 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v6.19.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/6ef82981e29b8d63b56022b291bd05dc6eec7b3f
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/5fb7b46f1e34b2a209d64fc5899fb34bf8858c8c
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso  |   80 ++
@@ -142,7 +142,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso  |   50 +
  .../dts/ti/k3-am67a-beagley-ai-spidev0.dtso   |   52 +
  .../ti/k3-am67a-beagley-ai-uart-ttyama0.dtso  |   29 +
- .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  363 ++++++
+ .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  413 ++++++
  .../k3-j721e-beagleboneai64-BBORG_MOTOR.dtso  |   95 ++
  .../dts/ti/k3-j721e-beagleboneai64-ecap0.dtso |   40 +
  .../dts/ti/k3-j721e-beagleboneai64-ecap1.dtso |   40 +
@@ -179,7 +179,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../dt-bindings/clock/thead,th1520-clk-ap.h   |    1 +
  include/dt-bindings/phy/phy.h                 |    5 +
  include/uapi/linux/input-event-codes.h        |    4 +
- 171 files changed, 12945 insertions(+), 99 deletions(-)
+ 171 files changed, 12995 insertions(+), 99 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso
@@ -12516,7 +12516,7 @@ index 000000000000..bf41c0488af1
 +	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
-index 5255e04b9ac7..6dbcd1576ee3 100644
+index 5255e04b9ac7..129006dde678 100644
 --- a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 @@ -10,7 +10,11 @@
@@ -12545,7 +12545,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  	};
  
  	chosen {
-@@ -129,6 +138,20 @@ vsys_io_1v2: regulator-6 {
+@@ -129,6 +138,34 @@ vsys_io_1v2: regulator-6 {
  		regulator-boot-on;
  	};
  
@@ -12563,10 +12563,24 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
 +		pinctrl-0 = <&wlan_en_pins_default>;
 +	};
 +
++	pcie_pwr_en: regulator-8 {
++		compatible = "regulator-fixed";
++		regulator-name = "pcie_pwr_en";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		enable-active-high;
++		regulator-always-on;
++		regulator-boot-on;
++		vin-supply = <&vdd_3v3>;
++		gpios = <&mcu_gpio0 8 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&mcu_pcie_pwr_default>;
++	};
++
  	leds {
  		compatible = "gpio-leds";
  		pinctrl-names = "default";
-@@ -146,6 +169,22 @@ led-1 {
+@@ -146,6 +183,22 @@ led-1 {
  			default-state = "on";
  		};
  	};
@@ -12589,7 +12603,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  };
  
  &main_pmx0 {
-@@ -165,6 +204,14 @@ J722S_IOPAD(0x01cc, PIN_OUTPUT, 0)	/* (B22) UART0_TXD */
+@@ -165,6 +218,14 @@ J722S_IOPAD(0x01cc, PIN_OUTPUT, 0)	/* (B22) UART0_TXD */
  		bootph-all;
  	};
  
@@ -12604,7 +12618,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  	vdd_sd_dv_pins_default: vdd-sd-dv-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x0244, PIN_OUTPUT, 7) /* (A24) MMC1_SDWP.GPIO1_49 */
-@@ -185,6 +232,20 @@ J722S_IOPAD(0x0240, PIN_INPUT, 7) /* (B24) MMC1_SDCD.GPIO1_48 */
+@@ -185,6 +246,20 @@ J722S_IOPAD(0x0240, PIN_INPUT, 7) /* (B24) MMC1_SDCD.GPIO1_48 */
  		bootph-all;
  	};
  
@@ -12625,7 +12639,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  	mdio_pins_default: mdio-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x0160, PIN_OUTPUT, 0) /* (AC24) MDIO0_MDC */
-@@ -209,6 +270,18 @@ J722S_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AF25) RGMII1_TX_CTL */
+@@ -209,6 +284,18 @@ J722S_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AF25) RGMII1_TX_CTL */
  		>;
  	};
  
@@ -12644,7 +12658,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  	led_pins_default: led-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x002c, PIN_OUTPUT, 7) /* (K26) OSPI0_CSn0.GPIO0_11 */
-@@ -227,6 +300,87 @@ vdd_3v3_sd_pins_default: vdd-3v3-sd-default-pins {
+@@ -227,6 +314,87 @@ vdd_3v3_sd_pins_default: vdd-3v3-sd-default-pins {
  			J722S_IOPAD(0x0254, PIN_OUTPUT, 7) /* (E25) USB0_DRVVBUS.GPIO1_50 */
  		>;
  	};
@@ -12694,11 +12708,11 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
 +		pinctrl-single,pins = <
 +			J722S_IOPAD(0x0120, PIN_INPUT, 0) /* (F27) MMC2_CMD */
 +			J722S_IOPAD(0x0118, PIN_OUTPUT, 0) /* (H26) MMC2_CLK */
-+			J722S_IOPAD(0x011C, PIN_INPUT, 0) /* () MMC2_CLKLB */
 +			J722S_IOPAD(0x0114, PIN_INPUT, 0) /* (G26) MMC2_DAT0 */
-+			J722S_IOPAD(0x0110, PIN_INPUT_PULLUP, 0) /* (G27) MMC2_DAT1 */
-+			J722S_IOPAD(0x010c, PIN_INPUT_PULLUP, 0) /* (H27) MMC2_DAT2 */
-+			J722S_IOPAD(0x0108, PIN_INPUT_PULLUP, 0) /* (J27) MMC2_DAT3 */
++			J722S_IOPAD(0x0110, PIN_INPUT, 0) /* (G27) MMC2_DAT1 */
++			J722S_IOPAD(0x010c, PIN_INPUT, 0) /* (H27) MMC2_DAT2 */
++			J722S_IOPAD(0x0108, PIN_INPUT, 0) /* (J27) MMC2_DAT3 */
++			J722S_IOPAD(0x011C, PIN_INPUT, 0) /* () MMC2_CLKLB */
 +		>;
 +	};
 +
@@ -12732,7 +12746,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  };
  
  &cpsw3g {
-@@ -254,11 +408,19 @@ &cpsw_port1 {
+@@ -254,11 +422,19 @@ &cpsw_port1 {
  	status = "okay";
  };
  
@@ -12752,7 +12766,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  &main_uart0 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&main_uart0_pins_default>;
-@@ -266,7 +428,55 @@ &main_uart0 {
+@@ -266,7 +442,55 @@ &main_uart0 {
  	status = "okay";
  };
  
@@ -12808,7 +12822,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  	wkup_uart0_pins_default: wkup-uart0-default-pins {
  		pinctrl-single,pins = <
  			J722S_MCU_IOPAD(0x02c, PIN_INPUT, 0)	/* (C7) WKUP_UART0_CTSn */
-@@ -284,6 +494,36 @@ J722S_MCU_IOPAD(0x050, PIN_INPUT_PULLUP, 0)	/* (C6) WKUP_I2C1_SDA */
+@@ -284,6 +508,40 @@ J722S_MCU_IOPAD(0x050, PIN_INPUT_PULLUP, 0)	/* (C6) WKUP_I2C1_SDA */
  		>;
  		bootph-all;
  	};
@@ -12826,13 +12840,17 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
 +		>;
 +	};
 +
-+	pcie_pins_default: pcie-default-pins {
++	mcu_pcie_reset_default: mcu-pcie-reset-default-pins {
 +		pinctrl-single,pins = <
-+			J722S_MCU_IOPAD(0x0018, PIN_OUTPUT, 7)	/* (B4) MCU_UART0_TXD.MCU_GPIO0_6 */
-+			J722S_MCU_IOPAD(0x0014, PIN_INPUT, 7)	/* (B8) MCU_UART0_RXD.MCU_GPIO0_5 */ /* PCIE_DET_WAKE */
-+			J722S_MCU_IOPAD(0x0020, PIN_OUTPUT, 7)	/* (C5) MCU_UART0_RTSn.MCU_GPIO0_8 */ /* PCIE_PWR_EN */
++			J722S_MCU_IOPAD(0x0018, PIN_OUTPUT, 7) /* (B4) MCU_UART0_TXD.MCU_GPIO0_6 */
++			J722S_MCU_IOPAD(0x0014, PIN_INPUT, 7) /* (B8) MCU_UART0_RXD.MCU_GPIO0_5 */ /* PCIE_DET_WAKE */
 +		>;
-+		bootph-all;
++	};
++
++	mcu_pcie_pwr_default: mcu-pcie-pwr-default-pins {
++		pinctrl-single,pins = <
++			J722S_MCU_IOPAD(0x0020, PIN_OUTPUT, 7) /* (C5) MCU_UART0_RTSn.MCU_GPIO0_8 */ /* PCIE_PWR_EN */
++		>;
 +	};
 +
 +	mcu_i2c0_pins_default: mcu-i2c0-default-pins {
@@ -12845,7 +12863,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  };
  
  &wkup_uart0 {
-@@ -294,6 +534,15 @@ &wkup_uart0 {
+@@ -294,6 +552,15 @@ &wkup_uart0 {
  	status = "reserved";
  };
  
@@ -12861,7 +12879,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  &wkup_i2c0 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&wkup_i2c0_pins_default>;
-@@ -385,6 +634,22 @@ rtc: rtc@68 {
+@@ -385,6 +652,22 @@ rtc: rtc@68 {
  	};
  };
  
@@ -12884,7 +12902,7 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
  &sdhci1 {
  	/* SD/MMC */
  	vmmc-supply = <&vdd_mmc1>;
-@@ -399,4 +664,102 @@ &sdhci1 {
+@@ -399,4 +682,134 @@ &sdhci1 {
  	status = "okay";
  };
  
@@ -12932,6 +12950,38 @@ index 5255e04b9ac7..6dbcd1576ee3 100644
 +		cdns,phy-type = <PHY_TYPE_USB3>;
 +		resets = <&serdes_wiz0 1>;
 +	};
++};
++
++&serdes_wiz1 {
++	status = "okay";
++};
++
++&serdes1 {
++	serdes1_pcie_link: phy@0 {
++		reg = <0>;
++		cdns,num-lanes = <1>;
++		#phy-cells = <0>;
++		cdns,phy-type = <PHY_TYPE_PCIE>;
++		resets = <&serdes_wiz1 1>;
++	};
++};
++
++&pcie0_rc {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&mcu_pcie_reset_default>;
++	phys = <&serdes1_pcie_link>;
++	phy-names = "pcie-phy";
++	num-lanes = <1>;
++
++	/*
++	 * J722S has the ability to run at max-link-speed of 3 but we limit it to Gen 2.
++	 * https://pip.raspberrypi.com/categories/892-raspberry-pi-5 : pcie-connector-standard
++	 * Signals can be run at Gen 3 speeds, but this is not officially supported.
++	 */
++	max-link-speed = <2>;
++
++	reset-gpios = <&mcu_gpio0 6 GPIO_ACTIVE_HIGH>;
 +};
 +
 +&usbss0 {
