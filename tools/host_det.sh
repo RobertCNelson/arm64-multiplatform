@@ -1,5 +1,9 @@
 #!/bin/bash -e
 
+# SPDX-FileCopyrightText: Robert Nelson <robertcnelson@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 #opensuse support added by: Antonio Cavallo
 #https://launchpad.net/~a.cavallo
 
@@ -66,6 +70,16 @@ redhat_reqs () {
 	pkg="uboot-tools"
 	check_rpm
 	pkg="openssl-devel"
+	check_rpm
+	pkg="rust"
+	check_rpm
+	pkg="rust-src"
+	check_rpm
+	pkg="bindgen-cli"
+	check_rpm
+	pkg="rustfmt"
+	check_rpm
+	pkg="clippy"
 	check_rpm
 
 	arch=$(uname -m)
@@ -168,6 +182,8 @@ debian_regs () {
 	pkg="rustc"
 	check_dpkg
 	pkg="rustfmt"
+	check_dpkg
+	pkg="rust-clippy"
 	check_dpkg
 
 	unset stop_pkg_search

@@ -1,7 +1,14 @@
+# SPDX-FileCopyrightText: Robert Nelson <robertcnelson@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
+variables:
+  TRANSFER_METER_FREQUENCY: "5s"
+  KERNEL_IMAGE: "arch/arm64/boot/Image"
+
 before_script:
   - export PATH=/usr/lib/ccache:$PATH
   - export CCACHE_DIR=/dev/shm/my-ccache-in-memory
-  - export CCACHE_NOCOMPRESS=1
   - df -h /dev/shm
   - git config --global user.email "$GITLAB_USER_EMAIL"
   - git config --global user.name "$GITLAB_USER_NAME"
@@ -85,7 +92,7 @@ build-fedora-43-amd64:
     - ccache -z
     - cp -v system.sh.gitlab system.sh
     - ./build_kernel.sh
-    - du -sh KERNEL/arch/arm64/boot/Image || exit 1
+    - du -sh KERNEL/$KERNEL_IMAGE || exit 1
     - ccache -sv
     - df -h /dev/shm
     - tar --use-compress-program='zstd -6' -cf ccache.tar.zst /dev/shm/my-ccache-in-memory
