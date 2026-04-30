@@ -62,10 +62,10 @@ linux_stable_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/stab
 #
 KERNEL_REL=6.13
 KERNEL_TAG=${KERNEL_REL}.12
-#https://mirrors.edge.kernel.org/pub/linux/kernel/projects/rt/6.13/
-kernel_rt="-rt5"
+#https://mirrors.edge.kernel.org/pub/linux/kernel/projects/rt/x.y/
+kernel_rt=".X-rtY"
 #Kernel Build
-BUILD=${build_prefix}24.4
+BUILD=${build_prefix}24.5
 
 #v6.X-rcX + upto SHA
 #prev_KERNEL_SHA=""
