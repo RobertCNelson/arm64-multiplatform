@@ -1,5 +1,9 @@
 #!/bin/bash -e
 
+# SPDX-FileCopyrightText: Robert Nelson <robertcnelson@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 #opensuse support added by: Antonio Cavallo
 #https://launchpad.net/~a.cavallo
 
@@ -160,14 +164,6 @@ debian_regs () {
 	pkg="zstd"
 	check_dpkg
 	pkg="libdw-dev"
-	check_dpkg
-	pkg="bindgen"
-	check_dpkg
-	pkg="rust-src"
-	check_dpkg
-	pkg="rustc"
-	check_dpkg
-	pkg="rustfmt"
 	check_dpkg
 
 	unset stop_pkg_search

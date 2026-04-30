@@ -1,4 +1,9 @@
 #!/bin/sh
+
+# SPDX-FileCopyrightText: Robert Nelson <robertcnelson@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 #
 ARCH=$(uname -m)
 
@@ -12,6 +17,7 @@ branch_postfix=".x-arm64-k3"
 #https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/changes.rst?h=v6.13-rc1
 #
 #Cross Compilers
+#https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/
 #arm
 #KERNEL_ARCH=arm
 #DEBARCH=armhf
