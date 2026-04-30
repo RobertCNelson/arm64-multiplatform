@@ -5,16 +5,10 @@
 # SPDX-License-Identifier: MIT
 
 #
-#https://packages.debian.org/source/sid/linux
+#https://packages.debian.org/source/forky/linux
 #
-#abi="6.19"
-#kernel="6.19.14-1"
-#
-abi="7.0"
-kernel="7.0.1-1~exp1"
-#
-#abi="6.19"
-#kernel="6.19~rc8-1~exp1"
+abi="6.19"
+kernel="6.19.13-1"
 #
 
 mirror_site="http://192.168.1.10/debian/pool/main/l/linux"
