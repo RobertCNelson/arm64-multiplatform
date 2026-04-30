@@ -545,6 +545,7 @@ cc33xx_drivers () {
 	#exit 2
 	#start_cleanup
 	dir 'drivers/cc33xx/1.0.2.10'
+	dir 'drivers/cc33xx/fixes'
 }
 
 drivers () {
