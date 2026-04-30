@@ -124,7 +124,7 @@ rt () {
 }
 
 wireless_regdb () {
-	#https://mirrors.edge.kernel.org/pub/software/network/wireless-regdb/
+	#https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
 		cd ../
@@ -132,25 +132,23 @@ wireless_regdb () {
 			rm -rf ./src || true
 		fi
 
-		wget -c https://mirrors.edge.kernel.org/pub/software/network/wireless-regdb/wireless-regdb-${WIRELESS_REGDB}.tar.xz
+		wget -c https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/snapshot/wireless-regdb-master-${WIRELESS_REGDB}.tar.gz
 		mkdir ./src/
-		tar xf wireless-regdb-${WIRELESS_REGDB}.tar.xz -C ./src/
+		tar xf wireless-regdb-master-${WIRELESS_REGDB}.tar.gz -C ./src/
 		sync
-		rm -rf wireless-regdb-${WIRELESS_REGDB}.tar.xz
+		rm -rf wireless-regdb-master-${WIRELESS_REGDB}.tar.gz
 
 		cd ./KERNEL/
 
 		mkdir -p ./firmware/ || true
-		cp -v ../src/wireless-regdb-${WIRELESS_REGDB}/regulatory.db ./firmware/
-		cp -v ../src/wireless-regdb-${WIRELESS_REGDB}/regulatory.db.p7s ./firmware/
+		cp -v ../src/wireless-regdb-master-${WIRELESS_REGDB}/regulatory.db ./firmware/
+		cp -v ../src/wireless-regdb-master-${WIRELESS_REGDB}/regulatory.db.p7s ./firmware/
 		${git_bin} add -f ./firmware/regulatory.*
 
-		commit_regdb=$(echo "$WIRELESS_REGDB" | sed 's/\./-/g')
-
-		${git_bin} commit -a -m 'Add wireless-regdb regulatory database file' -m "https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/tag/?h=master-${commit_regdb}" -s
+		${git_bin} commit -a -m 'Add wireless-regdb regulatory database file' -m "https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/tag/?h=master-${WIRELESS_REGDB}" -s
 
 		${git_bin} format-patch -1 -o ../patches/external/wireless_regdb/
-		echo "WIRELESS_REGDB: https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/tag/?h=master-${commit_regdb}" > ../patches/external/git/WIRELESS_REGDB
+		echo "WIRELESS_REGDB: https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git/tag/?h=master-${WIRELESS_REGDB}" > ../patches/external/git/WIRELESS_REGDB
 
 		rm -rf ../src/ || true
 
@@ -264,9 +262,11 @@ beagleboard_dtbs () {
 		cp -v ../${work_dir}/src/arm64/ti/*.h arch/arm64/boot/dts/ti/
 		cp -vr ../${work_dir}/include/dt-bindings/* ./include/dt-bindings/
 
-		ls ../${work_dir}/src/arm/overlays/ | grep dtso
+		#ls ../${work_dir}/src/arm/overlays/ | grep dtso
 		#exit 2
 
+		device="AM3359-PWM012" ; arm_dtbo_makefile_append
+		device="AM335X-PRU-UIO-00A0" ; arm_dtbo_makefile_append
 		device="BB-ADC-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBBW-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBGG-WL1835-00A0" ; arm_dtbo_makefile_append
@@ -281,15 +281,19 @@ beagleboard_dtbs () {
 		device="BB-EQEP1" ; arm_dtbo_makefile_append
 		device="BB-EQEP2B" ; arm_dtbo_makefile_append
 		device="BB-EQEP2" ; arm_dtbo_makefile_append
+		device="BB-GREEN-HDMI-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-IT66121-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-IT66122-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
+		device="BB-I2C1-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-FAST-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-MCP7940X-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-RTC-DS3231" ; arm_dtbo_makefile_append
 		device="BB-I2C1-RTC-PCF8563" ; arm_dtbo_makefile_append
+		device="BB-I2C2-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C2-BME680" ; arm_dtbo_makefile_append
 		device="BB-I2C2-FAST-00A0" ; arm_dtbo_makefile_append
+		device="BB-I2C2-MCP7940X-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C2-MPU6050" ; arm_dtbo_makefile_append
 		device="BB-I2C2-RTC-DS3231" ; arm_dtbo_makefile_append
 		device="BB-NHDMI-IT66121-00A0" ; arm_dtbo_makefile_append
@@ -324,6 +328,7 @@ beagleboard_dtbs () {
 		device="k3-am62-pocketbeagle2-led-all" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-leds-off" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-mspm0swd" ; k3_dtbo_makefile_append
+		device="k3-am62-pocketbeagle2-pru0-out" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-techlab-cape" ; k3_dtbo_makefile_append
 
 		#ls src/arm64/overlays/ | grep beagleplay
@@ -371,9 +376,16 @@ beagleboard_dtbs () {
 		device="k3-am67a-beagley-ai-spidev0" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-uart-ttyama0" ; k3_dtbo_makefile_append
 
-		#ls src/arm64/overlays/ | grep beaglebone
+		#ls ../${work_dir}/src/arm64/overlays/ | grep beagleboneai64
+		#exit 2
 
 		device="k3-j721e-beagleboneai64-BBORG_MOTOR" ; k3_dtbo_makefile_append
+		device="k3-j721e-beagleboneai64-ecap0" ; k3_dtbo_makefile_append
+		device="k3-j721e-beagleboneai64-ecap1" ; k3_dtbo_makefile_append
+		device="k3-j721e-beagleboneai64-ecap2" ; k3_dtbo_makefile_append
+		device="k3-j721e-beagleboneai64-eqep0" ; k3_dtbo_makefile_append
+		device="k3-j721e-beagleboneai64-eqep1" ; k3_dtbo_makefile_append
+		device="k3-j721e-beagleboneai64-io-pins" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-pwm-epwm0-p8_13" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-pwm-epwm0-p8_13-p8_19" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-pwm-epwm0-p8_19" ; k3_dtbo_makefile_append
@@ -381,6 +393,7 @@ beagleboard_dtbs () {
 		device="k3-j721e-beagleboneai64-pwm-epwm2-p9_14-p9_16" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-pwm-epwm2-p9_16" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-pwm-epwm4-p9_25" ; k3_dtbo_makefile_append
+		device="k3-j721e-beagleboneai64-rs485-uart8" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-spi-mcspi1-cs0" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-spi-mcspi1-cs0-no-miso" ; k3_dtbo_makefile_append
 		device="k3-j721e-beagleboneai64-spi-mcspi2-cs0" ; k3_dtbo_makefile_append
@@ -524,6 +537,16 @@ backports () {
 	fi
 }
 
+cc33xx_drivers () {
+	echo "dir: drivers/cc33xx/v5_20241107"
+	#b4 am https://lore.kernel.org/linux-wireless/20241107125209.1736277-1-michael.nemanov@ti.com/
+	${git} "${DIR}/patches/drivers/cc33xx/v5_20241107/v5_20241107_michael_nemanov_wifi_cc33xx_add_driver_for_new_ti_cc33xx_wireless_device_family.mbx"
+
+	#exit 2
+	#start_cleanup
+	dir 'drivers/cc33xx/1.0.2.10'
+}
+
 drivers () {
 	dir 'branding/boris'
 
@@ -538,6 +561,7 @@ drivers () {
 ###
 backports
 drivers
+cc33xx_drivers
 
 echo "patch.sh ran successfully"
 #
