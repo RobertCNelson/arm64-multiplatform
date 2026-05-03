@@ -5,10 +5,10 @@
 # SPDX-License-Identifier: MIT
 
 #
-#https://packages.debian.org/source/sid/linux
+#https://packages.debian.org/source/forky/linux
 #
-abi="6.18"
-kernel="6.18.5-1"
+abi="6.19"
+kernel="6.19.13-1"
 #
 
 mirror_site="http://192.168.1.10/debian/pool/main/l/linux"
@@ -18,35 +18,38 @@ incoming_site="http://incoming.debian.org/debian-buildd/pool/main/l/linux"
 
 dl_deb () {
 	if [ ! -f ./dl/linux-config-${abi}_${kernel}_${dpkg_arch}.deb ] ; then
-		wget -cnv --directory-prefix=./dl/ ${mirror_site}/linux-config-${abi}_${kernel}_${dpkg_arch}.deb
+		wget -cq --directory-prefix=./dl/ ${mirror_site}/linux-config-${abi}_${kernel}_${dpkg_arch}.deb
 	fi
 
 	if [ ! -f ./dl/linux-config-${abi}_${kernel}_${dpkg_arch}.deb ] ; then
-		wget -cnv --directory-prefix=./dl/ ${debian_site}/linux-config-${abi}_${kernel}_${dpkg_arch}.deb
+		wget -cq --directory-prefix=./dl/ ${debian_site}/linux-config-${abi}_${kernel}_${dpkg_arch}.deb
 	fi
 
 	if [ ! -f ./dl/linux-config-${abi}_${kernel}_${dpkg_arch}.deb ] ; then
-		wget -cnv --directory-prefix=./dl/ ${incoming_site}/linux-config-${abi}_${kernel}_${dpkg_arch}.deb
+		wget -cq --directory-prefix=./dl/ ${incoming_site}/linux-config-${abi}_${kernel}_${dpkg_arch}.deb
 	fi
 
 	if [ ! -f ./dl/linux-config-${abi}_${kernel}_${dpkg_arch}.deb ] ; then
-		wget -cnv --directory-prefix=./dl/ ${debian_security_site}/linux-config-${abi}_${kernel}_${dpkg_arch}.deb
+		wget -cq --directory-prefix=./dl/ ${debian_security_site}/linux-config-${abi}_${kernel}_${dpkg_arch}.deb
 	fi
 
 	if [ -f ./dl/linux-config-${abi}_${kernel}_${dpkg_arch}.deb ] ; then
+		echo "[linux-config-${abi}_${kernel}_${dpkg_arch}.deb]"
 		dpkg -x ./dl/linux-config-${abi}_${kernel}_${dpkg_arch}.deb ./dl/tmp/
-		if [ -f ./dl/tmp/usr/src/linux-config-${abi}/config.${dpkg_arch}_none_${config}.xz ] ; then
-			xzcat ./dl/tmp/usr/src/linux-config-${abi}/config.${dpkg_arch}_none_${config}.xz > ./debian.config
+		if [ -f ./dl/tmp/usr/src/linux-config-${abi}/config.${dpkg_arch}_${config}.xz ] ; then
+			xzcat -v ./dl/tmp/usr/src/linux-config-${abi}/config.${dpkg_arch}_${config}.xz > ./debian.config
 		else
 			tree ./dl/tmp/usr/src/linux-config-${abi}/
 			exit 2
 		fi
 		rm -rf ./dl/tmp/ || true
+	else
+		echo "[linux-config-${abi}_${kernel}_${dpkg_arch}.deb] NOT BUILT YET"
 	fi
 }
 
 dpkg_arch="arm64"
-config="arm64"
+config="none_arm64"
 dl_deb
 
 rm -rf ./dl/ || true
