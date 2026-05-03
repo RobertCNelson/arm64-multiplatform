@@ -1,4 +1,4 @@
-From a012a77733d54da903f4ff6148abb7f871f1d8be Mon Sep 17 00:00:00 2001
+From ad3e8e2ae4b43634e2ac682fbd71c60116b5f10d Mon Sep 17 00:00:00 2001
 From: Ben Hutchings <ben@decadent.org.uk>
 Date: Tue, 8 Jul 2025 13:30:55 +0200
 Subject: [PATCH 2/2] android: Enable building binder as module
@@ -49,10 +49,10 @@ index e0c650d3898e..eae81bed1fb9 100644
 +binder_linux-$(CONFIG_ANDROID_BINDER_ALLOC_KUNIT_TEST)	+= tests/
  obj-$(CONFIG_ANDROID_BINDER_IPC_RUST)	+= binder/
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
-index a3a1b5c33ba3..d9af63c8f59c 100644
+index 9e6194224593..d15c3d20e1e6 100644
 --- a/drivers/android/binder.c
 +++ b/drivers/android/binder.c
-@@ -7156,3 +7156,6 @@ device_initcall(binder_init);
+@@ -7169,3 +7169,6 @@ device_initcall(binder_init);
  
  #define CREATE_TRACE_POINTS
  #include "binder_trace.h"
@@ -60,7 +60,7 @@ index a3a1b5c33ba3..d9af63c8f59c 100644
 +MODULE_LICENSE("GPL v2");
 +MODULE_DESCRIPTION("Android Binder IPC Driver");
 diff --git a/drivers/android/binder_alloc.c b/drivers/android/binder_alloc.c
-index 979c96b74cad..19dc1a17c36d 100644
+index e4488ad86a65..3e72d446785d 100644
 --- a/drivers/android/binder_alloc.c
 +++ b/drivers/android/binder_alloc.c
 @@ -39,7 +39,7 @@ enum {
@@ -73,5 +73,5 @@ index 979c96b74cad..19dc1a17c36d 100644
  
  #define binder_alloc_debug(mask, x...) \
 -- 
-2.51.0
+2.53.0
 

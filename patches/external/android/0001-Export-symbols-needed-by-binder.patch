@@ -1,4 +1,4 @@
-From 6e2a763dabc0ddd1cd3d3ea5ecc67f686a381439 Mon Sep 17 00:00:00 2001
+From 17a95a6377a932bea6098b73c9b5b20bbc697ed9 Mon Sep 17 00:00:00 2001
 From: Ben Hutchings <ben@decadent.org.uk>
 Date: Tue, 8 Jul 2025 13:32:21 +0200
 Subject: [PATCH 1/2] Export symbols needed by binder
@@ -22,10 +22,10 @@ Export the currently un-exported symbols it depends on.
  10 files changed, 14 insertions(+)
 
 diff --git a/fs/file.c b/fs/file.c
-index 28743b742e3c..d030787add36 100644
+index 2c81c0b162d0..76d12d84eff8 100644
 --- a/fs/file.c
 +++ b/fs/file.c
-@@ -858,6 +858,7 @@ struct file *file_close_fd(unsigned int fd)
+@@ -887,6 +887,7 @@ struct file *file_close_fd(unsigned int fd)
  
  	return file;
  }
@@ -34,10 +34,10 @@ index 28743b742e3c..d030787add36 100644
  void do_close_on_exec(struct files_struct *files)
  {
 diff --git a/ipc/msgutil.c b/ipc/msgutil.c
-index 7a03f6d03de3..87f26f93dea1 100644
+index e28f0cecb2ec..89a8fae5d90c 100644
 --- a/ipc/msgutil.c
 +++ b/ipc/msgutil.c
-@@ -40,6 +40,7 @@ struct msg_msgseg {
+@@ -35,6 +35,7 @@ struct msg_msgseg {
  	struct msg_msgseg *next;
  	/* the next part of the message follows immediately */
  };
@@ -46,10 +46,10 @@ index 7a03f6d03de3..87f26f93dea1 100644
  #define DATALEN_MSG	((size_t)PAGE_SIZE-sizeof(struct msg_msg))
  #define DATALEN_SEG	((size_t)PAGE_SIZE-sizeof(struct msg_msgseg))
 diff --git a/ipc/namespace.c b/ipc/namespace.c
-index 59b12fcb40bd..7416908815e9 100644
+index 1e71353bdb4a..93dd24802ce1 100644
 --- a/ipc/namespace.c
 +++ b/ipc/namespace.c
-@@ -208,6 +208,7 @@ void put_ipc_ns(struct ipc_namespace *ns)
+@@ -210,6 +210,7 @@ void put_ipc_ns(struct ipc_namespace *ns)
  			schedule_work(&free_ipc_work);
  	}
  }
@@ -58,10 +58,10 @@ index 59b12fcb40bd..7416908815e9 100644
  static struct ns_common *ipcns_get(struct task_struct *task)
  {
 diff --git a/kernel/sched/syscalls.c b/kernel/sched/syscalls.c
-index bf360a6fbb80..c7df38ccce31 100644
+index b215b0ead9a6..cc6028938d0f 100644
 --- a/kernel/sched/syscalls.c
 +++ b/kernel/sched/syscalls.c
-@@ -140,6 +140,7 @@ int can_nice(const struct task_struct *p, const int nice)
+@@ -119,6 +119,7 @@ int can_nice(const struct task_struct *p, const int nice)
  {
  	return is_nice_reduction(p, nice) || capable(CAP_SYS_NICE);
  }
@@ -94,18 +94,18 @@ index 0f7519f8e7c9..45fd146b85df 100644
  /**
   * task_work_cancel_match - cancel a pending work added by task_work_add()
 diff --git a/mm/list_lru.c b/mm/list_lru.c
-index ec48b5dadf51..bf95d73c9815 100644
+index dd29bcf8eb5f..8e0f3a54db37 100644
 --- a/mm/list_lru.c
 +++ b/mm/list_lru.c
-@@ -179,6 +179,7 @@ bool list_lru_add(struct list_lru *lru, struct list_head *item, int nid,
- 	unlock_list_lru(l, false);
- 	return false;
+@@ -147,6 +147,7 @@ lock_list_lru_of_memcg(struct list_lru *lru, int nid, struct mem_cgroup *memcg,
+ 
+ 	return l;
  }
 +EXPORT_SYMBOL_GPL(list_lru_add);
  
- bool list_lru_add_obj(struct list_lru *lru, struct list_head *item)
+ static inline void unlock_list_lru(struct list_lru_one *l, bool irq_off)
  {
-@@ -216,6 +217,7 @@ bool list_lru_del(struct list_lru *lru, struct list_head *item, int nid,
+@@ -217,6 +218,7 @@ bool list_lru_del(struct list_lru *lru, struct list_head *item, int nid,
  	unlock_list_lru(l, false);
  	return false;
  }
@@ -114,22 +114,22 @@ index ec48b5dadf51..bf95d73c9815 100644
  bool list_lru_del_obj(struct list_lru *lru, struct list_head *item)
  {
 diff --git a/mm/memory.c b/mm/memory.c
-index b59ae7ce42eb..4fbc7ccc265e 100644
+index ea6568571131..612f5dc6d1f2 100644
 --- a/mm/memory.c
 +++ b/mm/memory.c
-@@ -2170,6 +2170,7 @@ void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,
- 	zap_page_range_single_batched(&tlb, vma, address, size, details);
+@@ -2231,6 +2231,7 @@ void zap_vma_range(struct vm_area_struct *vma, unsigned long address,
+ 	zap_vma_range_batched(&tlb, vma, address, size, NULL);
  	tlb_finish_mmu(&tlb);
  }
-+EXPORT_SYMBOL_GPL(zap_page_range_single);
++EXPORT_SYMBOL_GPL(zap_vma_range);
  
  /**
-  * zap_vma_ptes - remove ptes mapping the vma
+  * zap_special_vma_range - zap all page table entries in a special vma range
 diff --git a/mm/mmap_lock.c b/mm/mmap_lock.c
-index 42e3dde73e74..06e74720332b 100644
+index 898c2ef1e958..c8ad31e9d746 100644
 --- a/mm/mmap_lock.c
 +++ b/mm/mmap_lock.c
-@@ -359,6 +359,7 @@ struct vm_area_struct *lock_next_vma(struct mm_struct *mm,
+@@ -431,6 +431,7 @@ struct vm_area_struct *lock_next_vma(struct mm_struct *mm,
  
  	return vma;
  }
@@ -138,10 +138,10 @@ index 42e3dde73e74..06e74720332b 100644
  
  #ifdef CONFIG_LOCK_MM_AND_FIND_VMA
 diff --git a/security/security.c b/security/security.c
-index 4d3c03a4524c..881c9322c39b 100644
+index 4e999f023651..d53d9d8113ad 100644
 --- a/security/security.c
 +++ b/security/security.c
-@@ -1035,6 +1035,7 @@ int security_binder_set_context_mgr(const struct cred *mgr)
+@@ -514,6 +514,7 @@ int security_binder_set_context_mgr(const struct cred *mgr)
  {
  	return call_int_hook(binder_set_context_mgr, mgr);
  }
@@ -149,7 +149,7 @@ index 4d3c03a4524c..881c9322c39b 100644
  
  /**
   * security_binder_transaction() - Check if a binder transaction is allowed
-@@ -1050,6 +1051,7 @@ int security_binder_transaction(const struct cred *from,
+@@ -529,6 +530,7 @@ int security_binder_transaction(const struct cred *from,
  {
  	return call_int_hook(binder_transaction, from, to);
  }
@@ -157,7 +157,7 @@ index 4d3c03a4524c..881c9322c39b 100644
  
  /**
   * security_binder_transfer_binder() - Check if a binder transfer is allowed
-@@ -1065,6 +1067,7 @@ int security_binder_transfer_binder(const struct cred *from,
+@@ -544,6 +546,7 @@ int security_binder_transfer_binder(const struct cred *from,
  {
  	return call_int_hook(binder_transfer_binder, from, to);
  }
@@ -165,7 +165,7 @@ index 4d3c03a4524c..881c9322c39b 100644
  
  /**
   * security_binder_transfer_file() - Check if a binder file xfer is allowed
-@@ -1081,6 +1084,7 @@ int security_binder_transfer_file(const struct cred *from,
+@@ -560,6 +563,7 @@ int security_binder_transfer_file(const struct cred *from,
  {
  	return call_int_hook(binder_transfer_file, from, to, file);
  }
@@ -174,5 +174,5 @@ index 4d3c03a4524c..881c9322c39b 100644
  /**
   * security_ptrace_access_check() - Check if tracing is allowed
 -- 
-2.51.0
+2.53.0
 
