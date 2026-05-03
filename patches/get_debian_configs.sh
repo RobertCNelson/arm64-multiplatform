@@ -10,8 +10,8 @@
 abi="7.0"
 kernel="7.0.3-1"
 #
-abi="7.0"
-kernel="7.0.1-1~exp1"
+#abi="7.0"
+#kernel="7.0.1-1~exp1"
 #
 #abi="6.19"
 #kernel="6.19~rc8-1~exp1"
