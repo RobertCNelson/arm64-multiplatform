@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 6.6.133 Kernel Configuration
+# Linux/arm64 6.6.137 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 13.4.0"
 CONFIG_CC_IS_GCC=y
@@ -1584,10 +1584,8 @@ CONFIG_TIPC_MEDIA_UDP=y
 CONFIG_TIPC_CRYPTO=y
 CONFIG_TIPC_DIAG=m
 CONFIG_ATM=m
-CONFIG_ATM_CLIP=m
-# CONFIG_ATM_CLIP_NO_ICMP is not set
-CONFIG_ATM_LANE=m
-CONFIG_ATM_MPOA=m
+# CONFIG_ATM_CLIP is not set
+# CONFIG_ATM_LANE is not set
 CONFIG_ATM_BR2684=m
 # CONFIG_ATM_BR2684_IPFILTER is not set
 CONFIG_L2TP=m
@@ -1788,27 +1786,7 @@ CONFIG_NET_DROP_MONITOR=m
 # end of Network testing
 # end of Networking options
 
-CONFIG_HAMRADIO=y
-
-#
-# Packet Radio protocols
-#
-CONFIG_AX25=m
-CONFIG_AX25_DAMA_SLAVE=y
-CONFIG_NETROM=m
-CONFIG_ROSE=m
-
-#
-# AX.25 network device drivers
-#
-CONFIG_MKISS=m
-CONFIG_6PACK=m
-CONFIG_BPQETHER=m
-CONFIG_BAYCOM_SER_FDX=m
-CONFIG_BAYCOM_SER_HDX=m
-CONFIG_YAM=m
-# end of AX.25 network device drivers
-
+# CONFIG_HAMRADIO is not set
 CONFIG_CAN=m
 CONFIG_CAN_RAW=m
 CONFIG_CAN_BCM=m
@@ -2855,7 +2833,7 @@ CONFIG_NET_VRF=m
 # CONFIG_MHI_NET is not set
 # CONFIG_ARCNET is not set
 CONFIG_ATM_DRIVERS=y
-CONFIG_ATM_DUMMY=m
+# CONFIG_ATM_DUMMY is not set
 # CONFIG_ATM_TCP is not set
 # CONFIG_ATM_LANAI is not set
 # CONFIG_ATM_ENI is not set
@@ -2876,8 +2854,7 @@ CONFIG_NET_VENDOR_AGERE=y
 # CONFIG_ET131X is not set
 CONFIG_NET_VENDOR_ALACRITECH=y
 # CONFIG_SLICOSS is not set
-CONFIG_NET_VENDOR_ALTEON=y
-# CONFIG_ACENIC is not set
+# CONFIG_NET_VENDOR_ALTEON is not set
 # CONFIG_ALTERA_TSE is not set
 CONFIG_NET_VENDOR_AMAZON=y
 # CONFIG_ENA_ETHERNET is not set
