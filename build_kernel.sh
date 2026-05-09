@@ -100,7 +100,7 @@ make_pkg () {
 	cd "${DIR}/KERNEL" || exit
 
 	deployfile="-${pkg}.tar.gz"
-	tar_options="--create --gzip --file"
+	tar_options="--gzip"
 
 	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
 		rm -rf "${DIR}/deploy/${KERNEL_UTS}${deployfile}" || true
@@ -125,7 +125,7 @@ make_pkg () {
 
 	echo "Compressing ${KERNEL_UTS}${deployfile}..."
 	cd "${DIR}/deploy/tmp" || true
-	tar ${tar_options} "../${KERNEL_UTS}${deployfile}" ./*
+	tar ${tar_options} -cf "../${KERNEL_UTS}${deployfile}" ./*
 
 	cd "${DIR}/" || exit
 	rm -rf "${DIR}/deploy/tmp" || true
