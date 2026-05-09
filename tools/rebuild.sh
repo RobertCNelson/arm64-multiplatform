@@ -99,8 +99,8 @@ make_kernel () {
 make_pkg () {
 	cd "${DIR}/KERNEL" || exit
 
-	deployfile="-${pkg}.tar.gz"
-	tar_options="--gzip"
+	deployfile="-${pkg}.tar.zst"
+	tar_options="--use-compress-program='zstd -6'"
 
 	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
 		rm -rf "${DIR}/deploy/${KERNEL_UTS}${deployfile}" || true
