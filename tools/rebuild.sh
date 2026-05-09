@@ -100,7 +100,6 @@ make_pkg () {
 	cd "${DIR}/KERNEL" || exit
 
 	deployfile="-${pkg}.tar.zst"
-	tar_options="--use-compress-program='zstd -6'"
 
 	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
 		rm -rf "${DIR}/deploy/${KERNEL_UTS}${deployfile}" || true
@@ -125,7 +124,7 @@ make_pkg () {
 
 	echo "Compressing ${KERNEL_UTS}${deployfile}..."
 	cd "${DIR}/deploy/tmp" || true
-	tar ${tar_options} -cf "../${KERNEL_UTS}${deployfile}" ./*
+	tar --use-compress-program='zstd -6' -cf "../${KERNEL_UTS}${deployfile}" ./*
 
 	cd "${DIR}/" || exit
 	rm -rf "${DIR}/deploy/tmp" || true
