@@ -14,7 +14,7 @@ before_script:
   - df -h /dev/shm
   - cd /opt/linux-src/ ; git pull || true ; cd -
   - echo "ccache: $(ccache --print-version)"
-  - echo "$(git --version)
+  - echo "$(git --version)"
   - git config --global user.email "$GITLAB_USER_EMAIL"
   - git config --global user.name "$GITLAB_USER_NAME"
   - . version.sh && echo $BRANCH
