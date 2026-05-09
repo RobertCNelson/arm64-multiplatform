@@ -534,7 +534,6 @@ drivers () {
 
 	dir 'drivers/davinci-mcasp'
 	dir 'drivers/ite'
-	dir 'drivers/pcie'
 	dir 'drivers/mspm0'
 
 	dir 'external/android'
