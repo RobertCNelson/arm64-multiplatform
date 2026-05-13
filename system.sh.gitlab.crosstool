@@ -21,7 +21,6 @@ fi
 #CC=<enter full path>/bin/arm-none-eabi-
 #CC=<enter full path>/bin/arm-linux-gnueabi-
 #CC=<enter full path>/bin/arm-linux-gnueabihf-
-CC=aarch64-linux-gnu-
 
 ###OPTIONAL:
 
