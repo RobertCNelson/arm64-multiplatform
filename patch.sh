@@ -235,7 +235,7 @@ regenerate_arm64_dtbo_list () {
 }
 
 beagleboard_dtbs () {
-	branch="v7.1.x"
+	branch="v7.2.x"
 	https_repo="https://github.com/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -529,17 +529,17 @@ drivers () {
 	dir 'drivers/ite'
 	dir 'drivers/mspm0'
 
-	dir 'external/android'
+	#dir 'external/android'
 	dir 'external/cadence'
 	dir 'external/gasket'
 
 	#dir 'drivers/cpufreq'
-	dir 'drivers/drm/imagination'
-	dir 'drivers/drm/tidss'
+	#dir 'drivers/drm/imagination'
+	#dir 'drivers/drm/tidss'
 
-	echo "dir: drivers/power_sequencing_driver"
+	#echo "dir: drivers/power_sequencing_driver"
 	#b4 am https://lore.kernel.org/linux-pci/20260519-pwrseq-m2-bt-v3-0-b39dc2ae3966@oss.qualcomm.com/
-	${git} "${DIR}/patches/drivers/power_sequencing_driver/v3_20260519_manivannan_sadhasivam_fixes_improvements_for_the_pci_m_2_power_sequencing_driver.mbx"
+	#${git} "${DIR}/patches/drivers/power_sequencing_driver/v3_20260519_manivannan_sadhasivam_fixes_improvements_for_the_pci_m_2_power_sequencing_driver.mbx"
 
 #exit 2
 }

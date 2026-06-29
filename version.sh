@@ -63,12 +63,12 @@ WIRELESS_REGDB="2026-05-30"
 linux_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git"
 linux_stable_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git"
 #
-KERNEL_REL=7.1
-KERNEL_TAG=${KERNEL_REL}.1
+KERNEL_REL=7.2
+KERNEL_TAG=${KERNEL_REL}-rc1
 #https://mirrors.edge.kernel.org/pub/linux/kernel/projects/rt/x.y/
 kernel_rt=".X-rtY"
 #Kernel Build
-BUILD=${build_prefix}10
+BUILD=${build_prefix}0.1
 
 #git branch
 BRANCH="${branch_prefix}${KERNEL_REL}${branch_postfix}"
