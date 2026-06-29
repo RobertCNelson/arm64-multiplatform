@@ -494,14 +494,15 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="rpi-6.19.y"
+	backport_tag="rpi-7.0.y"
 
-	subsystem="edt-ft5x06"
+	subsystem="rpi-backports"
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
 		pre_rpibackports
 
 		cp -v ~/linux-rpi/drivers/input/touchscreen/edt-ft5x06.c ./drivers/input/touchscreen/
+		cp -v ~/linux-rpi/drivers/regulator/rpi-panel-v2-regulator.c ./drivers/regulator/
 
 		post_rpibackports
 	else
@@ -540,7 +541,7 @@ drivers () {
 }
 
 ###
-#backports
+backports
 drivers
 cc33xx_drivers
 
