@@ -85,6 +85,13 @@ make_deb () {
 		echo "make -j4 ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" dtbs_check"
 		echo "-----------------------------"
 		make -j4 ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" dtbs_check
+		echo "-----------------------------"
+
+		echo "-----------------------------"
+		echo "make ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" dt_style_selftest"
+		echo "-----------------------------"
+		make ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" dt_style_selftest
+		echo "-----------------------------"
 	fi
 
 	cd "${DIR}/" || exit
