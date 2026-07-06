@@ -88,9 +88,13 @@ external_git () {
 }
 
 mainline_patches () {
-	exit 2
-	dir 'drivers/drm/tidss'
-	exit 2
+	${git} "${DIR}/patches/mainline/tidss/0001-tidss-pre-revert.patch"
+
+	echo "dir: mainline/v3_20260529_drm_beagley_ai"
+	#b4 am https://lore.kernel.org/all/20260529-beagley-ai-display-v3-0-7fefdc5d1adf@ideasonboard.com/
+	${git} "${DIR}/patches/mainline/v3_20260529_drm_beagley_ai/v3_20260529_tomi_valkeinen_drm_tidss_add_beagley_ai_display_support_and_some_more.mbx"
+
+	${git} "${DIR}/patches/mainline/tidss/0002-tidss-post-revert.patch"
 }
 
 rt_cleanup () {
@@ -424,7 +428,7 @@ local_patch () {
 }
 
 #external_git
-#mainline_patches
+mainline_patches
 rt
 wireless_regdb
 beagleboard_dtbs

@@ -1,0 +1,2670 @@
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 1/15] dt-bindings: display: ti: Move ti,am62l-dss
+ binding to a new binding file
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:31 +0300
+Message-Id: <20260529-beagley-ai-display-v3-1-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+We currently have two binding files for different TI K3 DSS versions:
+ti,j721e-dss.yaml which contains bindings for the "full" DSS version,
+with four planes and outputs, and ti,am65x-dss.yaml which used to
+contain bindings for the "lite" DSS version, with two planes and
+outputs.
+
+ti,am62l-dss binding was added recently to the ti,am65x-dss.yaml file,
+which only has a single plane and a single output. To keep with the
+above "binding file per DSS model" style, and to simplify the
+ti,am65x-dss.yaml file, let's move the ti,am62l-dss to a separate, new
+file.
+
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ .../bindings/display/ti/ti,am62l-dss.yaml          | 136 +++++++++++++++++++++
+ .../bindings/display/ti/ti,am65x-dss.yaml          |  94 +++-----------
+ MAINTAINERS                                        |   1 +
+ 3 files changed, 156 insertions(+), 75 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/display/ti/ti,am62l-dss.yaml b/Documentation/devicetree/bindings/display/ti/ti,am62l-dss.yaml
+new file mode 100644
+index 000000000000..ce6185dca18d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/display/ti/ti,am62l-dss.yaml
+@@ -0,0 +1,136 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++# Copyright 2026 Texas Instruments Incorporated
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/display/ti/ti,am62l-dss.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Texas Instruments AM62L Display Subsystem
++
++maintainers:
++  - Tomi Valkeinen <tomi.valkeinen@ti.com>
++
++description: |
++  The AM62L display subsystem is a cut-down version of the TI Keystone
++  Display SubSystem. It has a single output port which supports DPI
++  format and a single video "lite plane" which does not support scaling.
++  The output port is routed to the SoC boundary via the DPI interface,
++  and the same DPI signals are also routed internally to the DSI Tx
++  controller present within the SoC. Due to clocking limitations only
++  one of the interfaces (DSI or DPI) can be used at a time.
++
++properties:
++  compatible:
++    const: ti,am62l-dss
++
++  reg:
++    description:
++      Addresses to each DSS memory region described in the SoC's TRM.
++    items:
++      - description: common DSS register area
++      - description: VIDL1 light video plane
++      - description: OVR1 overlay manager for vp1
++      - description: VP1 video port 1
++      - description: common1 DSS register area
++
++  reg-names:
++    items:
++      - const: common
++      - const: vidl1
++      - const: ovr1
++      - const: vp1
++      - const: common1
++
++  clocks:
++    items:
++      - description: fck DSS functional clock
++      - description: vp1 Video Port 1 pixel clock
++
++  clock-names:
++    items:
++      - const: fck
++      - const: vp1
++
++  assigned-clocks:
++    minItems: 1
++    maxItems: 2
++
++  assigned-clock-parents:
++    minItems: 1
++    maxItems: 2
++
++  interrupts:
++    maxItems: 1
++
++  power-domains:
++    maxItems: 1
++    description: phandle to the associated power domain
++
++  dma-coherent: true
++
++  ports:
++    $ref: /schemas/graph.yaml#/properties/ports
++
++    properties:
++      port@0:
++        $ref: /schemas/graph.yaml#/properties/port
++        description:
++          The DSS DPI output port node from video port 1, which may be
++          connected to the external DPI pins or to the internal DSI Tx
++          controller.
++
++    required:
++      - port@0
++
++  max-memory-bandwidth:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description:
++      Input memory (from main memory to dispc) bandwidth limit in
++      bytes per second
++
++required:
++  - compatible
++  - reg
++  - reg-names
++  - clocks
++  - clock-names
++  - interrupts
++  - ports
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++
++    bus {
++        #address-cells = <2>;
++        #size-cells = <2>;
++
++        dss: dss@30200000 {
++            compatible = "ti,am62l-dss";
++            reg = <0x00 0x30200000 0x00 0x1000>, /* common */
++                  <0x00 0x30202000 0x00 0x1000>, /* vidl1 */
++                  <0x00 0x30207000 0x00 0x1000>, /* ovr1 */
++                  <0x00 0x3020a000 0x00 0x1000>, /* vp1 */
++                  <0x00 0x30201000 0x00 0x1000>; /* common1 */
++            reg-names = "common", "vidl1", "ovr1", "vp1", "common1";
++            power-domains = <&scmi_pds 39>;
++            clocks = <&scmi_clk 162>,
++                     <&scmi_clk 161>;
++            clock-names = "fck", "vp1";
++            interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
++
++            ports {
++                #address-cells = <1>;
++                #size-cells = <0>;
++                port@0 {
++                    reg = <0>;
++                    dpi0_out: endpoint {
++                        remote-endpoint = <&dsi_in>;
++                    };
++                };
++            };
++        };
++    };
+diff --git a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+index 49a007cbcd3a..75d9640398f0 100644
+--- a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
++++ b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+@@ -18,68 +18,45 @@ description: |
+   internally routed to 2 OLDI TXes. The second video port supports DPI
+   format. The first plane is full video plane with all features and the
+   second is a "lite plane" without scaling support.
+-  The AM62L display subsystem has a single output port which supports DPI
+-  format but it only supports single video "lite plane" which does not support
+-  scaling. The output port is routed to SoC boundary via DPI interface and same
+-  DPI signals are also routed internally to DSI Tx controller present within the
+-  SoC. Due to clocking limitations only one of the interface i.e. either DSI or
+-  DPI can be used at once.
+ 
+ properties:
+   compatible:
+     enum:
+       - ti,am625-dss
+       - ti,am62a7-dss
+-      - ti,am62l-dss
+       - ti,am65x-dss
+ 
+   reg:
+     description:
+       Addresses to each DSS memory region described in the SoC's TRM.
+-    oneOf:
+-      - items:
+-          - description: common DSS register area
+-          - description: VIDL1 light video plane
+-          - description: VID video plane
+-          - description: OVR1 overlay manager for vp1
+-          - description: OVR2 overlay manager for vp2
+-          - description: VP1 video port 1
+-          - description: VP2 video port 2
+-          - description: common1 DSS register area
+-      - items:
+-          - description: common DSS register area
+-          - description: VIDL1 light video plane
+-          - description: OVR1 overlay manager for vp1
+-          - description: VP1 video port 1
+-          - description: common1 DSS register area
++    items:
++      - description: common DSS register area
++      - description: VIDL1 light video plane
++      - description: VID video plane
++      - description: OVR1 overlay manager for vp1
++      - description: OVR2 overlay manager for vp2
++      - description: VP1 video port 1
++      - description: VP2 video port 2
++      - description: common1 DSS register area
+ 
+   reg-names:
+-    oneOf:
+-      - items:
+-          - const: common
+-          - const: vidl1
+-          - const: vid
+-          - const: ovr1
+-          - const: ovr2
+-          - const: vp1
+-          - const: vp2
+-          - const: common1
+-      - items:
+-          - const: common
+-          - const: vidl1
+-          - const: ovr1
+-          - const: vp1
+-          - const: common1
++    items:
++      - const: common
++      - const: vidl1
++      - const: vid
++      - const: ovr1
++      - const: ovr2
++      - const: vp1
++      - const: vp2
++      - const: common1
+ 
+   clocks:
+-    minItems: 2
+     items:
+       - description: fck DSS functional clock
+       - description: vp1 Video Port 1 pixel clock
+       - description: vp2 Video Port 2 pixel clock
+ 
+   clock-names:
+-    minItems: 2
+     items:
+       - const: fck
+       - const: vp1
+@@ -113,8 +90,6 @@ properties:
+           For AM625 DSS, the internal DPI output port node from video
+           port 1.
+           For AM62A7 DSS, the port is tied off inside the SoC.
+-          For AM62L DSS, the DSS DPI output port node from video port 1
+-          or DSI Tx controller node connected to video port 1.
+         properties:
+           endpoint@0:
+             $ref: /schemas/graph.yaml#/properties/endpoint
+@@ -189,38 +164,7 @@ allOf:
+       properties:
+         compatible:
+           contains:
+-            const: ti,am62l-dss
+-    then:
+-      properties:
+-        ports:
+-          properties:
+-            port@1: false
+-        reg:
+-          maxItems: 5
+-        reg-names:
+-          maxItems: 5
+-        clocks:
+-          maxItems: 2
+-        clock-names:
+-          maxItems: 2
+-    else:
+-      properties:
+-        reg:
+-          minItems: 8
+-        reg-names:
+-          minItems: 8
+-        clocks:
+-          minItems: 3
+-        clock-names:
+-          minItems: 3
+-
+-  - if:
+-      properties:
+-        compatible:
+-          contains:
+-            enum:
+-              - ti,am62l-dss
+-              - ti,am65x-dss
++            const: ti,am65x-dss
+     then:
+       properties:
+         oldi-transmitters: false
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b539be153f6a..1285572db151 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8791,6 +8791,7 @@ L:	dri-devel@lists.freedesktop.org
+ S:	Maintained
+ T:	git https://gitlab.freedesktop.org/drm/misc/kernel.git
+ F:	Documentation/devicetree/bindings/display/ti/ti,am625-oldi.yaml
++F:	Documentation/devicetree/bindings/display/ti/ti,am62l-dss.yaml
+ F:	Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+ F:	Documentation/devicetree/bindings/display/ti/ti,j721e-dss.yaml
+ F:	Documentation/devicetree/bindings/display/ti/ti,k2g-dss.yaml
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 2/15] dt-bindings: display: ti,am65x-dss: Simplify
+ binding
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:32 +0300
+Message-Id: <20260529-beagley-ai-display-v3-2-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+In principle the DT binding for the DSS IP should mainly cover the DSS
+IP. The current binding also covers the SoC integration topics outside
+the DSS, mainly via the endpoint related rules and descriptions.
+
+A more recent SoC, AM62P, has two instances of the DSS IP, and while
+both DSS IPs are identical, they are integrated slightly differently
+(e.g. which DSS output goes to an in-SoC DSI bridge, which goes to
+DPI pins, etc.).
+
+To make the bindings usable for both DSS instances, relax the binding
+slightly: remove the explicit endpoint rules, and generalize the
+descriptions.
+
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ .../bindings/display/ti/ti,am65x-dss.yaml          | 55 ++++++++--------------
+ 1 file changed, 20 insertions(+), 35 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+index 75d9640398f0..588d72d4ec0d 100644
+--- a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
++++ b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+@@ -12,12 +12,21 @@ maintainers:
+   - Tomi Valkeinen <tomi.valkeinen@ti.com>
+ 
+ description: |
+-  The AM625 and AM65x TI Keystone Display SubSystem has two output
+-  ports and two video planes. In AM65x DSS, the first video port
+-  supports 1 OLDI TX and in AM625 DSS, the first video port output is
+-  internally routed to 2 OLDI TXes. The second video port supports DPI
+-  format. The first plane is full video plane with all features and the
+-  second is a "lite plane" without scaling support.
++  The Display Subsystem (DSS) used in e.g. AM65x and AM625 SoCs has two output
++  video ports (VP) and two video planes. The integration varies from SoC to SoC,
++  affecting the routing of the video ports.
++
++  The first plane is full video plane with all features and the second is a
++  "lite plane" without scaling support.
++
++  On AM65x, the first VP has an integrated OLDI TX, thus the first output port
++  is OLDI output. The second VP is routed to external MIPI DPI pins.
++
++  On AM625, the first VP is connected to two OLDI TX instances, and the second
++  VP is routed to external MIPI DPI pins.
++
++  On AM62A7, the first VP is tied off in the SoC, and the second VP is routed to
++  external MIPI DPI pins.
+ 
+ properties:
+   compatible:
+@@ -85,34 +94,15 @@ properties:
+     properties:
+       port@0:
+         $ref: /schemas/graph.yaml#/properties/port
+-        description:
+-          For AM65x DSS, the OLDI output port node from video port 1.
+-          For AM625 DSS, the internal DPI output port node from video
+-          port 1.
+-          For AM62A7 DSS, the port is tied off inside the SoC.
+-        properties:
+-          endpoint@0:
+-            $ref: /schemas/graph.yaml#/properties/endpoint
+-            description:
+-              For AM625 DSS, VP Connection to OLDI0.
+-              For AM65X DSS, OLDI output from the SoC.
+-
+-          endpoint@1:
+-            $ref: /schemas/graph.yaml#/properties/endpoint
+-            description:
+-              For AM625 DSS, VP Connection to OLDI1.
+-
+-        anyOf:
+-          - required:
+-              - endpoint
+-          - required:
+-              - endpoint@0
+-              - endpoint@1
++        description: |
++          AM65x: OLDI output from video port 1
++          AM62A7: Not available, tied off inside the SoC
++          Other SoCs: Parallel video from video port 1
+ 
+       port@1:
+         $ref: /schemas/graph.yaml#/properties/port
+         description:
+-          The DSS DPI output port node from video port 2
++          Parallel video from video port 2
+ 
+   ti,am65x-oldi-io-ctrl:
+     $ref: /schemas/types.yaml#/definitions/phandle
+@@ -168,11 +158,6 @@ allOf:
+     then:
+       properties:
+         oldi-transmitters: false
+-        ports:
+-          properties:
+-            port@0:
+-              properties:
+-                endpoint@1: false
+ 
+ required:
+   - compatible
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 3/15] dt-bindings: display: ti,am625-oldi: Add optional
+ power-domain for OLDI
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:33 +0300
+Message-Id: <20260529-beagley-ai-display-v3-3-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+On some SoCs the OLDI blocks belong to the same power-domain as the main
+DSS block, but on some more recent SoCs the OLDI blocks have a
+controllable power-domain.
+
+Add the power-domain to the DT binding.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+---
+ Documentation/devicetree/bindings/display/ti/ti,am625-oldi.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/display/ti/ti,am625-oldi.yaml b/Documentation/devicetree/bindings/display/ti/ti,am625-oldi.yaml
+index 8203ec5e5bb3..5dbf1f76dd3f 100644
+--- a/Documentation/devicetree/bindings/display/ti/ti,am625-oldi.yaml
++++ b/Documentation/devicetree/bindings/display/ti/ti,am625-oldi.yaml
+@@ -29,6 +29,9 @@ properties:
+   clock-names:
+     const: serial
+ 
++  power-domains:
++    maxItems: 1
++
+   ti,companion-oldi:
+     $ref: /schemas/types.yaml#/definitions/phandle
+     description:
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 4/15] dt-bindings: display: ti,am65x-dss: Add
+ ti,dpi-io-ctrl
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:34 +0300
+Message-Id: <20260529-beagley-ai-display-v3-4-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+The DPI output pipeline in K3 SoCs contains the display subsystem (DSS)
+which produces the in-SoC parallel video signal, and a DPI block which
+adjusts the signal to the external MIPI DPI output.
+
+The DSS IP has registers to configure whether the data and sync signals
+are driven on rising or falling clock edge, and on some SoCs these are
+automatically conveyed to the DPI block which needs that configuration
+to properly output the MIPI DPI signal.
+
+However, on some SoCs the DPI block configuration has to be done
+manually, using an extra register outside the DSS, DPI0_CLK_CTRL in
+MAIN_CTRL_MMR_CFG0 block, which controls the DPI block's behavior.
+
+Currently the DPI0_CLK_CTRL is never written, so it's always 0, meaning
+the data and sync are always driven on a rising clock edge regardless of
+the DSS configuration.
+
+Add 'ti,dpi-io-ctrl' property, which contains phandle to the
+MAIN_CTRL_MMR_CFG0 block and the offset to the DPI0_CLK_CTRL register,
+so that the DSS driver can configure the data and sync signals
+correctly.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ .../devicetree/bindings/display/ti/ti,am65x-dss.yaml          | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+index 588d72d4ec0d..902ae2122d86 100644
+--- a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
++++ b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+@@ -113,6 +113,17 @@ properties:
+       and OLDI_CLK_IO_CTRL registers. This property is needed for OLDI
+       interface to work.
+ 
++  ti,dpi-io-ctrl:
++    $ref: /schemas/types.yaml#/definitions/phandle-array
++    description:
++      phandle to a syscon device node containing the DPI0_CLK_CTRL register,
++      with the offset to DPI0_CLK_CTRL as an argument.
++    maxItems: 1
++    items:
++      items:
++        - description: phandle to the syscon node
++        - description: DPI0_CLK_CTRL register offset
++
+   max-memory-bandwidth:
+     $ref: /schemas/types.yaml#/definitions/uint32
+     description:
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 5/15] dt-bindings: display: ti,am65x-dss: Add AM62P DSS
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:35 +0300
+Message-Id: <20260529-beagley-ai-display-v3-5-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+TI's AM62P, J722S and AM67A SoCs contain same implementation of the
+display subsystem (DSS). There are two instances of the DSS (DSS0 and
+DSS1), each with two video ports (VP) and two video planes.
+Additionally the SoCs contain two OLDI TXes (OLDI0 and OLDI1), a MIPI
+DSI TX and a MIPI DPI output path.
+
+DSS0 supports:
+- VP0: OLDI0 in single-link mode, or OLDI0 and OLDI1 in dual-link or
+  clone mode.
+- VP1: DPI
+
+DSS1 supports:
+- VP0: OLDI1 in single-link mode, or DPI
+- VP1: DPI or DSI
+
+The DSI is only connected to VP1 of DSS1, but OLDI and DPI are shared
+between the DSS instances. Thus only a single VP can output to DPI, and
+a single VP can use an OLDI block. Note that in single-link
+configuration OLDI0 can be used by DSS0, and at the same time OLDI1 can
+be used by DSS1.
+
+The DSS IP itself is compatible with older SoCs. While we could use
+"ti,am625-dss" compatible string, we add a new one "ti,am62p-dss" to be
+on the safe side in case the driver needs to do something special for
+the dual-DSS case in the future.
+
+Original patch by Swamil Jain <s-jain1@ti.com>
+
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ .../bindings/display/ti/ti,am65x-dss.yaml          | 27 ++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+index 902ae2122d86..acb7ac635097 100644
+--- a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
++++ b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+@@ -28,11 +28,38 @@ description: |
+   On AM62A7, the first VP is tied off in the SoC, and the second VP is routed to
+   external MIPI DPI pins.
+ 
++  AM62P SoC contains two instances of the DSS:
++  On AM62P DSS0, the first VP is connected to two OLDI TX instances (the second
++  TX shared with DSS1), the second VP to external MIPI DPI pins (shared with
++  DSS1).
++  On AM62P DSS1, the first VP is connected either to the second OLDI TX, or
++  external MIPI DPI pins. The second VP is connected to either the external MIPI
++  DPI pins or a Cadence DSI TX.
++
++  An important note about OLDIs on AM62P:
++
++  There are two OLDI hardware blocks. Each OLDI has certain configuration that
++  has to be done before it can be used. The OLDI blocks get this configuration
++  directly from the DSS block, via DSS registers. However, as a single OLDI
++  block can be used either with DSS0 or DSS1, the source for the configuration
++  changes according to a mux. This mux is set according to the OLDI
++  configuration registers in DSS0. Thus the OLDI control paths change at
++  runtime, and it is not obvious how to structure this in the DT bindings.
++
++  The solution used here is that each DSS node contains the OLDI nodes that can
++  be used with that DSS. Thus the DSS0 node has two OLDI child nodes, OLDI0 and
++  OLDI1, and the DSS1 node has one OLDI child node, OLDI1, so three OLDI DT
++  nodes in total. The two OLDI1 nodes thus refer to the same piece of hardware,
++  and they cannot be used at the same time. The selection which OLDI nodes to
++  use are chosen in the board dts files, so assuming the dts files are correct,
++  no resource conflict can happen.
++
+ properties:
+   compatible:
+     enum:
+       - ti,am625-dss
+       - ti,am62a7-dss
++      - ti,am62p-dss
+       - ti,am65x-dss
+ 
+   reg:
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 6/15] drm/tidss: Remove extra pm_runtime_mark_last_busy
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:36 +0300
+Message-Id: <20260529-beagley-ai-display-v3-6-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+pm_runtime_put_autosuspend() calls pm_runtime_mark_last_busy(), so no
+need to call pm_runtime_mark_last_busy() explicitly in the driver.
+
+Tested-by: Swamil Jain <s-jain1@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Reviewed-by: Swamil Jain <s-jain1@ti.com>
+---
+ drivers/gpu/drm/tidss/tidss_drv.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_drv.c b/drivers/gpu/drm/tidss/tidss_drv.c
+index 1c8cc18bc53c..5cb3e746aeb3 100644
+--- a/drivers/gpu/drm/tidss/tidss_drv.c
++++ b/drivers/gpu/drm/tidss/tidss_drv.c
+@@ -42,8 +42,6 @@ void tidss_runtime_put(struct tidss_device *tidss)
+ {
+ 	int r;
+ 
+-	pm_runtime_mark_last_busy(tidss->dev);
+-
+ 	r = pm_runtime_put_autosuspend(tidss->dev);
+ 	WARN_ON(r < 0);
+ }
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 7/15] drm/tidss: oldi: Remove define for unused register
+ OLDI_LB_CTRL
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:37 +0300
+Message-Id: <20260529-beagley-ai-display-v3-7-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+OLDI_LB_CTRL define is not used, and doesn't seem to exist at least on
+some SoCs. Let's remove the define.
+
+Tested-by: Swamil Jain <s-jain1@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Reviewed-by: Swamil Jain <s-jain1@ti.com>
+---
+ drivers/gpu/drm/tidss/tidss_oldi.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.h b/drivers/gpu/drm/tidss/tidss_oldi.h
+index 8cd535c5ee65..a361e6dbfce3 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.h
++++ b/drivers/gpu/drm/tidss/tidss_oldi.h
+@@ -20,7 +20,6 @@ struct tidss_oldi;
+ 
+ /* Register offsets */
+ #define OLDI_PD_CTRL            0x100
+-#define OLDI_LB_CTRL            0x104
+ 
+ /* Power control bits */
+ #define OLDI_PWRDOWN_TX(n)	BIT(n)
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 8/15] drm/tidss: Add mechanism to detect DPI output
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:38 +0300
+Message-Id: <20260529-beagley-ai-display-v3-8-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+There are situations where the driver needs to know if the output is
+going to the DPI output or not. There is no trivial way to get this
+information, as there is no "DPI bridge". We can only find this out in
+reverse: check if the output is NOT DPI, and if that is negative, then
+it must be DPI.
+
+At the moment we have two non-DPI outputs: DSI and OLDI. DSI always has
+"ti,j721e-dsi" DSI bridge connected to the DSI, so we can use that for
+checking. OLDI doesn't have a compatible property, but we can check if
+the DT node has "oldi-transmitters" node as a parent, and the dss node
+itself as a grand-parent.
+
+If the output is not connected to either of the above, it must be DPI.
+
+Tested-by: Swamil Jain <s-jain1@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Reviewed-by: Swamil Jain <s-jain1@ti.com>
+---
+ drivers/gpu/drm/tidss/tidss_crtc.c  | 10 +++++--
+ drivers/gpu/drm/tidss/tidss_crtc.h  |  4 ++-
+ drivers/gpu/drm/tidss/tidss_dispc.c |  5 +++-
+ drivers/gpu/drm/tidss/tidss_dispc.h |  3 +-
+ drivers/gpu/drm/tidss/tidss_kms.c   | 55 ++++++++++++++++++++++++++++++++++++-
+ 5 files changed, 70 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_crtc.c b/drivers/gpu/drm/tidss/tidss_crtc.c
+index a31c21c5f855..dfdf61b01dcd 100644
+--- a/drivers/gpu/drm/tidss/tidss_crtc.c
++++ b/drivers/gpu/drm/tidss/tidss_crtc.c
+@@ -192,7 +192,8 @@ static void tidss_crtc_atomic_flush(struct drm_crtc *crtc,
+ 		return;
+ 
+ 	/* Write vp properties to HW if needed. */
+-	dispc_vp_setup(tidss->dispc, tcrtc->hw_videoport, crtc->state, false);
++	dispc_vp_setup(tidss->dispc, tcrtc->hw_videoport, crtc->state, false,
++		       tcrtc->dpi_output);
+ 
+ 	/* Update plane positions if needed. */
+ 	tidss_crtc_position_planes(tidss, crtc, old_crtc_state, false);
+@@ -235,7 +236,8 @@ static void tidss_crtc_atomic_enable(struct drm_crtc *crtc,
+ 	if (r != 0)
+ 		return;
+ 
+-	dispc_vp_setup(tidss->dispc, tcrtc->hw_videoport, crtc->state, true);
++	dispc_vp_setup(tidss->dispc, tcrtc->hw_videoport, crtc->state, true,
++		       tcrtc->dpi_output);
+ 	tidss_crtc_position_planes(tidss, crtc, old_state, true);
+ 
+ 	/* Turn vertical blanking interrupt reporting on. */
+@@ -417,7 +419,8 @@ static const struct drm_crtc_funcs tidss_crtc_funcs = {
+ 
+ struct tidss_crtc *tidss_crtc_create(struct tidss_device *tidss,
+ 				     u32 hw_videoport,
+-				     struct drm_plane *primary)
++				     struct drm_plane *primary,
++				     bool dpi_output)
+ {
+ 	struct tidss_crtc *tcrtc;
+ 	struct drm_crtc *crtc;
+@@ -430,6 +433,7 @@ struct tidss_crtc *tidss_crtc_create(struct tidss_device *tidss,
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	tcrtc->hw_videoport = hw_videoport;
++	tcrtc->dpi_output = dpi_output;
+ 	init_completion(&tcrtc->framedone_completion);
+ 
+ 	crtc =  &tcrtc->crtc;
+diff --git a/drivers/gpu/drm/tidss/tidss_crtc.h b/drivers/gpu/drm/tidss/tidss_crtc.h
+index 040d1205496b..65df220698f6 100644
+--- a/drivers/gpu/drm/tidss/tidss_crtc.h
++++ b/drivers/gpu/drm/tidss/tidss_crtc.h
+@@ -20,6 +20,7 @@ struct tidss_crtc {
+ 	struct drm_crtc crtc;
+ 
+ 	u32 hw_videoport;
++	bool dpi_output;
+ 
+ 	struct drm_pending_vblank_event *event;
+ 
+@@ -44,5 +45,6 @@ void tidss_crtc_error_irq(struct drm_crtc *crtc, u64 irqstatus);
+ 
+ struct tidss_crtc *tidss_crtc_create(struct tidss_device *tidss,
+ 				     u32 hw_videoport,
+-				     struct drm_plane *primary);
++				     struct drm_plane *primary,
++				     bool dpi_output);
+ #endif
+diff --git a/drivers/gpu/drm/tidss/tidss_dispc.c b/drivers/gpu/drm/tidss/tidss_dispc.c
+index 58d5eb033bdb..c21ac3f51720 100644
+--- a/drivers/gpu/drm/tidss/tidss_dispc.c
++++ b/drivers/gpu/drm/tidss/tidss_dispc.c
+@@ -448,6 +448,7 @@ static const u16 *dispc_common_regmap;
+ 
+ struct dss_vp_data {
+ 	u32 *gamma_table;
++	bool dpi_output;
+ };
+ 
+ struct dispc_device {
+@@ -2770,8 +2771,10 @@ static void dispc_vp_set_color_mgmt(struct dispc_device *dispc,
+ }
+ 
+ void dispc_vp_setup(struct dispc_device *dispc, u32 hw_videoport,
+-		    const struct drm_crtc_state *state, bool newmodeset)
++		    const struct drm_crtc_state *state, bool newmodeset,
++		    bool dpi_output)
+ {
++	dispc->vp_data[hw_videoport].dpi_output = dpi_output;
+ 	dispc_vp_set_default_color(dispc, hw_videoport, 0);
+ 	dispc_vp_set_color_mgmt(dispc, hw_videoport, state, newmodeset);
+ }
+diff --git a/drivers/gpu/drm/tidss/tidss_dispc.h b/drivers/gpu/drm/tidss/tidss_dispc.h
+index 739d211d0018..6f53d554259c 100644
+--- a/drivers/gpu/drm/tidss/tidss_dispc.h
++++ b/drivers/gpu/drm/tidss/tidss_dispc.h
+@@ -131,7 +131,8 @@ void dispc_vp_disable_clk(struct dispc_device *dispc, u32 hw_videoport);
+ int dispc_vp_set_clk_rate(struct dispc_device *dispc, u32 hw_videoport,
+ 			  unsigned long rate);
+ void dispc_vp_setup(struct dispc_device *dispc, u32 hw_videoport,
+-		    const struct drm_crtc_state *state, bool newmodeset);
++		    const struct drm_crtc_state *state, bool newmodeset,
++		    bool dpi_output);
+ 
+ int dispc_runtime_suspend(struct dispc_device *dispc);
+ int dispc_runtime_resume(struct dispc_device *dispc);
+diff --git a/drivers/gpu/drm/tidss/tidss_kms.c b/drivers/gpu/drm/tidss/tidss_kms.c
+index 8bb93194e5ac..bc8b10af9a48 100644
+--- a/drivers/gpu/drm/tidss/tidss_kms.c
++++ b/drivers/gpu/drm/tidss/tidss_kms.c
+@@ -122,6 +122,50 @@ static const struct drm_mode_config_funcs mode_config_funcs = {
+ 	.atomic_commit = drm_atomic_helper_commit,
+ };
+ 
++static const char * const tidss_internal_bridge_compatibles[] = {
++	"ti,j721e-dsi",
++};
++
++/*
++ * Detect whether the bridge is internal to the SoC or not. This is needed
++ * to find out whether we are using DPI output (thus no internal bridge).
++ * We detect this via two means:
++ * - If the bridge's of_node has a compatible, compare to known internal values.
++ * - If the bridge is a grand-child of DSS, and has "oldi-transmitters" parent.
++ */
++static bool tidss_is_bridge_internal(struct tidss_device *tidss,
++				     struct drm_bridge *bridge)
++{
++	struct device_node *parent, *grand_parent;
++	struct property *prop;
++	bool is_internal;
++
++	if (WARN_ON(!bridge->of_node))
++		return false;
++
++	prop = of_find_property(bridge->of_node, "compatible", NULL);
++	for (const char *cp = of_prop_next_string(prop, NULL); cp;
++	     cp = of_prop_next_string(prop, cp)) {
++		for (unsigned int i = 0;
++		     i < ARRAY_SIZE(tidss_internal_bridge_compatibles); ++i) {
++			if (strcmp(cp, tidss_internal_bridge_compatibles[i]) == 0)
++				return true;
++		}
++	}
++
++	parent = of_get_parent(bridge->of_node);
++	grand_parent = of_get_parent(parent);
++
++	is_internal = parent && grand_parent &&
++		      tidss->dev->of_node == grand_parent &&
++		      of_node_name_eq(parent, "oldi-transmitters");
++
++	of_node_put(grand_parent);
++	of_node_put(parent);
++
++	return is_internal;
++}
++
+ static int tidss_dispc_modeset_init(struct tidss_device *tidss)
+ {
+ 	struct device *dev = tidss->dev;
+@@ -133,6 +177,7 @@ static int tidss_dispc_modeset_init(struct tidss_device *tidss)
+ 		u32 hw_videoport;
+ 		struct drm_bridge *bridge;
+ 		u32 enc_type;
++		bool dpi_output;
+ 	};
+ 
+ 	const struct dispc_features *feat = tidss->feat;
+@@ -149,6 +194,7 @@ static int tidss_dispc_modeset_init(struct tidss_device *tidss)
+ 		struct drm_panel *panel;
+ 		struct drm_bridge *bridge;
+ 		u32 enc_type = DRM_MODE_ENCODER_NONE;
++		bool dpi_output;
+ 		int ret;
+ 
+ 		ret = drm_of_find_panel_or_bridge(dev->of_node, i, 0,
+@@ -160,6 +206,11 @@ static int tidss_dispc_modeset_init(struct tidss_device *tidss)
+ 			return dev_err_probe(dev, ret, "port %d probe failed\n", i);
+ 		}
+ 
++		if (bridge)
++			dpi_output = !tidss_is_bridge_internal(tidss, bridge);
++		else
++			dpi_output = true;
++
+ 		if (panel) {
+ 			u32 conn_type;
+ 
+@@ -199,6 +250,7 @@ static int tidss_dispc_modeset_init(struct tidss_device *tidss)
+ 		pipes[num_pipes].hw_videoport = i;
+ 		pipes[num_pipes].bridge = bridge;
+ 		pipes[num_pipes].enc_type = enc_type;
++		pipes[num_pipes].dpi_output = dpi_output;
+ 		num_pipes++;
+ 	}
+ 
+@@ -224,7 +276,8 @@ static int tidss_dispc_modeset_init(struct tidss_device *tidss)
+ 		tidss->planes[tidss->num_planes++] = &tplane->plane;
+ 
+ 		tcrtc = tidss_crtc_create(tidss, pipes[i].hw_videoport,
+-					  &tplane->plane);
++					  &tplane->plane,
++					  pipes[i].dpi_output);
+ 		if (IS_ERR(tcrtc)) {
+ 			dev_err(tidss->dev, "crtc create failed\n");
+ 			return PTR_ERR(tcrtc);
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 9/15] drm/tidss: Add external data and sync signal edge
+ configuration
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:39 +0300
+Message-Id: <20260529-beagley-ai-display-v3-9-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+The DPI output pipeline in K3 SoCs contains the display subsystem (DSS)
+which produces the in-SoC parallel video signal, and a DPI block which
+adjusts the signal to the external MIPI DPI output.
+
+The DSS IP has registers to configure whether the data and sync signals
+are driven on rising or falling clock edge, and on some SoCs these are
+automatically conveyed to the DPI block which needs that configuration
+to properly output the MIPI DPI signal.
+
+However, on some SoCs the DPI block configuration has to be done
+manually, using an extra register outside the DSS, DPI0_CLK_CTRL from
+MAIN_CTRL_MMR_CFG0 block, which controls the DPI block's behavior.
+
+Add the support to get the regmap to the register via syscon, and
+configure the bits before enabling the video output.
+
+Original patch from Louis Chauvet <louis.chauvet@bootlin.com>
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_dispc.c      | 25 +++++++++++++++++++++++++
+ drivers/gpu/drm/tidss/tidss_dispc_regs.h |  4 ++++
+ 2 files changed, 29 insertions(+)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_dispc.c b/drivers/gpu/drm/tidss/tidss_dispc.c
+index c21ac3f51720..08342a9a5e8c 100644
+--- a/drivers/gpu/drm/tidss/tidss_dispc.c
++++ b/drivers/gpu/drm/tidss/tidss_dispc.c
+@@ -467,6 +467,8 @@ struct dispc_device {
+ 	const struct dispc_features *feat;
+ 
+ 	struct clk *fclk;
++	struct regmap *syscon_dpi_io_ctrl;
++	unsigned int syscon_dpi_io_ctrl_offset;
+ 
+ 	bool is_enabled;
+ 
+@@ -1201,6 +1203,13 @@ void dispc_vp_prepare(struct dispc_device *dispc, u32 hw_videoport,
+ 				  mode->crtc_hdisplay - 1) |
+ 		       FIELD_PREP(DISPC_VP_SIZE_SCREEN_VDISPLAY_MASK,
+ 				  mode->crtc_vdisplay - 1));
++
++	if (dispc->vp_data[hw_videoport].dpi_output && dispc->syscon_dpi_io_ctrl) {
++		regmap_write(dispc->syscon_dpi_io_ctrl,
++			     dispc->syscon_dpi_io_ctrl_offset + 0x0,
++			     (!ipc ? DPI0_CLK_CTRL_DATA_CLK_INVDIS : 0) |
++			     (rf ? DPI0_CLK_CTRL_SYNC_CLK_INVDIS : 0));
++	}
+ }
+ 
+ void dispc_vp_enable(struct dispc_device *dispc, u32 hw_videoport)
+@@ -2989,6 +2998,22 @@ int dispc_init(struct tidss_device *tidss)
+ 
+ 	dispc_init_errata(dispc);
+ 
++	dispc->syscon_dpi_io_ctrl =
++		syscon_regmap_lookup_by_phandle_args(tidss->dev->of_node,
++						     "ti,dpi-io-ctrl", 1,
++						     &dispc->syscon_dpi_io_ctrl_offset);
++
++	if (IS_ERR(dispc->syscon_dpi_io_ctrl)) {
++		r = PTR_ERR(dispc->syscon_dpi_io_ctrl);
++
++		if (r == -ENOENT) {
++			dispc->syscon_dpi_io_ctrl = NULL;
++		} else {
++			return dev_err_probe(dispc->dev, r,
++					     "failed to get 'ti,dpi-io-ctrl'\n");
++		}
++	}
++
+ 	dispc->fourccs = devm_kcalloc(dev, ARRAY_SIZE(dispc_color_formats),
+ 				      sizeof(*dispc->fourccs), GFP_KERNEL);
+ 	if (!dispc->fourccs)
+diff --git a/drivers/gpu/drm/tidss/tidss_dispc_regs.h b/drivers/gpu/drm/tidss/tidss_dispc_regs.h
+index 382027dddce8..4cdde24d8372 100644
+--- a/drivers/gpu/drm/tidss/tidss_dispc_regs.h
++++ b/drivers/gpu/drm/tidss/tidss_dispc_regs.h
+@@ -333,4 +333,8 @@ enum oldi_mode_reg_val { SPWG_18 = 0, JEIDA_24 = 1, SPWG_24 = 2 };
+ 
+ #define AM65X_OLDI_PWRDN_TX		BIT(8)
+ 
++/* Bits in the MAIN_CTRL_MMR_CFG0_DPI0_CLK_CTRL register */
++#define DPI0_CLK_CTRL_DATA_CLK_INVDIS BIT(8)
++#define DPI0_CLK_CTRL_SYNC_CLK_INVDIS BIT(9)
++
+ #endif /* __TIDSS_DISPC_REGS_H */
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 10/15] drm/tidss: Add support for DPIENABLE bit
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:40 +0300
+Message-Id: <20260529-beagley-ai-display-v3-10-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Many (or even all?) K3 SoCs have DSS VP_CONTROL.DPIENABLE bit described
+in their documentation. This bit controls whether the DPI block is
+enabled, and is set to 1 by default (i.e. DPI is enabled at HW reset).
+
+However, in almost all SoCs the setting does not actually do anything,
+and at the moment the bit is not managed by the driver.
+
+The exception is AM62L, which does have DPIENABLE connected, and
+disabling the DPI block when it is not in use provides power savings.
+
+Let's add a new feature flag for this, 'has_vp_control_dpienable', and
+implement the support.  Disable DPIENABLE for all videoports at resume
+time, so that it is 0 by default. Specifically enable and disable it in
+dispc_vp_enable() and dispc_vp_disable() for DPI output.
+
+Tested-by: Swamil Jain <s-jain1@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Reviewed-by: Swamil Jain <s-jain1@ti.com>
+---
+ drivers/gpu/drm/tidss/tidss_dispc.c      | 23 +++++++++++++++++++++--
+ drivers/gpu/drm/tidss/tidss_dispc.h      |  2 ++
+ drivers/gpu/drm/tidss/tidss_dispc_regs.h |  1 +
+ 3 files changed, 24 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_dispc.c b/drivers/gpu/drm/tidss/tidss_dispc.c
+index 08342a9a5e8c..1b8d52f10673 100644
+--- a/drivers/gpu/drm/tidss/tidss_dispc.c
++++ b/drivers/gpu/drm/tidss/tidss_dispc.c
+@@ -442,6 +442,8 @@ const struct dispc_features dispc_am62l_feats = {
+ 	},
+ 
+ 	.vid_order = {0},
++
++	.has_vp_control_dpienable = true,
+ };
+ 
+ static const u16 *dispc_common_regmap;
+@@ -1210,6 +1212,11 @@ void dispc_vp_prepare(struct dispc_device *dispc, u32 hw_videoport,
+ 			     (!ipc ? DPI0_CLK_CTRL_DATA_CLK_INVDIS : 0) |
+ 			     (rf ? DPI0_CLK_CTRL_SYNC_CLK_INVDIS : 0));
+ 	}
++
++	if (dispc->feat->has_vp_control_dpienable &&
++	    dispc->vp_data[hw_videoport].dpi_output)
++		VP_REG_FLD_MOD(dispc, hw_videoport, DISPC_VP_CONTROL, 1,
++			       DISPC_VP_CONTROL_DPIENABLE_MASK);
+ }
+ 
+ void dispc_vp_enable(struct dispc_device *dispc, u32 hw_videoport)
+@@ -1226,6 +1233,11 @@ void dispc_vp_disable(struct dispc_device *dispc, u32 hw_videoport)
+ 
+ void dispc_vp_unprepare(struct dispc_device *dispc, u32 hw_videoport)
+ {
++	if (dispc->feat->has_vp_control_dpienable &&
++	    dispc->vp_data[hw_videoport].dpi_output)
++		VP_REG_FLD_MOD(dispc, hw_videoport, DISPC_VP_CONTROL, 0,
++			       DISPC_VP_CONTROL_DPIENABLE_MASK);
++
+ 	if (dispc->feat->vp_bus_type[hw_videoport] == DISPC_VP_OLDI_AM65X) {
+ 		dispc_vp_write(dispc, hw_videoport, DISPC_VP_DSS_OLDI_CFG, 0);
+ 
+@@ -2445,10 +2457,17 @@ static void dispc_vp_init(struct dispc_device *dispc)
+ 
+ 	dev_dbg(dispc->dev, "%s()\n", __func__);
+ 
+-	/* Enable the gamma Shadow bit-field for all VPs*/
+-	for (i = 0; i < dispc->feat->num_vps; i++)
++	for (i = 0; i < dispc->feat->num_vps; i++) {
++		/* Enable the gamma Shadow bit-field for all VPs*/
+ 		VP_REG_FLD_MOD(dispc, i, DISPC_VP_CONFIG, 1,
+ 			       DISPC_VP_CONFIG_GAMMAENABLE_MASK);
++
++		if (dispc->feat->has_vp_control_dpienable) {
++			/* Disable DPIENABLE for all VPs */
++			VP_REG_FLD_MOD(dispc, i, DISPC_VP_CONTROL, 0,
++				       DISPC_VP_CONTROL_DPIENABLE_MASK);
++		}
++	}
+ }
+ 
+ static void dispc_initial_config(struct dispc_device *dispc)
+diff --git a/drivers/gpu/drm/tidss/tidss_dispc.h b/drivers/gpu/drm/tidss/tidss_dispc.h
+index 6f53d554259c..0fbfb86adfbf 100644
+--- a/drivers/gpu/drm/tidss/tidss_dispc.h
++++ b/drivers/gpu/drm/tidss/tidss_dispc.h
+@@ -92,6 +92,8 @@ struct dispc_features {
+ 	u32 num_vids;
+ 	struct dispc_vid_info vid_info[TIDSS_MAX_PLANES];
+ 	u32 vid_order[TIDSS_MAX_PLANES];
++	/* The DSS has VP_CONTROL.DPIENABLE bit */
++	bool has_vp_control_dpienable;
+ };
+ 
+ extern const struct dispc_features dispc_k2g_feats;
+diff --git a/drivers/gpu/drm/tidss/tidss_dispc_regs.h b/drivers/gpu/drm/tidss/tidss_dispc_regs.h
+index 4cdde24d8372..4246c72efdd5 100644
+--- a/drivers/gpu/drm/tidss/tidss_dispc_regs.h
++++ b/drivers/gpu/drm/tidss/tidss_dispc_regs.h
+@@ -230,6 +230,7 @@ enum dispc_common_regs {
+ 
+ #define DISPC_VP_CONTROL			0x4
+ #define DISPC_VP_CONTROL_DATALINES_MASK			GENMASK(10, 8)
++#define DISPC_VP_CONTROL_DPIENABLE_MASK			GENMASK(6, 6)
+ #define DISPC_VP_CONTROL_GOBIT_MASK			GENMASK(5, 5)
+ #define DISPC_VP_CONTROL_ENABLE_MASK			GENMASK(0, 0)
+ 
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 11/15] drm/tidss: oldi: Fix OLDI signal polarities
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:41 +0300
+Message-Id: <20260529-beagley-ai-display-v3-11-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+OLDI has a few issues with how it handles the signal polarities:
+
+- It always sets OLDI_DEPOL, which means DE active low
+- It sets DRM_BUS_FLAG_DE_HIGH in struct drm_bridge_timings, i.e.
+  reverse to the OLDI_DEPOL
+- It sets DRM_BUS_FLAG_SYNC_SAMPLE_NEGEDGE in struct drm_bridge_timings,
+  but the TRM says "The DSS interface is clocked on the rising edge of
+  OLDI_FWD_P_CLK pixel clock", which I read as "OLDI samples on rising
+  edge".
+- But the defined drm_bridge_timings is not actually used anywhere, even
+  if it is set to bridge->timings, so the bus flags are just ignored.
+
+However, based on my testing, OLDI_DEPOL bit or the edge on which data
+and syncs are driven doesn't seem to affect the OLDI output. Possibly
+it's not as robust, but I did not see any effect with an oscilloscope.
+
+However, the code is still quite broken, so let's fix it:
+- Remove drm_bridge_timings
+- Set the correct input_bus_cfg.flags in tidss_oldi_atomic_check()
+- Set OLDI_DEPOL based on the DE bus flag
+
+Tested-by: Swamil Jain <s-jain1@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Reviewed-by: Swamil Jain <s-jain1@ti.com>
+---
+ drivers/gpu/drm/tidss/tidss_oldi.c | 38 ++++++++++++++++++++++++++++----------
+ 1 file changed, 28 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.c b/drivers/gpu/drm/tidss/tidss_oldi.c
+index 17c535bfa057..e925ddaa4fd6 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.c
++++ b/drivers/gpu/drm/tidss/tidss_oldi.c
+@@ -164,7 +164,8 @@ static void tidss_oldi_tx_power(struct tidss_oldi *oldi, bool enable)
+ 	regmap_update_bits(oldi->io_ctrl, OLDI_PD_CTRL, mask, enable ? 0 : mask);
+ }
+ 
+-static int tidss_oldi_config(struct tidss_oldi *oldi)
++static int tidss_oldi_config(struct tidss_oldi *oldi,
++			     struct drm_bridge_state *bridge_state)
+ {
+ 	const struct oldi_bus_format *bus_fmt = NULL;
+ 	u32 oldi_cfg = 0;
+@@ -183,7 +184,8 @@ static int tidss_oldi_config(struct tidss_oldi *oldi)
+ 			 "OLDI%u: DSS port width %d not supported\n",
+ 			 oldi->oldi_instance, bus_fmt->data_width);
+ 
+-	oldi_cfg |= OLDI_DEPOL;
++	if (bridge_state->input_bus_cfg.flags & DRM_BUS_FLAG_DE_LOW)
++		oldi_cfg |= OLDI_DEPOL; /* 1 = active low */
+ 
+ 	oldi_cfg = (oldi_cfg & (~OLDI_MAP)) | (bus_fmt->oldi_mode_reg_val << 1);
+ 
+@@ -220,6 +222,22 @@ static int tidss_oldi_config(struct tidss_oldi *oldi)
+ 	return ret;
+ }
+ 
++static int tidss_oldi_atomic_check(struct drm_bridge *bridge,
++				   struct drm_bridge_state *bridge_state,
++				   struct drm_crtc_state *crtc_state,
++				   struct drm_connector_state *conn_state)
++{
++	bridge_state->input_bus_cfg.flags &=
++		~(DRM_BUS_FLAG_PIXDATA_SAMPLE_NEGEDGE |
++		  DRM_BUS_FLAG_SYNC_SAMPLE_NEGEDGE);
++
++	bridge_state->input_bus_cfg.flags |=
++		DRM_BUS_FLAG_PIXDATA_SAMPLE_POSEDGE |
++		DRM_BUS_FLAG_SYNC_SAMPLE_POSEDGE;
++
++	return 0;
++}
++
+ static void tidss_oldi_atomic_pre_enable(struct drm_bridge *bridge,
+ 					 struct drm_atomic_state *state)
+ {
+@@ -228,6 +246,7 @@ static void tidss_oldi_atomic_pre_enable(struct drm_bridge *bridge,
+ 	struct drm_connector_state *conn_state;
+ 	struct drm_crtc_state *crtc_state;
+ 	struct drm_display_mode *mode;
++	struct drm_bridge_state *bridge_state;
+ 
+ 	if (oldi->link_type == OLDI_MODE_SECONDARY_CLONE_SINGLE_LINK)
+ 		return;
+@@ -245,10 +264,14 @@ static void tidss_oldi_atomic_pre_enable(struct drm_bridge *bridge,
+ 	if (WARN_ON(!crtc_state))
+ 		return;
+ 
++	bridge_state = drm_atomic_get_new_bridge_state(state, bridge);
++	if (WARN_ON(!bridge_state))
++		return;
++
+ 	mode = &crtc_state->adjusted_mode;
+ 
+ 	/* Configure the OLDI params*/
+-	tidss_oldi_config(oldi);
++	tidss_oldi_config(oldi, bridge_state);
+ 
+ 	/* Set the OLDI serial clock (7 times the pixel clock) */
+ 	tidss_oldi_set_serial_clk(oldi, mode->clock * 7 * 1000);
+@@ -329,7 +352,8 @@ tidss_oldi_mode_valid(struct drm_bridge *bridge,
+ }
+ 
+ static const struct drm_bridge_funcs tidss_oldi_bridge_funcs = {
+-	.attach	= tidss_oldi_bridge_attach,
++	.attach = tidss_oldi_bridge_attach,
++	.atomic_check = tidss_oldi_atomic_check,
+ 	.atomic_pre_enable = tidss_oldi_atomic_pre_enable,
+ 	.atomic_post_disable = tidss_oldi_atomic_post_disable,
+ 	.atomic_get_input_bus_fmts = tidss_oldi_atomic_get_input_bus_fmts,
+@@ -440,11 +464,6 @@ static int get_parent_dss_vp(struct device_node *oldi_tx, u32 *parent_vp)
+ 	return -ENODEV;
+ }
+ 
+-static const struct drm_bridge_timings default_tidss_oldi_timings = {
+-	.input_bus_flags = DRM_BUS_FLAG_SYNC_SAMPLE_NEGEDGE
+-			 | DRM_BUS_FLAG_DE_HIGH,
+-};
+-
+ void tidss_oldi_deinit(struct tidss_device *tidss)
+ {
+ 	for (int i = 0; i < tidss->num_oldis; i++) {
+@@ -598,7 +617,6 @@ int tidss_oldi_init(struct tidss_device *tidss)
+ 		/* Register the bridge. */
+ 		oldi->bridge.of_node = child;
+ 		oldi->bridge.driver_private = oldi;
+-		oldi->bridge.timings = &default_tidss_oldi_timings;
+ 
+ 		tidss->oldis[tidss->num_oldis++] = oldi;
+ 		tidss->is_ext_vp_clk[oldi->parent_vp] = true;
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 12/15] drm/tidss: oldi: Convert OLDI to an aux driver
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:42 +0300
+Message-Id: <20260529-beagley-ai-display-v3-12-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Currently in the DT, OLDI is defined in child nodes under the DSS node.
+The tidss driver will parse the DT, and create DRM bridges for the
+OLDIs, and there are no Linux devices for the OLDIs.
+
+On new SoCs the OLDIs have their own power-domains which we need to
+control. The cleanest way to do this in DT is to add the PDs to the OLDI
+nodes. But this means the OLDI bridge code would somehow have to
+manually manage the PDs, the PDs not being under a Linux device, and
+there isn't much support for that kind of setup in the PD framework.
+
+A solution to this is to convert the OLDI to an auxiliary device/driver,
+created by tidss:
+
+- At module load time the tidss module will, in addition to registering
+  the tidss DRM driver, register an oldi auxiliary driver.
+- At probe time tidss will parse the DT, and create an auxiliary device
+  for each OLDI.
+
+The aux driver will probe, and as its of_node points to the OLDI node
+containing the PD, the driver framework will take care of enabling and
+disabling the PD when OLDI is used ("used" as in pm_runtime context).
+
+Tested-by: Swamil Jain <s-jain1@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Reviewed-by: Swamil Jain <s-jain1@ti.com>
+---
+ drivers/gpu/drm/tidss/tidss_drv.c  |  51 +++-
+ drivers/gpu/drm/tidss/tidss_drv.h  |   5 +-
+ drivers/gpu/drm/tidss/tidss_oldi.c | 502 ++++++++++++++++++++++++++-----------
+ drivers/gpu/drm/tidss/tidss_oldi.h |   7 +-
+ 4 files changed, 405 insertions(+), 160 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_drv.c b/drivers/gpu/drm/tidss/tidss_drv.c
+index 5cb3e746aeb3..aef945101be4 100644
+--- a/drivers/gpu/drm/tidss/tidss_drv.c
++++ b/drivers/gpu/drm/tidss/tidss_drv.c
+@@ -133,10 +133,6 @@ static int tidss_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	ret = tidss_oldi_init(tidss);
+-	if (ret)
+-		return dev_err_probe(dev, ret, "failed to init OLDI\n");
+-
+ 	pm_runtime_enable(dev);
+ 
+ 	pm_runtime_set_autosuspend_delay(dev, 1000);
+@@ -147,24 +143,30 @@ static int tidss_probe(struct platform_device *pdev)
+ 	dispc_runtime_resume(tidss->dispc);
+ #endif
+ 
++	ret = tidss_oldi_create_devices(tidss);
++	if (ret) {
++		dev_err_probe(dev, ret, "failed to create OLDI devices\n");
++		goto err_runtime_suspend;
++	}
++
+ 	ret = tidss_modeset_init(tidss);
+ 	if (ret < 0) {
+ 		if (ret != -EPROBE_DEFER)
+ 			dev_err(dev, "failed to init DRM/KMS (%d)\n", ret);
+-		goto err_runtime_suspend;
++		goto err_destroy_oldis;
+ 	}
+ 
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0) {
+ 		ret = irq;
+-		goto err_runtime_suspend;
++		goto err_destroy_oldis;
+ 	}
+ 	tidss->irq = irq;
+ 
+ 	ret = tidss_irq_install(ddev, irq);
+ 	if (ret) {
+ 		dev_err(dev, "tidss_irq_install failed: %d\n", ret);
+-		goto err_runtime_suspend;
++		goto err_destroy_oldis;
+ 	}
+ 
+ 	drm_kms_helper_poll_init(ddev);
+@@ -194,6 +196,9 @@ static int tidss_probe(struct platform_device *pdev)
+ err_irq_uninstall:
+ 	tidss_irq_uninstall(ddev);
+ 
++err_destroy_oldis:
++	tidss_oldi_destroy_devices(tidss);
++
+ err_runtime_suspend:
+ #ifndef CONFIG_PM
+ 	dispc_runtime_suspend(tidss->dispc);
+@@ -201,8 +206,6 @@ static int tidss_probe(struct platform_device *pdev)
+ 	pm_runtime_dont_use_autosuspend(dev);
+ 	pm_runtime_disable(dev);
+ 
+-	tidss_oldi_deinit(tidss);
+-
+ 	return ret;
+ }
+ 
+@@ -218,6 +221,8 @@ static void tidss_remove(struct platform_device *pdev)
+ 
+ 	tidss_irq_uninstall(ddev);
+ 
++	tidss_oldi_destroy_devices(tidss);
++
+ #ifndef CONFIG_PM
+ 	/* If we don't have PM, we need to call suspend manually */
+ 	dispc_runtime_suspend(tidss->dispc);
+@@ -225,8 +230,6 @@ static void tidss_remove(struct platform_device *pdev)
+ 	pm_runtime_dont_use_autosuspend(dev);
+ 	pm_runtime_disable(dev);
+ 
+-	tidss_oldi_deinit(tidss);
+-
+ 	/* devm allocated dispc goes away with the dev so mark it NULL */
+ 	dispc_remove(tidss);
+ 
+@@ -262,7 +265,31 @@ static struct platform_driver tidss_platform_driver = {
+ 	},
+ };
+ 
+-drm_module_platform_driver(tidss_platform_driver);
++static int __init tidss_platform_driver_init(void)
++{
++	int ret;
++
++	ret = tidss_oldi_register_driver();
++	if (ret)
++		return ret;
++
++	ret = drm_platform_driver_register(&tidss_platform_driver);
++	if (ret) {
++		tidss_oldi_unregister_driver();
++		return ret;
++	}
++
++	return 0;
++}
++module_init(tidss_platform_driver_init);
++
++static void __exit tidss_platform_driver_exit(void)
++{
++	platform_driver_unregister(&tidss_platform_driver);
++	tidss_oldi_unregister_driver();
++}
++module_exit(tidss_platform_driver_exit);
++
+ 
+ MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
+ MODULE_DESCRIPTION("TI Keystone DSS Driver");
+diff --git a/drivers/gpu/drm/tidss/tidss_drv.h b/drivers/gpu/drm/tidss/tidss_drv.h
+index e1c1f41d8b4b..d3dba639b278 100644
+--- a/drivers/gpu/drm/tidss/tidss_drv.h
++++ b/drivers/gpu/drm/tidss/tidss_drv.h
+@@ -16,7 +16,8 @@
+ #define TIDSS_MAX_OLDI_TXES 2
+ 
+ typedef u32 dispc_irq_t;
+-struct tidss_oldi;
++
++struct auxiliary_device;
+ 
+ struct tidss_device {
+ 	struct drm_device ddev;		/* DRM device for DSS */
+@@ -34,7 +35,7 @@ struct tidss_device {
+ 	struct drm_plane *planes[TIDSS_MAX_PLANES];
+ 
+ 	unsigned int num_oldis;
+-	struct tidss_oldi *oldis[TIDSS_MAX_OLDI_TXES];
++	struct auxiliary_device *oldis[TIDSS_MAX_OLDI_TXES];
+ 
+ 	unsigned int irq;
+ 
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.c b/drivers/gpu/drm/tidss/tidss_oldi.c
+index e925ddaa4fd6..188f31b57c6a 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.c
++++ b/drivers/gpu/drm/tidss/tidss_oldi.c
+@@ -5,11 +5,13 @@
+  * Aradhya Bhatia <a-bhatia1@ti.com>
+  */
+ 
++#include <linux/auxiliary_bus.h>
+ #include <linux/clk.h>
+ #include <linux/of.h>
+ #include <linux/of_graph.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/media-bus-format.h>
++#include <linux/pm_runtime.h>
+ #include <linux/regmap.h>
+ 
+ #include <drm/drm_atomic_helper.h>
+@@ -20,6 +22,12 @@
+ #include "tidss_dispc_regs.h"
+ #include "tidss_oldi.h"
+ 
++static DEFINE_IDA(tidss_oldi_ida);
++
++struct tidss_oldi_platform_data {
++	struct tidss_device *tidss;
++};
++
+ struct tidss_oldi {
+ 	struct tidss_device	*tidss;
+ 	struct device		*dev;
+@@ -251,6 +259,8 @@ static void tidss_oldi_atomic_pre_enable(struct drm_bridge *bridge,
+ 	if (oldi->link_type == OLDI_MODE_SECONDARY_CLONE_SINGLE_LINK)
+ 		return;
+ 
++	WARN_ON(pm_runtime_get_sync(oldi->dev) < 0);
++
+ 	connector = drm_atomic_get_new_connector_for_encoder(state,
+ 							     bridge->encoder);
+ 	if (WARN_ON(!connector))
+@@ -296,6 +306,8 @@ static void tidss_oldi_atomic_post_disable(struct drm_bridge *bridge,
+ 
+ 	/* Clear OLDI Config */
+ 	tidss_disable_oldi(oldi->tidss, oldi->parent_vp);
++
++	pm_runtime_put_autosuspend(oldi->dev);
+ }
+ 
+ #define MAX_INPUT_SEL_FORMATS	1
+@@ -383,12 +395,16 @@ static int get_oldi_mode(struct device_node *oldi_tx, int *companion_instance)
+ 		 */
+ 		return OLDI_MODE_SINGLE_LINK;
+ 
+-	if (of_property_read_u32(companion, "reg", &companion_reg))
++	if (of_property_read_u32(companion, "reg", &companion_reg)) {
++		of_node_put(companion);
+ 		return OLDI_MODE_UNSUPPORTED;
++	}
+ 
+-	if (companion_reg > (TIDSS_MAX_OLDI_TXES - 1))
++	if (companion_reg > (TIDSS_MAX_OLDI_TXES - 1)) {
+ 		/* Invalid companion OLDI reg value. */
++		of_node_put(companion);
+ 		return OLDI_MODE_UNSUPPORTED;
++	}
+ 
+ 	*companion_instance = (int)companion_reg;
+ 
+@@ -464,174 +480,372 @@ static int get_parent_dss_vp(struct device_node *oldi_tx, u32 *parent_vp)
+ 	return -ENODEV;
+ }
+ 
+-void tidss_oldi_deinit(struct tidss_device *tidss)
++static int tidss_oldi_probe(struct auxiliary_device *auxdev,
++			    const struct auxiliary_device_id *id)
+ {
+-	for (int i = 0; i < tidss->num_oldis; i++) {
+-		if (tidss->oldis[i]) {
+-			drm_bridge_remove(&tidss->oldis[i]->bridge);
+-			tidss->is_ext_vp_clk[tidss->oldis[i]->parent_vp] = false;
+-			tidss->oldis[i] = NULL;
++	struct device *dev = &auxdev->dev;
++	struct tidss_oldi_platform_data *oldi_pdata = dev_get_platdata(dev);
++	struct tidss_device *tidss = oldi_pdata->tidss;
++	struct device_node *node = auxdev->dev.of_node;
++	enum tidss_oldi_link_type link_type = OLDI_MODE_UNSUPPORTED;
++	int companion_instance = -1;
++	struct drm_bridge *bridge;
++	struct device_link *link;
++	struct tidss_oldi *oldi;
++	u32 oldi_instance;
++	u32 parent_vp;
++	int ret;
++
++	ret = of_property_read_u32(node, "reg", &oldi_instance);
++	if (ret)
++		return ret;
++
++	ret = get_parent_dss_vp(node, &parent_vp);
++	if (ret)
++		return ret;
++
++	/*
++	 * Now that it's confirmed that OLDI is connected with DSS,
++	 * let's continue getting the OLDI sinks ahead and other OLDI
++	 * properties.
++	 */
++	bridge = devm_drm_of_get_bridge(dev, node, OLDI_OUTPUT_PORT, 0);
++	if (IS_ERR(bridge)) {
++		/*
++		 * Either there was no OLDI sink in the devicetree, or the OLDI
++		 * sink has not been added yet. In any case, return.
++		 */
++		return dev_err_probe(dev, PTR_ERR(bridge),
++				     "no panel/bridge for OLDI%u.\n",
++				     oldi_instance);
++	}
++
++	link_type = get_oldi_mode(node, &companion_instance);
++	if (link_type == OLDI_MODE_UNSUPPORTED) {
++		return dev_err_probe(dev, -EINVAL,
++				     "OLDI%u: Unsupported OLDI connection.\n",
++				     oldi_instance);
++	} else if ((link_type == OLDI_MODE_SECONDARY_CLONE_SINGLE_LINK) ||
++		   (link_type == OLDI_MODE_CLONE_SINGLE_LINK)) {
++		/*
++		 * The OLDI driver cannot support OLDI clone mode properly at
++		 * present. The clone mode requires 2 working encoder-bridge
++		 * pipelines, generating from the same crtc. The DRM framework
++		 * does not support this at present. If there were to be, say, 2
++		 * OLDI sink bridges each connected to an OLDI TXes, they
++		 * couldn't both be supported simultaneously. This driver still
++		 * has some code pertaining to OLDI clone mode configuration in
++		 * DSS hardware for future, when there is a better
++		 * infrastructure in the DRM framework to support 2
++		 * encoder-bridge pipelines simultaneously. Till that time, this
++		 * driver shall error out if it detects a clone mode
++		 * configuration.
++		 */
++		return dev_err_probe(dev, -EOPNOTSUPP,
++				     "The OLDI driver does not support Clone Mode at present.\n");
++	}
++
++	oldi = devm_drm_bridge_alloc(dev, struct tidss_oldi, bridge,
++				     &tidss_oldi_bridge_funcs);
++	if (IS_ERR(oldi))
++		return PTR_ERR(oldi);
++
++	oldi->parent_vp = parent_vp;
++	oldi->oldi_instance = oldi_instance;
++	oldi->companion_instance = companion_instance;
++	oldi->link_type = link_type;
++	oldi->dev = dev;
++	oldi->next_bridge = bridge;
++	oldi->tidss = tidss;
++
++	auxiliary_set_drvdata(auxdev, oldi);
++
++	/*
++	 * Only the primary OLDI needs to reference the io-ctrl system
++	 * registers, and the serial clock.
++	 * We don't require a check for secondary OLDI in dual-link mode
++	 * because the driver will not create a drm_bridge instance.
++	 * But the driver will need to create a drm_bridge instance,
++	 * for secondary OLDI in clone mode (once it is supported).
++	 */
++	if (link_type != OLDI_MODE_SECONDARY_DUAL_LINK &&
++	    link_type != OLDI_MODE_SECONDARY_CLONE_SINGLE_LINK) {
++		oldi->io_ctrl = syscon_regmap_lookup_by_phandle(node,
++								"ti,oldi-io-ctrl");
++		if (IS_ERR(oldi->io_ctrl)) {
++			return dev_err_probe(oldi->dev, PTR_ERR(oldi->io_ctrl),
++					     "OLDI%u: syscon_regmap_lookup_by_phandle failed.\n",
++					     oldi_instance);
++		}
++
++		oldi->serial = of_clk_get_by_name(node, "serial");
++		if (IS_ERR(oldi->serial)) {
++			return dev_err_probe(oldi->dev, PTR_ERR(oldi->serial),
++					     "OLDI%u: Failed to get serial clock.\n",
++					     oldi_instance);
+ 		}
+ 	}
++
++	if (link_type != OLDI_MODE_SECONDARY_DUAL_LINK) {
++		/* Register the bridge. */
++		oldi->bridge.of_node = node;
++		oldi->bridge.driver_private = oldi;
++
++		tidss->is_ext_vp_clk[oldi->parent_vp] = true;
++
++		drm_bridge_add(&oldi->bridge);
++	}
++
++	link = device_link_add(&auxdev->dev, tidss->dev,
++			       DL_FLAG_PM_RUNTIME | DL_FLAG_AUTOREMOVE_CONSUMER);
++	if (!link) {
++		ret = -EINVAL;
++		goto err_bridge_remove;
++	}
++
++	pm_runtime_enable(dev);
++	pm_runtime_set_autosuspend_delay(dev, 500);
++	pm_runtime_use_autosuspend(dev);
++
++	return 0;
++
++err_bridge_remove:
++	if (link_type != OLDI_MODE_SECONDARY_DUAL_LINK) {
++		drm_bridge_remove(&oldi->bridge);
++		tidss->is_ext_vp_clk[oldi->parent_vp] = false;
++	}
++
++	clk_put(oldi->serial);
++
++	return ret;
+ }
+ 
+-int tidss_oldi_init(struct tidss_device *tidss)
++static void tidss_oldi_remove(struct auxiliary_device *auxdev)
+ {
+-	struct tidss_oldi *oldi;
+-	struct device_node *child;
+-	struct drm_bridge *bridge;
+-	u32 parent_vp, oldi_instance;
+-	int companion_instance = -1;
+-	enum tidss_oldi_link_type link_type = OLDI_MODE_UNSUPPORTED;
+-	struct device_node *oldi_parent;
+-	int ret = 0;
++	struct tidss_oldi *oldi = auxiliary_get_drvdata(auxdev);
++	struct tidss_device *tidss = oldi->tidss;
++	struct device *dev = &auxdev->dev;
+ 
+-	tidss->num_oldis = 0;
++	pm_runtime_dont_use_autosuspend(dev);
++	pm_runtime_disable(dev);
+ 
+-	oldi_parent = of_get_child_by_name(tidss->dev->of_node, "oldi-transmitters");
+-	if (!oldi_parent)
+-		/* Return gracefully */
+-		return 0;
++	if (oldi->link_type != OLDI_MODE_SECONDARY_DUAL_LINK) {
++		drm_bridge_remove(&oldi->bridge);
++
++		tidss->is_ext_vp_clk[oldi->parent_vp] = false;
++	}
++
++	clk_put(oldi->serial);
++}
++
++static const struct auxiliary_device_id tidss_oldi_aux_id_table[] = {
++	{ .name = "tidss.oldi" },
++	{}
++};
++
++static struct auxiliary_driver oldi_aux_driver = {
++	.name = "oldi",
++	.probe = tidss_oldi_probe,
++	.remove = tidss_oldi_remove,
++	.id_table = tidss_oldi_aux_id_table,
++};
++
++static void tidss_oldi_aux_device_release(struct device *dev)
++{
++	struct auxiliary_device *auxdev = to_auxiliary_dev(dev);
++
++	ida_free(&tidss_oldi_ida, auxdev->id);
++
++	of_node_put(auxdev->dev.of_node);
+ 
+-	for_each_available_child_of_node(oldi_parent, child) {
+-		ret = get_parent_dss_vp(child, &parent_vp);
+-		if (ret) {
+-			if (ret == -ENODEV) {
+-				/*
+-				 * ENODEV means that this particular OLDI node
+-				 * is not connected with the DSS, which is not
+-				 * a harmful case. There could be another OLDI
+-				 * which may still be connected.
+-				 * Continue to search for that.
+-				 */
+-				continue;
++	kfree(auxdev->dev.platform_data);
++	kfree(auxdev);
++}
++
++static struct auxiliary_device *
++tidss_oldi_create_device(struct tidss_device *tidss,
++			 struct device_node *oldi_tx)
++{
++	struct tidss_oldi_platform_data *oldi_pdata;
++	struct auxiliary_device *companion_auxdev;
++	struct auxiliary_device *auxdev;
++	struct device_link *link = NULL;
++	u32 oldi_aux_id;
++	int ret;
++
++	/*
++	 * Allocate the ID first, so that we get a lower ID for the primary
++	 * OLDI, instead of the companion grabbing it in the call below. Note
++	 * that the ID allocated here often matches the OLDI hardware index,
++	 * but not always.
++	 * The OLDI hardware index cannot be used as an ID, as, say, OLDI 1 on
++	 * two DSS instances would produce the exact same device name
++	 * ("tidss.oldi.1").
++	 */
++	ret = ida_alloc(&tidss_oldi_ida, GFP_KERNEL);
++	if (ret < 0)
++		return ERR_PTR(ret);
++
++	oldi_aux_id = ret;
++
++	companion_auxdev = NULL;
++
++	/*
++	 * If this is the primary OLDI and there is a companion, create the
++	 * auxdev for the secondary OLDI first, as the secondary will act as
++	 * a supplier for the primary OLDI.
++	 */
++	if (!of_property_read_bool(oldi_tx, "ti,secondary-oldi")) {
++		struct device_node *companion_node;
++
++		companion_node = of_parse_phandle(oldi_tx, "ti,companion-oldi", 0);
++		if (companion_node) {
++			companion_auxdev =
++				tidss_oldi_create_device(tidss, companion_node);
++
++			of_node_put(companion_node);
++
++			if (IS_ERR(companion_auxdev)) {
++				dev_err(tidss->dev,
++					"Failed to create secondary oldi device\n");
++				ret = PTR_ERR(companion_auxdev);
++				goto err_free_ida;
+ 			}
+-			goto err_put_node;
+ 		}
++	}
+ 
+-		ret = of_property_read_u32(child, "reg", &oldi_instance);
+-		if (ret)
+-			goto err_put_node;
++	oldi_pdata = kzalloc_obj(*oldi_pdata);
++	if (!oldi_pdata) {
++		ret = -ENOMEM;
++		goto err_free_ida;
++	}
+ 
+-		/*
+-		 * Now that it's confirmed that OLDI is connected with DSS,
+-		 * let's continue getting the OLDI sinks ahead and other OLDI
+-		 * properties.
+-		 */
+-		bridge = devm_drm_of_get_bridge(tidss->dev, child,
+-						OLDI_OUTPUT_PORT, 0);
+-		if (IS_ERR(bridge)) {
+-			/*
+-			 * Either there was no OLDI sink in the devicetree, or
+-			 * the OLDI sink has not been added yet. In any case,
+-			 * return.
+-			 * We don't want to have an OLDI node connected to DSS
+-			 * but not to any sink.
+-			 */
+-			ret = dev_err_probe(tidss->dev, PTR_ERR(bridge),
+-					    "no panel/bridge for OLDI%u.\n",
+-					    oldi_instance);
+-			goto err_put_node;
+-		}
++	oldi_pdata->tidss = tidss;
+ 
+-		link_type = get_oldi_mode(child, &companion_instance);
+-		if (link_type == OLDI_MODE_UNSUPPORTED) {
+-			ret = dev_err_probe(tidss->dev, -EINVAL,
+-					    "OLDI%u: Unsupported OLDI connection.\n",
+-					    oldi_instance);
+-			goto err_put_node;
+-		} else if ((link_type == OLDI_MODE_SECONDARY_CLONE_SINGLE_LINK) ||
+-			   (link_type == OLDI_MODE_CLONE_SINGLE_LINK)) {
+-			/*
+-			 * The OLDI driver cannot support OLDI clone mode
+-			 * properly at present.
+-			 * The clone mode requires 2 working encoder-bridge
+-			 * pipelines, generating from the same crtc. The DRM
+-			 * framework does not support this at present. If
+-			 * there were to be, say, 2 OLDI sink bridges each
+-			 * connected to an OLDI TXes, they couldn't both be
+-			 * supported simultaneously.
+-			 * This driver still has some code pertaining to OLDI
+-			 * clone mode configuration in DSS hardware for future,
+-			 * when there is a better infrastructure in the DRM
+-			 * framework to support 2 encoder-bridge pipelines
+-			 * simultaneously.
+-			 * Till that time, this driver shall error out if it
+-			 * detects a clone mode configuration.
+-			 */
+-			ret = dev_err_probe(tidss->dev, -EOPNOTSUPP,
+-					    "The OLDI driver does not support Clone Mode at present.\n");
+-			goto err_put_node;
+-		} else if (link_type == OLDI_MODE_SECONDARY_DUAL_LINK) {
+-			/*
+-			 * This is the secondary OLDI node, which serves as a
+-			 * companion to the primary OLDI, when it is configured
+-			 * for the dual-link mode. Since the primary OLDI will
+-			 * be a part of bridge chain, no need to put this one
+-			 * too. Continue onto the next OLDI node.
+-			 */
+-			continue;
+-		}
++	auxdev = kzalloc_obj(*auxdev);
++	if (!auxdev) {
++		ret = -ENOMEM;
++		goto err_free_pdata;
++	}
++
++	*auxdev = (struct auxiliary_device) {
++		.name = "oldi",
++		.id = oldi_aux_id,
++		.dev = {
++			.parent = tidss->dev,
++			.of_node = of_node_get(oldi_tx),
++			.release = tidss_oldi_aux_device_release,
++			.platform_data = oldi_pdata,
++		},
++	};
++
++	ret = auxiliary_device_init(auxdev);
++	if (ret) {
++		dev_err(tidss->dev, "OLDI auxiliary_device_init failed: %d\n",
++			ret);
++		goto err_free_auxdev;
++	}
+ 
+-		oldi = devm_drm_bridge_alloc(tidss->dev, struct tidss_oldi, bridge,
+-					     &tidss_oldi_bridge_funcs);
+-		if (IS_ERR(oldi)) {
+-			ret = PTR_ERR(oldi);
+-			goto err_put_node;
++	/*
++	 * Create a device-link between the primary and the secondary, so that
++	 * the secondary will be powered on when the primary is used.
++	 */
++	if (companion_auxdev) {
++		link = device_link_add(&auxdev->dev, &companion_auxdev->dev,
++				       DL_FLAG_PM_RUNTIME |
++					       DL_FLAG_AUTOREMOVE_CONSUMER |
++					       DL_FLAG_AUTOREMOVE_SUPPLIER);
++		if (!link) {
++			dev_err(tidss->dev,
++				"device_link_add failed between primary and secondary OLDI\n");
++			ret = -EINVAL;
++			goto err_uninit_auxdev;
+ 		}
++	}
+ 
+-		oldi->parent_vp = parent_vp;
+-		oldi->oldi_instance = oldi_instance;
+-		oldi->companion_instance = companion_instance;
+-		oldi->link_type = link_type;
+-		oldi->dev = tidss->dev;
+-		oldi->next_bridge = bridge;
++	ret = auxiliary_device_add(auxdev);
++	if (ret) {
++		dev_err(tidss->dev, "OLDI auxiliary_device_add failed: %d\n",
++			ret);
++		goto err_link_del;
++	}
+ 
+-		/*
+-		 * Only the primary OLDI needs to reference the io-ctrl system
+-		 * registers, and the serial clock.
+-		 * We don't require a check for secondary OLDI in dual-link mode
+-		 * because the driver will not create a drm_bridge instance.
+-		 * But the driver will need to create a drm_bridge instance,
+-		 * for secondary OLDI in clone mode (once it is supported).
+-		 */
+-		if (link_type != OLDI_MODE_SECONDARY_CLONE_SINGLE_LINK) {
+-			oldi->io_ctrl = syscon_regmap_lookup_by_phandle(child,
+-									"ti,oldi-io-ctrl");
+-			if (IS_ERR(oldi->io_ctrl)) {
+-				ret = dev_err_probe(oldi->dev, PTR_ERR(oldi->io_ctrl),
+-						    "OLDI%u: syscon_regmap_lookup_by_phandle failed.\n",
+-						    oldi_instance);
+-				goto err_put_node;
+-			}
++	tidss->oldis[tidss->num_oldis++] = auxdev;
+ 
+-			oldi->serial = of_clk_get_by_name(child, "serial");
+-			if (IS_ERR(oldi->serial)) {
+-				ret = dev_err_probe(oldi->dev, PTR_ERR(oldi->serial),
+-						    "OLDI%u: Failed to get serial clock.\n",
+-						    oldi_instance);
+-				goto err_put_node;
+-			}
+-		}
++	return auxdev;
+ 
+-		/* Register the bridge. */
+-		oldi->bridge.of_node = child;
+-		oldi->bridge.driver_private = oldi;
++err_link_del:
++	if (link)
++		device_link_del(link);
++err_uninit_auxdev:
++	auxiliary_device_uninit(auxdev);
++	/* return here, as the rest are done in auxdev's release */
++	return ERR_PTR(ret);
+ 
+-		tidss->oldis[tidss->num_oldis++] = oldi;
+-		tidss->is_ext_vp_clk[oldi->parent_vp] = true;
+-		oldi->tidss = tidss;
++err_free_auxdev:
++	kfree(auxdev);
++err_free_pdata:
++	kfree(oldi_pdata);
++err_free_ida:
++	ida_free(&tidss_oldi_ida, oldi_aux_id);
+ 
+-		drm_bridge_add(&oldi->bridge);
++	return ERR_PTR(ret);
++}
++
++int tidss_oldi_create_devices(struct tidss_device *tidss)
++{
++	struct device_node *oldi_txes;
++	struct device_node *oldi_tx;
++	int ret;
++
++	oldi_txes = of_get_child_by_name(tidss->dev->of_node,
++					 "oldi-transmitters");
++	if (!oldi_txes)
++		return 0;
++
++	/*
++	 * Look for primary OLDIs and create devices for them. For dual-link
++	 * cases, the primary's create_device call will also create the
++	 * secondary device.
++	 */
++	for_each_available_child_of_node(oldi_txes, oldi_tx) {
++		struct auxiliary_device *auxdev;
++
++		if (of_property_read_bool(oldi_tx, "ti,secondary-oldi"))
++			continue;
++
++		auxdev = tidss_oldi_create_device(tidss, oldi_tx);
++		if (IS_ERR(auxdev)) {
++			ret = PTR_ERR(auxdev);
++			goto err_destroy_oldis;
++		}
+ 	}
+ 
+-	of_node_put(child);
+-	of_node_put(oldi_parent);
++	of_node_put(oldi_txes);
+ 
+ 	return 0;
+ 
+-err_put_node:
+-	of_node_put(child);
+-	of_node_put(oldi_parent);
++err_destroy_oldis:
++	tidss_oldi_destroy_devices(tidss);
++
++	of_node_put(oldi_tx);
++	of_node_put(oldi_txes);
++
+ 	return ret;
+ }
++
++void tidss_oldi_destroy_devices(struct tidss_device *tidss)
++{
++	for (unsigned int i = 0; i < tidss->num_oldis; ++i)
++		auxiliary_device_destroy(tidss->oldis[i]);
++}
++
++int tidss_oldi_register_driver(void)
++{
++	return auxiliary_driver_register(&oldi_aux_driver);
++}
++
++void tidss_oldi_unregister_driver(void)
++{
++	auxiliary_driver_unregister(&oldi_aux_driver);
++}
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.h b/drivers/gpu/drm/tidss/tidss_oldi.h
+index a361e6dbfce3..2069bd46aaae 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.h
++++ b/drivers/gpu/drm/tidss/tidss_oldi.h
+@@ -36,7 +36,10 @@ enum tidss_oldi_link_type {
+ 	OLDI_MODE_SECONDARY_DUAL_LINK,
+ };
+ 
+-int tidss_oldi_init(struct tidss_device *tidss);
+-void tidss_oldi_deinit(struct tidss_device *tidss);
++int tidss_oldi_create_devices(struct tidss_device *tidss);
++void tidss_oldi_destroy_devices(struct tidss_device *tidss);
++
++int tidss_oldi_register_driver(void);
++void tidss_oldi_unregister_driver(void);
+ 
+ #endif /* __TIDSS_OLDI_H__ */
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 13/15] drm/tidss: Add support for AM62P display
+ subsystem
+From: Swamil Jain <s-jain1@ti.com>
+Date: Fri, 29 May 2026 11:45:43 +0300
+Message-Id: <20260529-beagley-ai-display-v3-13-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+The DSS controller on TI's AM62P SoC features two instances of the TI
+DSS. Each DSS instance supports two video ports, similar to the DSS
+controller found on the TI AM62X SoC. This allows three independent
+video streams to be supported: OLDI, DPI, and DSI.
+
+Since the DSS instances on AM62P are architecturally similar to those
+on the AM62X DSS controller, the existing dispc_am625_feats
+configuration can be reused for the AM62P DSS support.
+
+This commit adds the necessary device tree compatibility entry for
+"ti,am62p-dss" in the tidss driver, pointing to dispc_am625_feats,
+thereby enabling DSS support on AM62P devices.
+
+Signed-off-by: Swamil Jain <s-jain1@ti.com>
+Tested-by: Swamil Jain <s-jain1@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Reviewed-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_drv.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_drv.c b/drivers/gpu/drm/tidss/tidss_drv.c
+index aef945101be4..2d056dc1c5ff 100644
+--- a/drivers/gpu/drm/tidss/tidss_drv.c
++++ b/drivers/gpu/drm/tidss/tidss_drv.c
+@@ -246,6 +246,7 @@ static const struct of_device_id tidss_of_table[] = {
+ 	{ .compatible = "ti,am625-dss", .data = &dispc_am625_feats, },
+ 	{ .compatible = "ti,am62a7-dss", .data = &dispc_am62a7_feats, },
+ 	{ .compatible = "ti,am62l-dss", .data = &dispc_am62l_feats, },
++	{ .compatible = "ti,am62p-dss", .data = &dispc_am625_feats, },
+ 	{ .compatible = "ti,am65x-dss", .data = &dispc_am65x_feats, },
+ 	{ .compatible = "ti,j721e-dss", .data = &dispc_j721e_feats, },
+ 	{ }
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 14/15] arm64: dts: ti: k3-am62p-j722s-common-main: Add
+ support for DSS
+From: Jayesh Choudhary <j-choudhary@ti.com>
+Date: Fri, 29 May 2026 11:45:44 +0300
+Message-Id: <20260529-beagley-ai-display-v3-14-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+TI's AM62P and J722S SoCs support 2 display subsystems (DSS), DSS0 and
+DSS1, each with two video ports (VP) and two video planes. The outputs
+from the DSS VPs can be routed to two OLDI TXes (OLDI0, OLDI1), a DSI
+TX, or parallel DPI output.
+
+DSS0 supports:
+- VP0: OLDI0 in single-link mode or OLDI0 and OLDI1 in dual-link or
+  clone mode.
+- VP1: DPI
+
+DSS1 supports:
+- VP0: OLDI1 in single-link mode, or DPI
+- VP1: DPI or DSI
+
+The DSI is only connected to VP1 of DSS1, but OLDI and DPI are shared
+between the DSS instances. Thus only a single VP can output to DPI, and
+a single VP can use an OLDI block. Note that in single-link
+configuration OLDI0 can be used by DSS0, and at the same time OLDI1 can
+be used by DSS1.
+
+Add the necessary nodes to k3-am62p-j722s-common-main.dtsi, including
+DSS0, DSS1, OLDI0, OLDI1, DPHY and DSI.
+
+An important note about OLDIs:
+
+We have two OLDI hardware blocks. Each OLDI has certain configuration
+that has to be done before it can be used. The OLDI blocks get this
+configuration directly from the DSS block, via DSS registers. However,
+as a single OLDI block can be used either with DSS0 or DSS1, the
+source for the configuration changes according to (probably, this is
+unclear) a DSS related clock mux.
+
+So, afaics, when thinking about Linux device hierarchy wrt. control
+busses, OLDI blocks are children of DSS blocks, and they reside in a
+special DSS bus. And the OLDI parent changes according to the mux. As
+far as I know, there is no way we can represent this in the DT.
+
+Thus the solution used here (and in the driver) is that each DSS node
+contains the OLDI nodes that can be used with that DSS. Thus the DSS0
+node has two child nodes, OLDI0 and OLDI1, and the DSS1 node has one
+child node, OLDI1. The OLDI1 nodes thus refer to the same piece of
+hardware, and they cannot be used at the same time. The selection which
+OLDI nodes to use are chosen in the board dts files, so assuming the dts
+files are correct, no resource conflict can happen.
+
+This is not a very nice solution, but the hardware doesn't make it easy
+to have a clean solution, and, most importantly, this works.
+
+[j-choudhary@ti.com: Refactor changes for k3-am62p-j722s-common-main.dtsi
+ and add changes for new OLDI driver support]
+
+Signed-off-by: Aradhya Bhatia <a-bhatia1@ti.com>
+Signed-off-by: Jayesh Choudhary <j-choudhary@ti.com>
+Signed-off-by: Swamil Jain <s-jain1@ti.com>
+[tomi.valkeinen: various fixes and improvements]
+Tested-by: Swamil Jain <s-jain1@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ .../boot/dts/ti/k3-am62p-j722s-common-main.dtsi    | 112 +++++++++++++++++++++
+ arch/arm64/boot/dts/ti/k3-am62p.dtsi               |  16 +++
+ arch/arm64/boot/dts/ti/k3-j722s.dtsi               |  16 +++
+ 3 files changed, 144 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
+index 58805e287496..8b65c6efc148 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
+@@ -64,6 +64,11 @@ audio_refclk1: clock@82e4 {
+ 			#clock-cells = <0>;
+ 		};
+ 
++		dss_oldi_io_ctrl: dss-oldi-io-ctrl@8600 {
++			compatible = "ti,am625-dss-oldi-io-ctrl", "syscon";
++			reg = <0x8600 0x200>;
++		};
++
+ 		phy_gmii_sel: phy@4044 {
+ 			compatible = "ti,am654-phy-gmii-sel";
+ 			reg = <0x4044 0x8>;
+@@ -1111,6 +1116,113 @@ dphy0: phy@30110000 {
+ 		status = "disabled";
+ 	};
+ 
++	dss0: dss@30200000 {
++		compatible = "ti,am62p-dss";
++		reg = <0x00 0x30200000 0x00 0x1000>, /* common */
++		      <0x00 0x30202000 0x00 0x1000>, /* vidl1 */
++		      <0x00 0x30206000 0x00 0x1000>, /* vid */
++		      <0x00 0x30207000 0x00 0x1000>, /* ovr1 */
++		      <0x00 0x30208000 0x00 0x1000>, /* ovr2 */
++		      <0x00 0x3020a000 0x00 0x1000>, /* vp1: Used for OLDI */
++		      <0x00 0x3020b000 0x00 0x1000>, /* vp2: Used as DPI */
++		      <0x00 0x30201000 0x00 0x1000>; /* common1 */
++		reg-names = "common", "vidl1", "vid",
++			    "ovr1", "ovr2", "vp1", "vp2", "common1";
++		power-domains = <&k3_pds 186 TI_SCI_PD_EXCLUSIVE>;	/* DSS0 */
++		clocks = <&k3_clks 186 6>,
++			 <&dss0_vp1_clk>,
++			 <&k3_clks 186 2>;
++		clock-names = "fck", "vp1", "vp2";
++		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
++		ti,dpi-io-ctrl = <&main_conf 0x8300>;
++		status = "disabled";
++
++		oldi-transmitters {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			dss0_oldi0: oldi@0 {
++				reg = <0>;
++				clocks = <&k3_clks 186 0>;
++				clock-names = "serial";
++				ti,oldi-io-ctrl = <&dss_oldi_io_ctrl>;
++				status = "disabled";
++				power-domains = <&k3_pds 243 TI_SCI_PD_EXCLUSIVE>; /* OLDI0_VD */
++			};
++
++			dss0_oldi1: oldi@1 {
++				reg = <1>;
++				clocks = <&k3_clks 186 0>;
++				clock-names = "serial";
++				ti,oldi-io-ctrl = <&dss_oldi_io_ctrl>;
++				status = "disabled";
++				power-domains = <&k3_pds 244 TI_SCI_PD_EXCLUSIVE>; /* OLDI1_VD */
++			};
++		};
++	};
++
++	dss1: dss@30220000 {
++		compatible = "ti,am62p-dss";
++		reg = <0x00 0x30220000 0x00 0x1000>, /* common */
++		      <0x00 0x30222000 0x00 0x1000>, /* vidl1 */
++		      <0x00 0x30226000 0x00 0x1000>, /* vid */
++		      <0x00 0x30227000 0x00 0x1000>, /* ovr1 */
++		      <0x00 0x30228000 0x00 0x1000>, /* ovr2 */
++		      <0x00 0x3022a000 0x00 0x1000>, /* vp1: Used for DPI/OLDI */
++		      <0x00 0x3022b000 0x00 0x1000>, /* vp2: Used DPI/DSI */
++		      <0x00 0x30221000 0x00 0x1000>; /* common1 */
++		reg-names = "common", "vidl1", "vid",
++			    "ovr1", "ovr2", "vp1", "vp2", "common1";
++		power-domains = <&k3_pds 232 TI_SCI_PD_EXCLUSIVE>;	/* DSS1 */
++		clocks = <&k3_clks 232 8>,
++			 <&dss1_vp1_clk>,
++			 <&k3_clks 232 4>;
++		clock-names = "fck", "vp1", "vp2";
++		interrupts = <GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
++		ti,dpi-io-ctrl = <&main_conf 0x8300>;
++		status = "disabled";
++
++		oldi-transmitters {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			dss1_oldi1: oldi@1 {
++				reg = <1>;
++				clocks = <&k3_clks 232 0>;
++				clock-names = "serial";
++				ti,oldi-io-ctrl = <&dss_oldi_io_ctrl>;
++				status = "disabled";
++				power-domains = <&k3_pds 244 TI_SCI_PD_EXCLUSIVE>; /* OLDI1_VD */
++			};
++		};
++	};
++
++	dphy_tx0: phy@301c0000 {
++		compatible = "ti,j721e-dphy";
++		reg = <0x0 0x301c0000 0x0 0x1000>;
++		clocks = <&k3_clks 238 16>, <&k3_clks 238 1>;
++		clock-names = "psm", "pll_ref";
++		#phy-cells = <0>;
++		power-domains = <&k3_pds 238 TI_SCI_PD_EXCLUSIVE>;
++		assigned-clocks = <&k3_clks 238 1>;
++		assigned-clock-parents = <&k3_clks 238 2>;
++		assigned-clock-rates = <25000000>;
++		status = "disabled";
++	};
++
++	dsi0: dsi@30500000 {
++		compatible = "ti,j721e-dsi";
++		reg = <0x0 0x30500000 0x0 0x100000>, <0x0 0x30270000 0x0 0x100>;
++		clocks = <&k3_clks 231 2>, <&k3_clks 231 5>;
++		clock-names = "dsi_p_clk", "dsi_sys_clk";
++		power-domains = <&k3_pds 231 TI_SCI_PD_EXCLUSIVE>;
++		interrupt-parent = <&gic500>;
++		interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
++		phys = <&dphy_tx0>;
++		phy-names = "dphy";
++		status = "disabled";
++	};
++
+ 	vpu: video-codec@30210000 {
+ 		compatible = "ti,j721s2-wave521c", "cnm,wave521c";
+ 		reg = <0x00 0x30210000 0x00 0x10000>;
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p.dtsi b/arch/arm64/boot/dts/ti/k3-am62p.dtsi
+index 9d6266d6ddb8..074dc44ec049 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-am62p.dtsi
+@@ -144,6 +144,22 @@ cbass_wakeup: bus@b00000 {
+ 		};
+ 	};
+ 
++	dss0_vp1_clk: clock-divider-oldi-dss0 {
++		compatible = "fixed-factor-clock";
++		clocks = <&k3_clks 186 0>;
++		#clock-cells = <0>;
++		clock-div = <7>;
++		clock-mult = <1>;
++	};
++
++	dss1_vp1_clk: clock-divider-oldi-dss1 {
++		compatible = "fixed-factor-clock";
++		clocks = <&k3_clks 232 0>;
++		#clock-cells = <0>;
++		clock-div = <7>;
++		clock-mult = <1>;
++	};
++
+ 	#include "k3-am62p-j722s-common-thermal.dtsi"
+ };
+ 
+diff --git a/arch/arm64/boot/dts/ti/k3-j722s.dtsi b/arch/arm64/boot/dts/ti/k3-j722s.dtsi
+index 1b36dcf37925..e34e32ef8b8d 100644
+--- a/arch/arm64/boot/dts/ti/k3-j722s.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-j722s.dtsi
+@@ -228,6 +228,22 @@ cbass_wakeup: bus@b00000 {
+ 		};
+ 	};
+ 
++	dss0_vp1_clk: clock-divider-oldi-dss0 {
++		compatible = "fixed-factor-clock";
++		clocks = <&k3_clks 186 0>;
++		#clock-cells = <0>;
++		clock-div = <7>;
++		clock-mult = <1>;
++	};
++
++	dss1_vp1_clk: clock-divider-oldi-dss1 {
++		compatible = "fixed-factor-clock";
++		clocks = <&k3_clks 232 0>;
++		#clock-cells = <0>;
++		clock-div = <7>;
++		clock-mult = <1>;
++	};
++
+ 	#include "k3-am62p-j722s-common-thermal.dtsi"
+ };
+ 
+
+-- 
+2.43.0
+
+From git@z Thu Jan  1 00:00:00 1970
+Subject: [PATCH v3 15/15] arm64: dts: ti: beagley-ai: Enable HDMI display
+ and audio
+From: Andrew Davis <afd@ti.com>
+Date: Fri, 29 May 2026 11:45:45 +0300
+Message-Id: <20260529-beagley-ai-display-v3-15-7fefdc5d1adf@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Enable HDMI support for BeagleY-AI platform. The display controller used is
+TIDSS and the HDMI bridge used is IT66122.
+
+Based on DT by: Robert Nelson <robertcnelson@gmail.com>
+
+Signed-off-by: Andrew Davis <afd@ti.com>
+Signed-off-by: Swamil Jain <s-jain1@ti.com>
+[tomi.valkeinen: cosmetic fixes]
+Tested-by: Robert Nelson <robertcnelson@gmail.com>
+Tested-by: Swamil Jain <s-jain1@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts | 191 +++++++++++++++++++++++++
+ 1 file changed, 191 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
+index 5255e04b9ac7..f97e3bddf28f 100644
+--- a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
++++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
+@@ -146,6 +146,34 @@ led-1 {
+ 			default-state = "on";
+ 		};
+ 	};
++
++	hdmi0: connector-hdmi {
++		compatible = "hdmi-connector";
++		label = "hdmi";
++		type = "d";
++		port {
++			hdmi_connector_in: endpoint {
++				remote-endpoint = <&it66122_out>;
++			};
++		};
++	};
++
++	sound0: sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,name = "it66122 HDMI";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,bitclock-master = <&hdmi_dailink_master>;
++		simple-audio-card,frame-master = <&hdmi_dailink_master>;
++
++		hdmi_dailink_master: simple-audio-card,cpu {
++			sound-dai = <&mcasp1>;
++			system-clock-direction-out;
++		};
++
++		simple-audio-card,codec {
++			sound-dai = <&it66122>;
++		};
++	};
+ };
+ 
+ &main_pmx0 {
+@@ -185,6 +213,14 @@ J722S_IOPAD(0x0240, PIN_INPUT, 7) /* (B24) MMC1_SDCD.GPIO1_48 */
+ 		bootph-all;
+ 	};
+ 
++	main_i2c1_pins_default: main-i2c1-default-pins {
++		pinctrl-single,pins = <
++			J722S_IOPAD(0x01e8, PIN_INPUT_PULLUP, 0) /* (C24) I2C1_SCL */
++			J722S_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A22) I2C1_SDA */
++		>;
++		bootph-all;
++	};
++
+ 	mdio_pins_default: mdio-default-pins {
+ 		pinctrl-single,pins = <
+ 			J722S_IOPAD(0x0160, PIN_OUTPUT, 0) /* (AC24) MDIO0_MDC */
+@@ -227,6 +263,47 @@ vdd_3v3_sd_pins_default: vdd-3v3-sd-default-pins {
+ 			J722S_IOPAD(0x0254, PIN_OUTPUT, 7) /* (E25) USB0_DRVVBUS.GPIO1_50 */
+ 		>;
+ 	};
++
++	dss1_pins_default: dss1-default-pins {
++		pinctrl-single,pins = <
++			J722S_IOPAD(0x0100, PIN_OUTPUT, 0) /* (AB23) VOUT0_VSYNC */
++			J722S_IOPAD(0x00f8, PIN_OUTPUT, 0) /* (AB24) VOUT0_HSYNC */
++			J722S_IOPAD(0x0104, PIN_OUTPUT, 0) /* (AC26) VOUT0_PCLK */
++			J722S_IOPAD(0x00fc, PIN_OUTPUT, 0) /* (AC27) VOUT0_DE */
++			J722S_IOPAD(0x00b8, PIN_OUTPUT, 0) /* (W27) VOUT0_DATA0 */
++			J722S_IOPAD(0x00bc, PIN_OUTPUT, 0) /* (W25) VOUT0_DATA1 */
++			J722S_IOPAD(0x00c0, PIN_OUTPUT, 0) /* (W24) VOUT0_DATA2 */
++			J722S_IOPAD(0x00c4, PIN_OUTPUT, 0) /* (W23) VOUT0_DATA3 */
++			J722S_IOPAD(0x00c8, PIN_OUTPUT, 0) /* (W22) VOUT0_DATA4 */
++			J722S_IOPAD(0x00cc, PIN_OUTPUT, 0) /* (W21) VOUT0_DATA5 */
++			J722S_IOPAD(0x00d0, PIN_OUTPUT, 0) /* (Y26) VOUT0_DATA6 */
++			J722S_IOPAD(0x00d4, PIN_OUTPUT, 0) /* (Y27) VOUT0_DATA7 */
++			J722S_IOPAD(0x00d8, PIN_OUTPUT, 0) /* (AA24) VOUT0_DATA8 */
++			J722S_IOPAD(0x00dc, PIN_OUTPUT, 0) /* (AA27) VOUT0_DATA9 */
++			J722S_IOPAD(0x00e0, PIN_OUTPUT, 0) /* (AA25) VOUT0_DATA10 */
++			J722S_IOPAD(0x00e4, PIN_OUTPUT, 0) /* (AB25) VOUT0_DATA11 */
++			J722S_IOPAD(0x00e8, PIN_OUTPUT, 0) /* (AA23) VOUT0_DATA12 */
++			J722S_IOPAD(0x00ec, PIN_OUTPUT, 0) /* (AA22) VOUT0_DATA13 */
++			J722S_IOPAD(0x00f0, PIN_OUTPUT, 0) /* (AB26) VOUT0_DATA14 */
++			J722S_IOPAD(0x00f4, PIN_OUTPUT, 0) /* (AB27) VOUT0_DATA15 */
++			J722S_IOPAD(0x005c, PIN_OUTPUT, 1) /* (AC25) GPMC0_AD8.VOUT0_DATA16 */
++			J722S_IOPAD(0x0060, PIN_OUTPUT, 1) /* (U26) GPMC0_AD9.VOUT0_DATA17 */
++			J722S_IOPAD(0x0064, PIN_OUTPUT, 1) /* (V27) GPMC0_AD10.VOUT0_DATA18 */
++			J722S_IOPAD(0x0068, PIN_OUTPUT, 1) /* (V25) GPMC0_AD11.VOUT0_DATA19 */
++			J722S_IOPAD(0x006c, PIN_OUTPUT, 1) /* (V26) GPMC0_AD12.VOUT0_DATA20 */
++			J722S_IOPAD(0x0070, PIN_OUTPUT, 1) /* (V24) GPMC0_AD13.VOUT0_DATA21 */
++			J722S_IOPAD(0x0074, PIN_OUTPUT, 1) /* (V22) GPMC0_AD14.VOUT0_DATA22 */
++			J722S_IOPAD(0x0078, PIN_OUTPUT, 1) /* (V23) GPMC0_AD15.VOUT0_DATA23 */
++		>;
++	};
++
++	main_mcasp1_pins_default: main-mcasp1-default-pins {
++		pinctrl-single,pins = <
++			J722S_IOPAD(0x0090, PIN_INPUT, 2) /* (P27) GPMC0_BE0n_CLE.MCASP1_ACLKX */
++			J722S_IOPAD(0x0098, PIN_INPUT, 2) /* (V21) GPMC0_WAIT0.MCASP1_AFSX */
++			J722S_IOPAD(0x008c, PIN_OUTPUT, 2) /* (N23) GPMC0_WEn.MCASP1_AXR0 */
++		>;
++	};
+ };
+ 
+ &cpsw3g {
+@@ -284,6 +361,13 @@ J722S_MCU_IOPAD(0x050, PIN_INPUT_PULLUP, 0)	/* (C6) WKUP_I2C1_SDA */
+ 		>;
+ 		bootph-all;
+ 	};
++
++	hdmi_gpio_pins_default: hdmi-gpio-default-pins {
++		pinctrl-single,pins = <
++			J722S_MCU_IOPAD(0x0038, PIN_INPUT_PULLUP | PIN_DEBOUNCE_CONF6, 7) /* (D8) MCU_MCAN0_RX.MCU_GPIO0_14 HDMI_INTn */
++			J722S_MCU_IOPAD(0x0034, PIN_OUTPUT_PULLUP, 7) /* (B2) MCU_MCAN0_TX.MCU_GPIO0_13 HDMI_RSTn */
++		>;
++	};
+ };
+ 
+ &wkup_uart0 {
+@@ -385,6 +469,63 @@ rtc: rtc@68 {
+ 	};
+ };
+ 
++&main_i2c1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_i2c1_pins_default>;
++	clock-frequency = <400000>;
++	bootph-all;
++
++	it66122: bridge-hdmi@4c {
++		compatible = "ite,it66122";
++		reg = <0x4c>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&hdmi_gpio_pins_default>;
++		vcn33-supply = <&vdd_3v3>;
++		vcn18-supply = <&buck2_reg>;
++		vrf12-supply = <&ldo2_reg>;
++		reset-gpios = <&mcu_gpio0 13 GPIO_ACTIVE_LOW>;
++		interrupt-parent = <&mcu_gpio0>;
++		interrupts = <14 IRQ_TYPE_EDGE_FALLING>;
++		#sound-dai-cells = <0>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			/*
++			 * HDMI can be serviced with 3 potential VPs -
++			 * (DSS0 VP1 / DSS1 VP0 / DSS1 VP1).
++			 * For now, we will service it with DSS1 VP0.
++			 */
++			port@0 {
++				reg = <0>;
++
++				it66122_in: endpoint {
++					bus-width = <24>;
++					remote-endpoint = <&dss1_dpi0_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++
++				it66122_out: endpoint {
++					remote-endpoint = <&hdmi_connector_in>;
++				};
++			};
++		};
++	};
++};
++
++&main_gpio0 {
++	status = "okay";
++};
++
++&mcu_gpio0 {
++	status = "okay";
++};
++
+ &sdhci1 {
+ 	/* SD/MMC */
+ 	vmmc-supply = <&vdd_mmc1>;
+@@ -399,4 +540,54 @@ &sdhci1 {
+ 	status = "okay";
+ };
+ 
++&dss1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&dss1_pins_default>;
++
++	clocks = <&k3_clks 232 8>,
++		 <&k3_clks 232 0>,
++		 <&k3_clks 232 4>;
++
++	assigned-clocks = <&k3_clks 241 0>, /* DSS1-VP0 */
++			  <&k3_clks 240 0>, /* DSS1-VP1 */
++			  <&k3_clks 245 0>; /* DPI Output */
++
++	assigned-clock-parents = <&k3_clks 241 2>, /* PLL 17 HDMI */
++				 <&k3_clks 240 1>, /* PLL 18 DSI */
++				 <&k3_clks 245 2>; /* DSS1-DPI0 */
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		/* DSS1-VP0: DPI/HDMI Output */
++		port@0 {
++			reg = <0>;
++
++			dss1_dpi0_out: endpoint {
++				remote-endpoint = <&it66122_in>;
++			};
++		};
++	};
++};
++
++&mcasp1 {
++	status = "okay";
++	#sound-dai-cells = <0>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_mcasp1_pins_default>;
++	auxclk-fs-ratio = <2177>;
++	op-mode = <0>; /* MCASP_IIS_MODE */
++	tdm-slots = <2>;
++	serial-dir = <  /* 0: INACTIVE, 1: TX, 2: RX */
++		1 0 0 0
++		0 0 0 0
++		0 0 0 0
++		0 0 0 0
++	>;
++	tx-num-evt = <32>;
++	rx-num-evt = <32>;
++};
++
+ #include "k3-j722s-ti-ipc-firmware.dtsi"
+
+-- 
+2.43.0
+

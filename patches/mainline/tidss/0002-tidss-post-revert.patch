@@ -1,0 +1,149 @@
+From cb5b92afc2f2e468fbec3368cf3567746ab48f9c Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Mon, 6 Jul 2026 10:02:18 -0500
+Subject: [PATCH 2/2] tidss post revert
+
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+---
+ drivers/gpu/drm/tidss/tidss_crtc.c  | 10 +++++-----
+ drivers/gpu/drm/tidss/tidss_kms.c   |  4 ++--
+ drivers/gpu/drm/tidss/tidss_oldi.c  |  4 ++--
+ drivers/gpu/drm/tidss/tidss_plane.c |  8 ++++----
+ 4 files changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_crtc.c b/drivers/gpu/drm/tidss/tidss_crtc.c
+index dfdf61b01dcd..45613059ef1f 100644
+--- a/drivers/gpu/drm/tidss/tidss_crtc.c
++++ b/drivers/gpu/drm/tidss/tidss_crtc.c
+@@ -83,7 +83,7 @@ void tidss_crtc_error_irq(struct drm_crtc *crtc, u64 irqstatus)
+ /* drm_crtc_helper_funcs */
+ 
+ static int tidss_crtc_atomic_check(struct drm_crtc *crtc,
+-				   struct drm_atomic_state *state)
++				   struct drm_atomic_commit *state)
+ {
+ 	struct drm_crtc_state *crtc_state = drm_atomic_get_new_crtc_state(state,
+ 									  crtc);
+@@ -123,7 +123,7 @@ static void tidss_crtc_position_planes(struct tidss_device *tidss,
+ 				       struct drm_crtc_state *old_state,
+ 				       bool newmodeset)
+ {
+-	struct drm_atomic_state *ostate = old_state->state;
++	struct drm_atomic_commit *ostate = old_state->state;
+ 	struct tidss_crtc *tcrtc = to_tidss_crtc(crtc);
+ 	struct drm_crtc_state *cstate = crtc->state;
+ 	int layer;
+@@ -162,7 +162,7 @@ static void tidss_crtc_position_planes(struct tidss_device *tidss,
+ }
+ 
+ static void tidss_crtc_atomic_flush(struct drm_crtc *crtc,
+-				    struct drm_atomic_state *state)
++				    struct drm_atomic_commit *state)
+ {
+ 	struct drm_crtc_state *old_crtc_state = drm_atomic_get_old_crtc_state(state,
+ 									      crtc);
+@@ -212,7 +212,7 @@ static void tidss_crtc_atomic_flush(struct drm_crtc *crtc,
+ }
+ 
+ static void tidss_crtc_atomic_enable(struct drm_crtc *crtc,
+-				     struct drm_atomic_state *state)
++				     struct drm_atomic_commit *state)
+ {
+ 	struct drm_crtc_state *old_state = drm_atomic_get_old_crtc_state(state,
+ 									 crtc);
+@@ -262,7 +262,7 @@ static void tidss_crtc_atomic_enable(struct drm_crtc *crtc,
+ }
+ 
+ static void tidss_crtc_atomic_disable(struct drm_crtc *crtc,
+-				      struct drm_atomic_state *state)
++				      struct drm_atomic_commit *state)
+ {
+ 	struct tidss_crtc *tcrtc = to_tidss_crtc(crtc);
+ 	struct drm_device *ddev = crtc->dev;
+diff --git a/drivers/gpu/drm/tidss/tidss_kms.c b/drivers/gpu/drm/tidss/tidss_kms.c
+index 9d41853ef7b9..df4da67c7eb3 100644
+--- a/drivers/gpu/drm/tidss/tidss_kms.c
++++ b/drivers/gpu/drm/tidss/tidss_kms.c
+@@ -19,7 +19,7 @@
+ #include "tidss_kms.h"
+ #include "tidss_plane.h"
+ 
+-static void tidss_atomic_commit_tail(struct drm_atomic_state *old_state)
++static void tidss_atomic_commit_tail(struct drm_atomic_commit *old_state)
+ {
+ 	struct drm_device *ddev = old_state->dev;
+ 	struct tidss_device *tidss = to_tidss(ddev);
+@@ -67,7 +67,7 @@ static const struct drm_mode_config_helper_funcs mode_config_helper_funcs = {
+ };
+ 
+ static int tidss_atomic_check(struct drm_device *ddev,
+-			      struct drm_atomic_state *state)
++			      struct drm_atomic_commit *state)
+ {
+ 	struct drm_plane_state *opstate;
+ 	struct drm_plane_state *npstate;
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.c b/drivers/gpu/drm/tidss/tidss_oldi.c
+index 188f31b57c6a..a90ddd0d07ab 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.c
++++ b/drivers/gpu/drm/tidss/tidss_oldi.c
+@@ -247,7 +247,7 @@ static int tidss_oldi_atomic_check(struct drm_bridge *bridge,
+ }
+ 
+ static void tidss_oldi_atomic_pre_enable(struct drm_bridge *bridge,
+-					 struct drm_atomic_state *state)
++					 struct drm_atomic_commit *state)
+ {
+ 	struct tidss_oldi *oldi = drm_bridge_to_tidss_oldi(bridge);
+ 	struct drm_connector *connector;
+@@ -291,7 +291,7 @@ static void tidss_oldi_atomic_pre_enable(struct drm_bridge *bridge,
+ }
+ 
+ static void tidss_oldi_atomic_post_disable(struct drm_bridge *bridge,
+-					   struct drm_atomic_state *state)
++					   struct drm_atomic_commit *state)
+ {
+ 	struct tidss_oldi *oldi = drm_bridge_to_tidss_oldi(bridge);
+ 
+diff --git a/drivers/gpu/drm/tidss/tidss_plane.c b/drivers/gpu/drm/tidss/tidss_plane.c
+index aaa02c851c59..1a8b44fb45f8 100644
+--- a/drivers/gpu/drm/tidss/tidss_plane.c
++++ b/drivers/gpu/drm/tidss/tidss_plane.c
+@@ -29,7 +29,7 @@ void tidss_plane_error_irq(struct drm_plane *plane, u64 irqstatus)
+ /* drm_plane_helper_funcs */
+ 
+ static int tidss_plane_atomic_check(struct drm_plane *plane,
+-				    struct drm_atomic_state *state)
++				    struct drm_atomic_commit *state)
+ {
+ 	struct drm_plane_state *new_plane_state = drm_atomic_get_new_plane_state(state,
+ 										 plane);
+@@ -113,7 +113,7 @@ static int tidss_plane_atomic_check(struct drm_plane *plane,
+ }
+ 
+ static void tidss_plane_atomic_update(struct drm_plane *plane,
+-				      struct drm_atomic_state *state)
++				      struct drm_atomic_commit *state)
+ {
+ 	struct drm_device *ddev = plane->dev;
+ 	struct tidss_device *tidss = to_tidss(ddev);
+@@ -133,7 +133,7 @@ static void tidss_plane_atomic_update(struct drm_plane *plane,
+ }
+ 
+ static void tidss_plane_atomic_enable(struct drm_plane *plane,
+-				      struct drm_atomic_state *state)
++				      struct drm_atomic_commit *state)
+ {
+ 	struct drm_device *ddev = plane->dev;
+ 	struct tidss_device *tidss = to_tidss(ddev);
+@@ -143,7 +143,7 @@ static void tidss_plane_atomic_enable(struct drm_plane *plane,
+ }
+ 
+ static void tidss_plane_atomic_disable(struct drm_plane *plane,
+-				       struct drm_atomic_state *state)
++				       struct drm_atomic_commit *state)
+ {
+ 	struct drm_device *ddev = plane->dev;
+ 	struct tidss_device *tidss = to_tidss(ddev);
+-- 
+2.53.0
+
