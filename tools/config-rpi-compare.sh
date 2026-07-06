@@ -27,7 +27,7 @@ grab_rpi_branch () {
 }
 
 if [ -f ${DIR}/KERNEL/Makefile ] ; then
-	backport_tag="rpi-6.16.y" ; grab_rpi_branch
+	backport_tag="rpi-6.18.y" ; grab_rpi_branch
 
 	cd ${DIR}/KERNEL/
 
