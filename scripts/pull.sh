@@ -4,6 +4,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-git pull --no-edit https://github.com/RobertCNelson/arm64-multiplatform.git v7.1.x-arm64-k3
-git pull --no-edit https://gitlab.com/RobertCNelson/arm64-multiplatform.git v7.1.x-arm64-k3
+git pull --no-edit https://github.com/RobertCNelson/arm64-multiplatform.git v7.2.x-arm64-k3
+git pull --no-edit https://gitlab.com/RobertCNelson/arm64-multiplatform.git v7.2.x-arm64-k3
 
