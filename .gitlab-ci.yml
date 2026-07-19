@@ -62,9 +62,7 @@ build-debian-14-amd64:
   stage: build
   script:
     - ./tools/ci-dt-schema.sh
-    - echo "Acquire::http::Proxy \"http://192.168.1.10:3142\";" > /etc/apt/apt.conf.d/00aptproxy
-    - apt-get update
-    - apt-get dist-upgrade -yq
+    - ./tools/ci-debian-update.sh
     - ./tools/ci-git.sh
     - tar --zstd -xf ccache.tar.zst -C / || true
     - df -h /dev/shm
@@ -94,9 +92,7 @@ build-ubuntu-26.04-amd64:
     - docker-amd64
   stage: build
   script:
-    - echo "Acquire::http::Proxy \"http://192.168.1.10:3142\";" > /etc/apt/apt.conf.d/00aptproxy
-    - apt-get update
-    - apt-get dist-upgrade -yq
+    - ./tools/ci-debian-update.sh
     - ./tools/ci-git.sh
     - tar --zstd -xf ccache.tar.zst -C / || true
     - df -h /dev/shm
