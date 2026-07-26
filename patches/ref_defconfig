@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 7.1.4 Kernel Configuration
+# Linux/arm64 7.1.5 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 16.1.0"
 CONFIG_CC_IS_GCC=y
@@ -9222,6 +9222,8 @@ CONFIG_SH_TIMER_TMU=y
 CONFIG_TIMER_IMX_SYS_CTR=y
 # CONFIG_NXP_STM_TIMER is not set
 # CONFIG_RTK_SYSTIMER is not set
+# CONFIG_VF_USE_PIT_TIMER is not set
+CONFIG_VF_TIMER_NONE=y
 # end of Clock Source drivers
 
 CONFIG_MAILBOX=y
