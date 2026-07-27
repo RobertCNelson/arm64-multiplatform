@@ -112,11 +112,6 @@ rt () {
 			xzcat patch-${rt_patch}.patch.xz | patch -p1 || rt_cleanup
 			rm -f patch-${rt_patch}.patch.xz
 			rm -f localversion-rt
-			rm -f kernel/sched/core.c.orig
-			rm -f kernel/time/hrtimer.c.orig
-			rm -f include/linux/sched.h.orig
-			rm -f kernel/sched/fair.c.orig
-			rm -f kernel/sched/sched.h.orig
 			${git_bin} add .
 			${git_bin} commit -a -m 'merge: CONFIG_PREEMPT_RT Patch Set' -m "patch-${rt_patch}.patch.xz" -s
 			${git_bin} format-patch -1 -o ../patches/external/rt/
@@ -330,6 +325,7 @@ beagleboard_dtbs () {
 		device="BBORG_FAN-A000" ; arm_dtbo_makefile_append
 		device="BBORG_RELAY-00A2" ; arm_dtbo_makefile_append
 		device="BB-SPIDEV0-00A0" ; arm_dtbo_makefile_append
+		device="BB-SPIDEV1-00A0-CS1" ; arm_dtbo_makefile_append
 		device="BB-SPIDEV1-00A0" ; arm_dtbo_makefile_append
 		device="BB-UART1-00A0" ; arm_dtbo_makefile_append
 		device="BB-UART2-00A0" ; arm_dtbo_makefile_append
@@ -349,6 +345,7 @@ beagleboard_dtbs () {
 
 		#regenerate_arm64_dtbo_list
 
+		device="k3-am6232-pocketbeagle2-gamepup-a4" ; k3_dtbo_makefile_append
 		device="k3-am6232-pocketbeagle2-techlab-cape" ; k3_dtbo_makefile_append
 		device="k3-am625-beagleplay-bcfserial-no-firmware" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-ardupilot-cape" ; k3_dtbo_makefile_append
