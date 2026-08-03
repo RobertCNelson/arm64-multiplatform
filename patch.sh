@@ -537,7 +537,7 @@ drivers () {
 	dir 'external/gasket'
 
 	#dir 'drivers/cpufreq'
-	dir 'drivers/drm/imagination'
+	#dir 'drivers/drm/imagination'
 	dir 'drivers/drm/tidss'
 
 	echo "dir: drivers/power_sequencing_driver"
