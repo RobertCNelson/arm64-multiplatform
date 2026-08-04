@@ -27,6 +27,8 @@ after_script:
     - rm -rf $CI_PROJECT_DIR/KERNEL/
 
 .script_fragments:
+  setup_dt_schema:
+    - ./tools/ci-dt-schema.sh
   setup_ccache:
     - ./tools/ci-git.sh
     - ./tools/ci-setup-ccache.sh
@@ -53,6 +55,7 @@ after_script:
     paths:
       - ccache.tar.zst
   script:
+    - !reference [.script_fragments, setup_dt_schema]
     - !reference [.script_fragments, setup_ccache]
     - cp -v $SYSTEM_SH_SRC system.sh
     - ./build_deb.sh
