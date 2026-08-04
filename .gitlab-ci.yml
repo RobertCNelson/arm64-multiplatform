@@ -27,10 +27,7 @@ after_script:
     - rm -rf $CI_PROJECT_DIR/KERNEL/
 
 .script_fragments:
-  setup_dt_schema:
-    - ./tools/ci-dt-schema.sh
   setup_ccache:
-    - ./tools/ci-git.sh
     - ./tools/ci-setup-ccache.sh
   cleanup_ccache:
     - ./tools/ci-cleanup-ccache.sh
