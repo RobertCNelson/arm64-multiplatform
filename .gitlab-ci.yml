@@ -9,7 +9,8 @@ variables:
   GIT_DEPTH: 1
   KERNEL_IMAGE: "arch/arm64/boot/Image"
   REGISTRY_BASE: "registry.gfnd.rcn-ee.org:5000/ci"
-  RUN_CI_GIT_UPDATE: "false"
+  RUN_CI_GIT_UPDATE: "true"
+  RUN_CI_DT_SCHEMA_CHECKER: "true"
 
 stages:
   - build
@@ -29,7 +30,12 @@ after_script:
 
 .script_fragments:
   setup_dt_schema:
-    - ./tools/ci-dt-schema.sh
+    - |
+      if [ "$RUN_CI_DT_SCHEMA_CHECKER" = "true" ]; then
+        ./tools/ci-dt-schema.sh
+      else
+        echo "Skipping ci-dt-schema.sh because RUN_CI_DT_SCHEMA_CHECKER is not true"
+      fi
   setup_ccache:
     - |
       if [ "$RUN_CI_GIT_UPDATE" = "true" ]; then
