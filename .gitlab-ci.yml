@@ -9,6 +9,7 @@ variables:
   GIT_DEPTH: 1
   KERNEL_IMAGE: "arch/arm64/boot/Image"
   REGISTRY_BASE: "registry.gfnd.rcn-ee.org:5000/ci"
+  RUN_CI_GIT_UPDATE: "false"
 
 stages:
   - build
@@ -30,7 +31,12 @@ after_script:
   setup_dt_schema:
     - ./tools/ci-dt-schema.sh
   setup_ccache:
-    - ./tools/ci-git.sh
+    - |
+      if [ "$RUN_CI_GIT_UPDATE" = "true" ]; then
+        ./tools/ci-git.sh
+      else
+        echo "Skipping ci-git.sh because RUN_CI_GIT_UPDATE is not true"
+      fi
     - ./tools/ci-setup-ccache.sh
   cleanup_ccache:
     - ./tools/ci-cleanup-ccache.sh
