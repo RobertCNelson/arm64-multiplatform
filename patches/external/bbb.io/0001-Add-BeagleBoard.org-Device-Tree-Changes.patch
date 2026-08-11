@@ -1,11 +1,11 @@
-From a84d2c946719546a6e06fd7da08fbd086d3c6d9e Mon Sep 17 00:00:00 2001
+From 68badc26a3b1000a76611acc9a38a81ac71ed60e Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 3 Aug 2026 11:50:17 -0500
+Date: Tue, 11 Aug 2026 09:28:32 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v7.2.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/a999f067f013dca134baaaa487887898f236a4a7
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/b36686698fc376842c192f244f3a8d9217201309
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso  |   80 ++
@@ -118,7 +118,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../ti/k3-am67a-beagley-ai-i2c1-ssd1306.dtso  |   32 +
  .../ti/k3-am67a-beagley-ai-mikroe-eth.dtso    |   48 +
  .../k3-am67a-beagley-ai-mikroe-microsd.dtso   |   47 +
- .../dts/ti/k3-am67a-beagley-ai-pinmux.dtsi    |  964 ++++++++++++++
+ .../dts/ti/k3-am67a-beagley-ai-pinmux.dtsi    |  947 ++++++++++++++
  .../ti/k3-am67a-beagley-ai-pps-gpio18.dtso    |   31 +
  .../k3-am67a-beagley-ai-pwm-ecap0-gpio12.dtso |   38 +
  .../k3-am67a-beagley-ai-pwm-ecap1-gpio16.dtso |   38 +
@@ -145,7 +145,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso  |   50 +
  .../dts/ti/k3-am67a-beagley-ai-spidev0.dtso   |   52 +
  .../ti/k3-am67a-beagley-ai-uart-ttyama0.dtso  |   29 +
- .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  347 ++++-
+ .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  417 +++++-
  .../k3-j721e-beagleboneai64-BBORG_MOTOR.dtso  |   95 ++
  .../dts/ti/k3-j721e-beagleboneai64-ecap0.dtso |   40 +
  .../dts/ti/k3-j721e-beagleboneai64-ecap1.dtso |   40 +
@@ -172,10 +172,11 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  ...3-j721e-beagleboneai64-spi-mcspi7-cs0.dtso |   62 +
  .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |    1 +
  arch/arm64/boot/dts/ti/k3-j721e-main.dtsi     |   23 +-
+ arch/arm64/boot/dts/ti/k3-j721e-sk.dts        |    2 +-
  arch/arm64/boot/dts/ti/k3-j722s.dtsi          |   54 +
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |    2 +
  .../dt-bindings/clock/spacemit,k3-clocks.h    |    4 +
- 167 files changed, 14516 insertions(+), 43 deletions(-)
+ 168 files changed, 14566 insertions(+), 48 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso
@@ -11978,10 +11979,10 @@ index 000000000000..d6e02c011e21
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-pinmux.dtsi b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-pinmux.dtsi
 new file mode 100644
-index 000000000000..010c15d3a5e3
+index 000000000000..4a374e96b9a2
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-pinmux.dtsi
-@@ -0,0 +1,964 @@
+@@ -0,0 +1,947 @@
 +// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
 + * https://beagley-ai.org/
@@ -12868,31 +12869,14 @@ index 000000000000..010c15d3a5e3
 +
 +&main_gpio0 {
 +	pinctrl-names = "default";
-+	gpio-line-names = "", "", "", "", "", /* 0-4 */
-+			  "", "", "", "", "", /* 5-9 */
-+			  "", "", "", "", "", /* 10-14 */
-+			  "", "", "", "", "", /* 15-19 */
-+			  "", "", "", "", "", /* 20-24 */
-+			  "", "", "", "", "", /* 25-29 */
-+			  "", "", "USB_RST", "GPIO27", "", /* 30-34 */
-+			  "", "GPIO26", "", "GPIO4", "", /* 35-39 */
-+			  "", "GPIO22", "GPIO25", "", ""; /* 40-44 */
 +};
 +
 +&main_gpio1 {
 +	pinctrl-names = "default";
-+	gpio-line-names = "", "", "", "", "", /* 0-4 */
-+			  "", "", "GPIO16", "GPIO17", "GPIO21", /* 5-9 */
-+			  "GPIO20", "GPIO18", "GPIO19", "GPIO15", "GPIO14", /* 10-14 */
-+			  "GPIO5", "GPIO12", "GPIO6", "GPIO13", ""; /* 15-19 */
 +};
 +
 +&mcu_gpio0 {
 +	pinctrl-names = "default";
-+	gpio-line-names = "GPIO8", "", "GPIO11", "GPIO10", "GPIO9", /* 0-4 */
-+			  "", "", "GPIO23", "", "GPIO7", /* 5-9 */
-+			  "GPIO24", "", "", "HDMI_RSTn", "HDMI_INTn", /* 10-14 */
-+			  "", "", "GPIO3", "GPIO2", ""; /* 15-19 */
 +};
 +
 +&ecap0 {
@@ -14130,7 +14114,7 @@ index 000000000000..bf41c0488af1
 +	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
-index f97e3bddf28f..e176f6e0c26d 100644
+index f97e3bddf28f..0f72a6f124a4 100644
 --- a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 @@ -10,7 +10,11 @@
@@ -14194,7 +14178,27 @@ index f97e3bddf28f..e176f6e0c26d 100644
  	leds {
  		compatible = "gpio-leds";
  		pinctrl-names = "default";
-@@ -174,6 +211,22 @@ simple-audio-card,codec {
+@@ -147,6 +184,19 @@ led-1 {
+ 		};
+ 	};
+ 
++	dsi_csi_mux: mux-controller {
++		compatible = "gpio-mux";
++		#mux-state-cells = <1>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&dsi_csi_mux_pins_default>;
++
++		mux-gpios = <&main_gpio0 2 GPIO_ACTIVE_HIGH>,
++			    <&main_gpio0 1 GPIO_ACTIVE_HIGH>;
++
++		/* state = SEL + 2*OE : 0 = DSI0, 1 = CSI1, 2,3 = off */
++		idle-state = <2>;
++	};
++
+ 	hdmi0: connector-hdmi {
+ 		compatible = "hdmi-connector";
+ 		label = "hdmi";
+@@ -174,6 +224,22 @@ simple-audio-card,codec {
  			sound-dai = <&it66122>;
  		};
  	};
@@ -14217,7 +14221,29 @@ index f97e3bddf28f..e176f6e0c26d 100644
  };
  
  &main_pmx0 {
-@@ -193,6 +246,14 @@ J722S_IOPAD(0x01cc, PIN_OUTPUT, 0)	/* (B22) UART0_TXD */
+@@ -185,6 +251,21 @@ J722S_IOPAD(0x01e4, PIN_INPUT_PULLUP, 0) /* (B22) I2C0_SDA */
+ 		bootph-all;
+ 	};
+ 
++	main_i2c1_pins_default: main-i2c1-default-pins {
++		pinctrl-single,pins = <
++			J722S_IOPAD(0x01e8, PIN_INPUT_PULLUP, 0) /* (C24) I2C1_SCL */
++			J722S_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A22) I2C1_SDA */
++		>;
++		bootph-all;
++	};
++
++	main_i2c2_pins_default: main-i2c2-default-pins {
++		pinctrl-single,pins = <
++			J722S_IOPAD(0x00b0, PIN_INPUT_PULLUP, 1) /* (P22) GPMC0_CSn2.I2C2_SCL */
++			J722S_IOPAD(0x00b4, PIN_INPUT_PULLUP, 1) /* (P23) GPMC0_CSn3.I2C2_SDA */
++		>;
++	};
++
+ 	main_uart0_pins_default: main-uart0-default-pins {
+ 		pinctrl-single,pins = <
+ 			J722S_IOPAD(0x01c8, PIN_INPUT, 0)	/* (A22) UART0_RXD */
+@@ -193,6 +274,14 @@ J722S_IOPAD(0x01cc, PIN_OUTPUT, 0)	/* (B22) UART0_TXD */
  		bootph-all;
  	};
  
@@ -14232,20 +14258,36 @@ index f97e3bddf28f..e176f6e0c26d 100644
  	vdd_sd_dv_pins_default: vdd-sd-dv-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x0244, PIN_OUTPUT, 7) /* (A24) MMC1_SDWP.GPIO1_49 */
-@@ -221,6 +282,12 @@ J722S_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A22) I2C1_SDA */
+@@ -213,12 +302,10 @@ J722S_IOPAD(0x0240, PIN_INPUT, 7) /* (B24) MMC1_SDCD.GPIO1_48 */
  		bootph-all;
  	};
  
+-	main_i2c1_pins_default: main-i2c1-default-pins {
 +	main_gpio0_ioexp_intr_pins_default: main-gpio0-ioexp-intr-default-pins {
-+		pinctrl-single,pins = <
+ 		pinctrl-single,pins = <
+-			J722S_IOPAD(0x01e8, PIN_INPUT_PULLUP, 0) /* (C24) I2C1_SCL */
+-			J722S_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A22) I2C1_SDA */
 +			J722S_IOPAD(0x0110, PIN_INPUT, 7) /* (G27) MMC2_DAT1.GPIO0_67 */
+ 		>;
+-		bootph-all;
+ 	};
+ 
+ 	mdio_pins_default: mdio-default-pins {
+@@ -228,6 +315,13 @@ J722S_IOPAD(0x015c, PIN_INPUT, 0) /* (AD25) MDIO0_MDIO */
+ 		>;
+ 	};
+ 
++	dsi_csi_mux_pins_default: dsi-csi-mux-default-pins {
++		pinctrl-single,pins = <
++			J722S_IOPAD(0x0004, PIN_OUTPUT, 7) /* (L23) OSPI0_LBCLKO.GPIO0_1 */
++			J722S_IOPAD(0x0008, PIN_OUTPUT, 7) /* (L22) OSPI0_DQS.GPIO0_2 */
 +		>;
 +	};
 +
- 	mdio_pins_default: mdio-default-pins {
+ 	rgmii1_pins_default: rgmii1-default-pins {
  		pinctrl-single,pins = <
- 			J722S_IOPAD(0x0160, PIN_OUTPUT, 0) /* (AC24) MDIO0_MDC */
-@@ -245,6 +312,18 @@ J722S_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AF25) RGMII1_TX_CTL */
+ 			J722S_IOPAD(0x014c, PIN_INPUT, 0) /* (AC25) RGMII1_RD0 */
+@@ -245,6 +339,18 @@ J722S_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AF25) RGMII1_TX_CTL */
  		>;
  	};
  
@@ -14264,7 +14306,7 @@ index f97e3bddf28f..e176f6e0c26d 100644
  	led_pins_default: led-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x002c, PIN_OUTPUT, 7) /* (K26) OSPI0_CSn0.GPIO0_11 */
-@@ -301,7 +380,47 @@ main_mcasp1_pins_default: main-mcasp1-default-pins {
+@@ -301,7 +407,47 @@ main_mcasp1_pins_default: main-mcasp1-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x0090, PIN_INPUT, 2) /* (P27) GPMC0_BE0n_CLE.MCASP1_ACLKX */
  			J722S_IOPAD(0x0098, PIN_INPUT, 2) /* (V21) GPMC0_WAIT0.MCASP1_AFSX */
@@ -14313,27 +14355,42 @@ index f97e3bddf28f..e176f6e0c26d 100644
  		>;
  	};
  };
-@@ -331,11 +450,19 @@ &cpsw_port1 {
+@@ -331,9 +477,34 @@ &cpsw_port1 {
  	status = "okay";
  };
  
 +&main_gpio0 {
 +	status = "okay";
++	gpio-line-names = "", "", "", "", "", /* 0-4 */
++			  "", "", "", "", "", /* 5-9 */
++			  "", "", "", "", "", /* 10-14 */
++			  "", "", "", "", "", /* 15-19 */
++			  "", "", "", "", "", /* 20-24 */
++			  "", "", "", "", "", /* 25-29 */
++			  "", "", "USB_RST", "GPIO27", "", /* 30-34 */
++			  "", "GPIO26", "", "GPIO4", "", /* 35-39 */
++			  "", "GPIO22", "GPIO25", "", ""; /* 40-44 */
 +};
 +
  &main_gpio1 {
  	bootph-all;
  	status = "okay";
- };
- 
-+&mcu_gpio0 {
-+	status = "okay";
++	gpio-line-names = "", "", "", "", "", /* 0-4 */
++			  "", "", "GPIO16", "GPIO17", "GPIO21", /* 5-9 */
++			  "GPIO20", "GPIO18", "GPIO19", "GPIO15", "GPIO14", /* 10-14 */
++			  "GPIO5", "GPIO12", "GPIO6", "GPIO13", ""; /* 15-19 */
 +};
 +
++&mcu_gpio0 {
++	status = "okay";
++	gpio-line-names = "GPIO8", "", "GPIO11", "GPIO10", "GPIO9", /* 0-4 */
++			  "", "", "GPIO23", "", "GPIO7", /* 5-9 */
++			  "GPIO24", "", "", "HDMI_RSTn", "HDMI_INTn", /* 10-14 */
++			  "", "", "GPIO3", "GPIO2", ""; /* 15-19 */
+ };
+ 
  &main_uart0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&main_uart0_pins_default>;
-@@ -343,7 +470,55 @@ &main_uart0 {
+@@ -343,7 +514,55 @@ &main_uart0 {
  	status = "okay";
  };
  
@@ -14389,7 +14446,7 @@ index f97e3bddf28f..e176f6e0c26d 100644
  	wkup_uart0_pins_default: wkup-uart0-default-pins {
  		pinctrl-single,pins = <
  			J722S_MCU_IOPAD(0x02c, PIN_INPUT, 0)	/* (C7) WKUP_UART0_CTSn */
-@@ -368,6 +543,33 @@ J722S_MCU_IOPAD(0x0038, PIN_INPUT_PULLUP | PIN_DEBOUNCE_CONF6, 7) /* (D8) MCU_MC
+@@ -368,6 +587,33 @@ J722S_MCU_IOPAD(0x0038, PIN_INPUT_PULLUP | PIN_DEBOUNCE_CONF6, 7) /* (D8) MCU_MC
  			J722S_MCU_IOPAD(0x0034, PIN_OUTPUT_PULLUP, 7) /* (B2) MCU_MCAN0_TX.MCU_GPIO0_13 HDMI_RSTn */
  		>;
  	};
@@ -14423,7 +14480,7 @@ index f97e3bddf28f..e176f6e0c26d 100644
  };
  
  &wkup_uart0 {
-@@ -378,6 +580,15 @@ &wkup_uart0 {
+@@ -378,6 +624,15 @@ &wkup_uart0 {
  	status = "reserved";
  };
  
@@ -14439,7 +14496,7 @@ index f97e3bddf28f..e176f6e0c26d 100644
  &wkup_i2c0 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&wkup_i2c0_pins_default>;
-@@ -496,7 +707,7 @@ ports {
+@@ -496,7 +751,7 @@ ports {
  			/*
  			 * HDMI can be serviced with 3 potential VPs -
  			 * (DSS0 VP1 / DSS1 VP0 / DSS1 VP1).
@@ -14448,10 +14505,28 @@ index f97e3bddf28f..e176f6e0c26d 100644
  			 */
  			port@0 {
  				reg = <0>;
-@@ -540,6 +751,33 @@ &sdhci1 {
+@@ -540,6 +795,51 @@ &sdhci1 {
  	status = "okay";
  };
  
++&main_i2c0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_i2c0_pins_default>;
++	clock-frequency = <400000>;
++
++	/* Only used by the CSI1/DSI0 connector; enable it in the overlay */
++	status = "disabled";
++};
++
++&main_i2c2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_i2c2_pins_default>;
++	clock-frequency = <400000>;
++
++	/* Only used by the CSI0 connector; enable it in the overlay */
++	status = "disabled";
++};
++
 +&sdhci2 {
 +	vmmc-supply = <&wlan_en>;
 +	pinctrl-names = "default";
@@ -14482,7 +14557,7 @@ index f97e3bddf28f..e176f6e0c26d 100644
  &dss1 {
  	status = "okay";
  	pinctrl-names = "default";
-@@ -561,7 +799,7 @@ ports {
+@@ -561,7 +861,7 @@ ports {
  		#address-cells = <1>;
  		#size-cells = <0>;
  
@@ -14491,7 +14566,7 @@ index f97e3bddf28f..e176f6e0c26d 100644
  		port@0 {
  			reg = <0>;
  
-@@ -590,4 +828,107 @@ &mcasp1 {
+@@ -590,4 +890,107 @@ &mcasp1 {
  	rx-num-evt = <32>;
  };
  
@@ -16403,6 +16478,19 @@ index d5fd30a01032..e108fbf5cc61 100644
  	main_mcan0: can@2701000 {
  		compatible = "bosch,m_can";
  		reg = <0x00 0x02701000 0x00 0x200>,
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-sk.dts b/arch/arm64/boot/dts/ti/k3-j721e-sk.dts
+index 689ba2ff81f7..d66e71db4697 100644
+--- a/arch/arm64/boot/dts/ti/k3-j721e-sk.dts
++++ b/arch/arm64/boot/dts/ti/k3-j721e-sk.dts
+@@ -1068,7 +1068,7 @@ &dss_ports {
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+ 
+-	port@0  {
++	port@0 {
+ 		reg = <0>;
+ 
+ 		dpi0_out: endpoint {
 diff --git a/arch/arm64/boot/dts/ti/k3-j722s.dtsi b/arch/arm64/boot/dts/ti/k3-j722s.dtsi
 index dd04accfc518..07aeb4fc1d92 100644
 --- a/arch/arm64/boot/dts/ti/k3-j722s.dtsi
