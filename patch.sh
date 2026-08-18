@@ -455,12 +455,17 @@ post_backports () {
 	fi
 
 	${git_bin} add .
-	${git_bin} commit -a -m "backports ${subsystem} from linux" -m "Reference: ${backport_tag}" -s
+	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag}" -s
 	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
 	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
 	exit 2
+}
+
+patch_backports () {
+	echo "dir: backports/${subsystem}"
+	${git} "${DIR}/patches/backports/${subsystem}/0001-backports-${subsystem}-from-linux.git.patch"
 }
 
 pre_rpibackports () {
@@ -483,7 +488,7 @@ post_rpibackports () {
 	fi
 
 	${git_bin} add .
-	${git_bin} commit -a -m "backports ${subsystem} from raspberrypi-linux" -m "Reference: ${backport_tag}" -s
+	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag}" -s
 	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
@@ -504,22 +509,7 @@ backports () {
 
 		post_rpibackports
 	else
-		dir 'backports/rpi-backports'
-	fi
-
-	backport_tag="v7.2"
-
-	subsystem="imagination"
-	#regenerate="enable"
-	if [ "x${regenerate}" = "xenable" ] ; then
-		pre_backports
-
-		rsync -av ~/linux-next/drivers/gpu/drm/imagination/ ./drivers/gpu/drm/imagination/
-		cp -v ~/linux-next/include/uapi/drm/pvr_drm.h ./include/uapi/drm/
-
-		post_backports
-	else
-		dir 'backports/imagination'
+		patch_backports
 	fi
 }
 
@@ -545,8 +535,10 @@ drivers () {
 
 	dir 'external/android'
 	dir 'external/cadence'
+	dir 'external/gasket'
 
 	#dir 'drivers/cpufreq'
+	#dir 'drivers/drm/imagination'
 	dir 'drivers/drm/tidss'
 
 	echo "dir: drivers/power_sequencing_driver"

@@ -1,7 +1,7 @@
-From 93ec5ebf395f77f51d909b5211483ea429d328ca Mon Sep 17 00:00:00 2001
+From dbb2a9f95fa78da150c23ecd1dab0d16d17034f5 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 18 Aug 2026 13:42:32 -0500
-Subject: [PATCH] backports rpi-backports from raspberrypi-linux
+Date: Mon, 3 Aug 2026 13:08:25 -0500
+Subject: [PATCH] backports: rpi-backports: from: linux.git
 
 Reference: rpi-7.1.y
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
