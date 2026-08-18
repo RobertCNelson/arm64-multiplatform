@@ -1,4 +1,4 @@
-From ad3e8e2ae4b43634e2ac682fbd71c60116b5f10d Mon Sep 17 00:00:00 2001
+From 76c32192375f9212e038c1b42097ccef96c6db51 Mon Sep 17 00:00:00 2001
 From: Ben Hutchings <ben@decadent.org.uk>
 Date: Tue, 8 Jul 2025 13:30:55 +0200
 Subject: [PATCH 2/2] android: Enable building binder as module
@@ -49,10 +49,10 @@ index e0c650d3898e..eae81bed1fb9 100644
 +binder_linux-$(CONFIG_ANDROID_BINDER_ALLOC_KUNIT_TEST)	+= tests/
  obj-$(CONFIG_ANDROID_BINDER_IPC_RUST)	+= binder/
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
-index 9e6194224593..d15c3d20e1e6 100644
+index 8f2ef1bd539f..2b6cf8188ad0 100644
 --- a/drivers/android/binder.c
 +++ b/drivers/android/binder.c
-@@ -7169,3 +7169,6 @@ device_initcall(binder_init);
+@@ -7184,3 +7184,6 @@ device_initcall(binder_init);
  
  #define CREATE_TRACE_POINTS
  #include "binder_trace.h"
@@ -73,5 +73,5 @@ index e4488ad86a65..3e72d446785d 100644
  
  #define binder_alloc_debug(mask, x...) \
 -- 
-2.53.0
+2.55.0
 

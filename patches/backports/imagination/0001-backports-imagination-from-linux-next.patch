@@ -1,0 +1,444 @@
+From 7d9c30eb09be1dbf0724d79d2a2de8097d2f1418 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Tue, 18 Aug 2026 10:03:39 -0500
+Subject: [PATCH] backports imagination from linux-next
+
+Reference: next-20260817
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+---
+ drivers/gpu/drm/imagination/pvr_ccb.c         |  6 +-
+ drivers/gpu/drm/imagination/pvr_check.h       | 36 ++++++++++
+ drivers/gpu/drm/imagination/pvr_device.c      |  4 +-
+ drivers/gpu/drm/imagination/pvr_device_info.h |  6 +-
+ drivers/gpu/drm/imagination/pvr_drv.c         |  7 +-
+ drivers/gpu/drm/imagination/pvr_gem.h         | 12 ++--
+ drivers/gpu/drm/imagination/pvr_queue.c       | 14 ++--
+ .../drm/imagination/pvr_rogue_fwif_check.h    | 11 +--
+ .../imagination/pvr_rogue_fwif_client_check.h |  9 +--
+ .../imagination/pvr_rogue_fwif_shared_check.h |  9 +--
+ .../drm/imagination/pvr_rogue_heap_config.h   | 10 +--
+ .../drm/imagination/pvr_rogue_mips_check.h    | 71 +++++++------------
+ 12 files changed, 91 insertions(+), 104 deletions(-)
+ create mode 100644 drivers/gpu/drm/imagination/pvr_check.h
+
+diff --git a/drivers/gpu/drm/imagination/pvr_ccb.c b/drivers/gpu/drm/imagination/pvr_ccb.c
+index 4accf18e2341..b702d122d791 100644
+--- a/drivers/gpu/drm/imagination/pvr_ccb.c
++++ b/drivers/gpu/drm/imagination/pvr_ccb.c
+@@ -255,7 +255,7 @@ pvr_kccb_used_slot_count_locked(struct pvr_device *pvr_dev)
+  * pvr_kccb_send_cmd_reserved_powered() - Send command to the KCCB, with the PM ref
+  * held and a slot pre-reserved
+  * @pvr_dev: Device pointer.
+- * @cmd: Command to sent.
++ * @cmd: Command to send.
+  * @kccb_slot: Address to store the KCCB slot for this command. May be %NULL.
+  */
+ void
+@@ -361,7 +361,7 @@ static int pvr_kccb_reserve_slot_sync(struct pvr_device *pvr_dev)
+ /**
+  * pvr_kccb_send_cmd_powered() - Send command to the KCCB, with a PM ref held
+  * @pvr_dev: Device pointer.
+- * @cmd: Command to sent.
++ * @cmd: Command to send.
+  * @kccb_slot: Address to store the KCCB slot for this command. May be %NULL.
+  *
+  * Returns:
+@@ -385,7 +385,7 @@ pvr_kccb_send_cmd_powered(struct pvr_device *pvr_dev, struct rogue_fwif_kccb_cmd
+ /**
+  * pvr_kccb_send_cmd() - Send command to the KCCB
+  * @pvr_dev: Device pointer.
+- * @cmd: Command to sent.
++ * @cmd: Command to send.
+  * @kccb_slot: Address to store the KCCB slot for this command. May be %NULL.
+  *
+  * Returns:
+diff --git a/drivers/gpu/drm/imagination/pvr_check.h b/drivers/gpu/drm/imagination/pvr_check.h
+new file mode 100644
+index 000000000000..94764ce9bbd1
+--- /dev/null
++++ b/drivers/gpu/drm/imagination/pvr_check.h
+@@ -0,0 +1,36 @@
++/* SPDX-License-Identifier: GPL-2.0-only OR MIT */
++/* Copyright (c) 2026 Imagination Technologies Ltd. */
++
++#ifndef PVR_CHECK_H
++#define PVR_CHECK_H
++
++#include <linux/build_bug.h>
++#include <linux/overflow.h>
++#include <linux/stddef.h>
++
++#define OFFSET_CHECK(type, member, offset) \
++	static_assert(offsetof(type, member) == (offset), \
++	"offsetof(" #type ", " #member ") incorrect")
++
++#define SIZE_CHECK(type, size) \
++	static_assert(sizeof(type) == (size), #type " is incorrect size")
++
++#define ALIGN_CHECK(type, align) \
++	static_assert(__alignof__(type) <= (align), #type " has incorrect alignment")
++
++/*
++ * Where the last member of a struct is a flexible array member, using
++ * SIZE_CHECK() is pointless. If the structure is not already padded to
++ * alignment without the flexible array member, sizeof() will not match the
++ * offset of the flexible array member and the "correct" sizeof() value is
++ * completely meaningless.
++ *
++ * In those instances, use FLEX_ARRAY_CHECK() instead to assert that the final
++ * field is a flexible array member and that it behaves as expected.
++ */
++#define FLEX_ARRAY_CHECK(type, member)                               \
++	static_assert(flex_array_size((type *)NULL, member, 1) ==    \
++				      sizeof_field(type, member[0]), \
++		      #type "->" #member " is incorrect size")
++
++#endif /* PVR_CHECK_H */
+diff --git a/drivers/gpu/drm/imagination/pvr_device.c b/drivers/gpu/drm/imagination/pvr_device.c
+index 2691ef9af0ca..54fe4180c73c 100644
+--- a/drivers/gpu/drm/imagination/pvr_device.c
++++ b/drivers/gpu/drm/imagination/pvr_device.c
+@@ -531,12 +531,10 @@ pvr_gpu_support_level(const struct pvr_gpu_id *gpu_id)
+ {
+ 	switch (pvr_gpu_id_to_packed_bvnc(gpu_id)) {
+ 	case PVR_PACKED_BVNC(33, 15, 11, 3):
++	case PVR_PACKED_BVNC(36, 52, 104, 182):
+ 	case PVR_PACKED_BVNC(36, 53, 104, 796):
+ 		return PVR_GPU_SUPPORTED;
+ 
+-	case PVR_PACKED_BVNC(36, 52, 104, 182):
+-		return PVR_GPU_EXPERIMENTAL;
+-
+ 	default:
+ 		return PVR_GPU_UNKNOWN;
+ 	}
+diff --git a/drivers/gpu/drm/imagination/pvr_device_info.h b/drivers/gpu/drm/imagination/pvr_device_info.h
+index f61fb988b553..f6c2845530da 100644
+--- a/drivers/gpu/drm/imagination/pvr_device_info.h
++++ b/drivers/gpu/drm/imagination/pvr_device_info.h
+@@ -22,12 +22,12 @@ struct pvr_device_features {
+ 	bool has_coreid_per_os;
+ 	bool has_dynamic_dust_power;
+ 	bool has_ecc_rams;
+-	bool has_fb_cdc_v4;
+-	bool has_fbc_max_default_descriptors;
+-	bool has_fbc_max_large_descriptors;
+ 	bool has_fbcdc;
+ 	bool has_fbcdc_algorithm;
+ 	bool has_fbcdc_architecture;
++	bool has_fbc_max_default_descriptors;
++	bool has_fbc_max_large_descriptors;
++	bool has_fb_cdc_v4;
+ 	bool has_gpu_multicore_support;
+ 	bool has_gpu_virtualisation;
+ 	bool has_gs_rta_support;
+diff --git a/drivers/gpu/drm/imagination/pvr_drv.c b/drivers/gpu/drm/imagination/pvr_drv.c
+index 58087e8517d6..5c965ef0274f 100644
+--- a/drivers/gpu/drm/imagination/pvr_drv.c
++++ b/drivers/gpu/drm/imagination/pvr_drv.c
+@@ -43,8 +43,9 @@
+  *
+  * This driver supports the following PowerVR/IMG graphics cores from Imagination Technologies:
+  *
+- * * AXE-1-16M (found in Texas Instruments AM62)
+- * * BXS-4-64 MC1 (found in Texas Instruments J721S2/AM68)
++ * * AXE-1-16M (33.15.11.3)
++ * * BXM-4-64 MC1 (36.52.104.182)
++ * * BXS-4-64 MC1 (36.53.104.796)
+  */
+ 
+ /**
+@@ -1378,7 +1379,7 @@ pvr_drm_driver_postclose(__always_unused struct drm_device *drm_dev,
+ DEFINE_DRM_GEM_FOPS(pvr_drm_driver_fops);
+ 
+ static struct drm_driver pvr_drm_driver = {
+-	.driver_features = DRIVER_GEM | DRIVER_GEM_GPUVA | DRIVER_RENDER |
++	.driver_features = DRIVER_GEM | DRIVER_RENDER |
+ 			   DRIVER_SYNCOBJ | DRIVER_SYNCOBJ_TIMELINE,
+ 	.open = pvr_drm_driver_open,
+ 	.postclose = pvr_drm_driver_postclose,
+diff --git a/drivers/gpu/drm/imagination/pvr_gem.h b/drivers/gpu/drm/imagination/pvr_gem.h
+index c99f30cc6208..4286e047ae24 100644
+--- a/drivers/gpu/drm/imagination/pvr_gem.h
++++ b/drivers/gpu/drm/imagination/pvr_gem.h
+@@ -84,8 +84,10 @@ struct pvr_gem_object {
+ 	/**
+ 	 * @base: The underlying &struct drm_gem_shmem_object.
+ 	 *
+-	 * Do not access this member directly, instead call
+-	 * shem_gem_from_pvr_gem().
++	 * .. note::
++	 *
++	 *    This member should not be accessed directly, but instead by
++	 *    calling shmem_gem_from_pvr_gem().
+ 	 */
+ 	struct drm_gem_shmem_object base;
+ 
+@@ -97,12 +99,6 @@ struct pvr_gem_object {
+ 	 * changed after creation.
+ 	 *
+ 	 * Must be a combination of DRM_PVR_BO_* and/or PVR_BO_* flags.
+-	 *
+-	 * .. note::
+-	 *
+-	 *    This member is declared const to indicate that none of these
+-	 *    options may change or be changed throughout the object's
+-	 *    lifetime.
+ 	 */
+ 	u64 flags;
+ 
+diff --git a/drivers/gpu/drm/imagination/pvr_queue.c b/drivers/gpu/drm/imagination/pvr_queue.c
+index 2d52ee321367..24a8645aa913 100644
+--- a/drivers/gpu/drm/imagination/pvr_queue.c
++++ b/drivers/gpu/drm/imagination/pvr_queue.c
+@@ -3,6 +3,7 @@
+ 
+ #include <drm/drm_managed.h>
+ #include <drm/gpu_scheduler.h>
++#include <linux/overflow.h>
+ 
+ #include "pvr_cccb.h"
+ #include "pvr_context.h"
+@@ -16,6 +17,7 @@
+ #include "pvr_rogue_fwif_client.h"
+ 
+ #define MAX_DEADLINE_MS 30000
++#define SCHED_TIMEOUT_PERIOD (2 * MAX_DEADLINE_MS)
+ 
+ #define CTX_COMPUTE_CCCB_SIZE_LOG2 15
+ #define CTX_FRAG_CCCB_SIZE_LOG2 15
+@@ -36,9 +38,8 @@ static int get_xfer_ctx_state_size(struct pvr_device *pvr_dev)
+ 			return err;
+ 	}
+ 
+-	return sizeof(struct rogue_fwif_frag_ctx_state) +
+-	       (num_isp_store_registers *
+-		sizeof(((struct rogue_fwif_frag_ctx_state *)0)->frag_reg_isp_store[0]));
++	return struct_size_t(struct rogue_fwif_frag_ctx_state,
++			     frag_reg_isp_store, num_isp_store_registers);
+ }
+ 
+ static int get_frag_ctx_state_size(struct pvr_device *pvr_dev)
+@@ -66,9 +67,8 @@ static int get_frag_ctx_state_size(struct pvr_device *pvr_dev)
+ 			return err;
+ 	}
+ 
+-	return sizeof(struct rogue_fwif_frag_ctx_state) +
+-	       (num_isp_store_registers *
+-		sizeof(((struct rogue_fwif_frag_ctx_state *)0)->frag_reg_isp_store[0]));
++	return struct_size_t(struct rogue_fwif_frag_ctx_state,
++			     frag_reg_isp_store, num_isp_store_registers);
+ }
+ 
+ static int get_ctx_state_size(struct pvr_device *pvr_dev, enum drm_pvr_job_type type)
+@@ -1288,7 +1288,7 @@ struct pvr_queue *pvr_queue_create(struct pvr_context *ctx,
+ 		.num_rqs = 1,
+ 		.credit_limit = 64 * 1024,
+ 		.hang_limit = 1,
+-		.timeout = msecs_to_jiffies(500),
++		.timeout = msecs_to_jiffies(SCHED_TIMEOUT_PERIOD),
+ 		.timeout_wq = pvr_dev->sched_wq,
+ 		.name = "pvr-queue",
+ 		.dev = pvr_dev->base.dev,
+diff --git a/drivers/gpu/drm/imagination/pvr_rogue_fwif_check.h b/drivers/gpu/drm/imagination/pvr_rogue_fwif_check.h
+index 51dc37e78f41..5048866359b9 100644
+--- a/drivers/gpu/drm/imagination/pvr_rogue_fwif_check.h
++++ b/drivers/gpu/drm/imagination/pvr_rogue_fwif_check.h
+@@ -4,14 +4,7 @@
+ #ifndef PVR_ROGUE_FWIF_CHECK_H
+ #define PVR_ROGUE_FWIF_CHECK_H
+ 
+-#include <linux/build_bug.h>
+-
+-#define OFFSET_CHECK(type, member, offset) \
+-	static_assert(offsetof(type, member) == (offset), \
+-		      "offsetof(" #type ", " #member ") incorrect")
+-
+-#define SIZE_CHECK(type, size) \
+-	static_assert(sizeof(type) == (size), #type " is incorrect size")
++#include "pvr_check.h"
+ 
+ OFFSET_CHECK(struct rogue_fwif_file_info_buf, path, 0);
+ OFFSET_CHECK(struct rogue_fwif_file_info_buf, info, 200);
+@@ -157,7 +150,7 @@ OFFSET_CHECK(struct rogue_fwif_frag_ctx_state, frag_reg_pm_deallocated_mask_stat
+ OFFSET_CHECK(struct rogue_fwif_frag_ctx_state, frag_reg_dm_pds_mtilefree_status, 4);
+ OFFSET_CHECK(struct rogue_fwif_frag_ctx_state, ctx_state_flags, 8);
+ OFFSET_CHECK(struct rogue_fwif_frag_ctx_state, frag_reg_isp_store, 12);
+-SIZE_CHECK(struct rogue_fwif_frag_ctx_state, 16);
++FLEX_ARRAY_CHECK(struct rogue_fwif_frag_ctx_state, frag_reg_isp_store);
+ 
+ OFFSET_CHECK(struct rogue_fwif_compute_ctx_state, ctx_state_flags, 0);
+ SIZE_CHECK(struct rogue_fwif_compute_ctx_state, 4);
+diff --git a/drivers/gpu/drm/imagination/pvr_rogue_fwif_client_check.h b/drivers/gpu/drm/imagination/pvr_rogue_fwif_client_check.h
+index 54aa4474163e..467d1d2073a1 100644
+--- a/drivers/gpu/drm/imagination/pvr_rogue_fwif_client_check.h
++++ b/drivers/gpu/drm/imagination/pvr_rogue_fwif_client_check.h
+@@ -4,14 +4,7 @@
+ #ifndef PVR_ROGUE_FWIF_CLIENT_CHECK_H
+ #define PVR_ROGUE_FWIF_CLIENT_CHECK_H
+ 
+-#include <linux/build_bug.h>
+-
+-#define OFFSET_CHECK(type, member, offset) \
+-	static_assert(offsetof(type, member) == (offset), \
+-		      "offsetof(" #type ", " #member ") incorrect")
+-
+-#define SIZE_CHECK(type, size) \
+-	static_assert(sizeof(type) == (size), #type " is incorrect size")
++#include "pvr_check.h"
+ 
+ OFFSET_CHECK(struct rogue_fwif_geom_regs, vdm_ctrl_stream_base, 0);
+ OFFSET_CHECK(struct rogue_fwif_geom_regs, tpu_border_colour_table, 8);
+diff --git a/drivers/gpu/drm/imagination/pvr_rogue_fwif_shared_check.h b/drivers/gpu/drm/imagination/pvr_rogue_fwif_shared_check.h
+index 597ed54bbd3a..59ef0a9aa395 100644
+--- a/drivers/gpu/drm/imagination/pvr_rogue_fwif_shared_check.h
++++ b/drivers/gpu/drm/imagination/pvr_rogue_fwif_shared_check.h
+@@ -4,14 +4,7 @@
+ #ifndef PVR_ROGUE_FWIF_SHARED_CHECK_H
+ #define PVR_ROGUE_FWIF_SHARED_CHECK_H
+ 
+-#include <linux/build_bug.h>
+-
+-#define OFFSET_CHECK(type, member, offset) \
+-	static_assert(offsetof(type, member) == (offset), \
+-		      "offsetof(" #type ", " #member ") incorrect")
+-
+-#define SIZE_CHECK(type, size) \
+-	static_assert(sizeof(type) == (size), #type " is incorrect size")
++#include "pvr_check.h"
+ 
+ OFFSET_CHECK(struct rogue_fwif_dma_addr, dev_addr, 0);
+ OFFSET_CHECK(struct rogue_fwif_dma_addr, fw_addr, 8);
+diff --git a/drivers/gpu/drm/imagination/pvr_rogue_heap_config.h b/drivers/gpu/drm/imagination/pvr_rogue_heap_config.h
+index 684766006703..5c33b342dda5 100644
+--- a/drivers/gpu/drm/imagination/pvr_rogue_heap_config.h
++++ b/drivers/gpu/drm/imagination/pvr_rogue_heap_config.h
+@@ -33,12 +33,12 @@
+ /* 0 MiB to 4 MiB, size of 4 MiB : RESERVED */
+ 
+ /* 0x00_0040_0000 - 0x7F_FFC0_0000 **/
+-/* 4 MiB to 512 GiB, size of 512 GiB less 4 MiB : RESERVED **/
++/* 4 MiB to 512 GiB, size of 512 GiB less 4 MiB : RESERVED */
+ 
+ /* 0x80_0000_0000 ************************************************************/
+ 
+ /* 0x80_0000_0000 - 0x9F_FFFF_FFFF **/
+-/* 512 GiB to 640 GiB, size of 128 GiB : GENERAL_HEAP **/
++/* 512 GiB to 640 GiB, size of 128 GiB : GENERAL_HEAP */
+ #define ROGUE_GENERAL_HEAP_BASE 0x8000000000ull
+ #define ROGUE_GENERAL_HEAP_SIZE SZ_128G
+ 
+@@ -62,7 +62,7 @@
+ #define ROGUE_PDSCODEDATA_HEAP_SIZE SZ_4G
+ 
+ /* 0xDB_0000_0000 - 0xDB_FFFF_FFFF */
+-/* 876 GiB to 880 GiB, size of 256 MiB (reserved 4GiB) : BRN **/
++/* 876 GiB to 880 GiB, size of 256 MiB (reserved 4GiB) : BRN */
+ /*
+  * The BRN63142 quirk workaround requires Region Header memory to be at the top
+  * of a 16GiB aligned range. This is so when masked with 0x03FFFFFFFF the
+@@ -82,7 +82,7 @@
+ /* 0xE1_0000_0000 - 0xE1_BFFF_FFFF */
+ /* 900 GiB to 903 GiB, size of 3 GiB : RESERVED */
+ 
+-/* 0xE1_C000_000 - 0xE1_FFFF_FFFF */
++/* 0xE1_C000_0000 - 0xE1_FFFF_FFFF */
+ /* 903 GiB to 904 GiB, reserved 1 GiB, : FIRMWARE_HEAP */
+ #define ROGUE_FW_HEAP_BASE 0xE1C0000000ull
+ 
+@@ -90,7 +90,7 @@
+ /* 904 GiB to 912 GiB, size of 8 GiB : FREE */
+ 
+ /* 0xE4_0000_0000 - 0xE7_FFFF_FFFF */
+-/* 912 GiB to 968 GiB, size of 16 GiB : TRANSFER_FRAG */
++/* 912 GiB to 928 GiB, size of 16 GiB : TRANSFER_FRAG */
+ #define ROGUE_TRANSFER_FRAG_HEAP_BASE 0xE400000000ull
+ #define ROGUE_TRANSFER_FRAG_HEAP_SIZE SZ_16G
+ 
+diff --git a/drivers/gpu/drm/imagination/pvr_rogue_mips_check.h b/drivers/gpu/drm/imagination/pvr_rogue_mips_check.h
+index 824b4bf33ac1..aebf231ce90f 100644
+--- a/drivers/gpu/drm/imagination/pvr_rogue_mips_check.h
++++ b/drivers/gpu/drm/imagination/pvr_rogue_mips_check.h
+@@ -4,55 +4,32 @@
+ #ifndef PVR_ROGUE_MIPS_CHECK_H
+ #define PVR_ROGUE_MIPS_CHECK_H
+ 
+-#include <linux/build_bug.h>
++#include "pvr_check.h"
+ 
+-static_assert(offsetof(struct rogue_mips_tlb_entry, tlb_page_mask) == 0,
+-	      "offsetof(struct rogue_mips_tlb_entry, tlb_page_mask) incorrect");
+-static_assert(offsetof(struct rogue_mips_tlb_entry, tlb_hi) == 4,
+-	      "offsetof(struct rogue_mips_tlb_entry, tlb_hi) incorrect");
+-static_assert(offsetof(struct rogue_mips_tlb_entry, tlb_lo0) == 8,
+-	      "offsetof(struct rogue_mips_tlb_entry, tlb_lo0) incorrect");
+-static_assert(offsetof(struct rogue_mips_tlb_entry, tlb_lo1) == 12,
+-	      "offsetof(struct rogue_mips_tlb_entry, tlb_lo1) incorrect");
+-static_assert(sizeof(struct rogue_mips_tlb_entry) == 16,
+-	      "struct rogue_mips_tlb_entry is incorrect size");
++OFFSET_CHECK(struct rogue_mips_tlb_entry, tlb_page_mask, 0);
++OFFSET_CHECK(struct rogue_mips_tlb_entry, tlb_hi, 4);
++OFFSET_CHECK(struct rogue_mips_tlb_entry, tlb_lo0, 8);
++OFFSET_CHECK(struct rogue_mips_tlb_entry, tlb_lo1, 12);
++SIZE_CHECK(struct rogue_mips_tlb_entry, 16);
+ 
+-static_assert(offsetof(struct rogue_mips_remap_entry, remap_addr_in) == 0,
+-	      "offsetof(struct rogue_mips_remap_entry, remap_addr_in) incorrect");
+-static_assert(offsetof(struct rogue_mips_remap_entry, remap_addr_out) == 4,
+-	      "offsetof(struct rogue_mips_remap_entry, remap_addr_out) incorrect");
+-static_assert(offsetof(struct rogue_mips_remap_entry, remap_region_size) == 8,
+-	      "offsetof(struct rogue_mips_remap_entry, remap_region_size) incorrect");
+-static_assert(sizeof(struct rogue_mips_remap_entry) == 12,
+-	      "struct rogue_mips_remap_entry is incorrect size");
++OFFSET_CHECK(struct rogue_mips_remap_entry, remap_addr_in, 0);
++OFFSET_CHECK(struct rogue_mips_remap_entry, remap_addr_out, 4);
++OFFSET_CHECK(struct rogue_mips_remap_entry, remap_region_size, 8);
++SIZE_CHECK(struct rogue_mips_remap_entry, 12);
+ 
+-static_assert(offsetof(struct rogue_mips_state, error_state) == 0,
+-	      "offsetof(struct rogue_mips_state, error_state) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, error_epc) == 4,
+-	      "offsetof(struct rogue_mips_state, error_epc) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, status_register) == 8,
+-	      "offsetof(struct rogue_mips_state, status_register) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, cause_register) == 12,
+-	      "offsetof(struct rogue_mips_state, cause_register) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, bad_register) == 16,
+-	      "offsetof(struct rogue_mips_state, bad_register) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, epc) == 20,
+-	      "offsetof(struct rogue_mips_state, epc) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, sp) == 24,
+-	      "offsetof(struct rogue_mips_state, sp) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, debug) == 28,
+-	      "offsetof(struct rogue_mips_state, debug) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, depc) == 32,
+-	      "offsetof(struct rogue_mips_state, depc) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, bad_instr) == 36,
+-	      "offsetof(struct rogue_mips_state, bad_instr) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, unmapped_address) == 40,
+-	      "offsetof(struct rogue_mips_state, unmapped_address) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, tlb) == 44,
+-	      "offsetof(struct rogue_mips_state, tlb) incorrect");
+-static_assert(offsetof(struct rogue_mips_state, remap) == 300,
+-	      "offsetof(struct rogue_mips_state, remap) incorrect");
+-static_assert(sizeof(struct rogue_mips_state) == 684,
+-	      "struct rogue_mips_state is incorrect size");
++OFFSET_CHECK(struct rogue_mips_state, error_state, 0);
++OFFSET_CHECK(struct rogue_mips_state, error_epc, 4);
++OFFSET_CHECK(struct rogue_mips_state, status_register, 8);
++OFFSET_CHECK(struct rogue_mips_state, cause_register, 12);
++OFFSET_CHECK(struct rogue_mips_state, bad_register, 16);
++OFFSET_CHECK(struct rogue_mips_state, epc, 20);
++OFFSET_CHECK(struct rogue_mips_state, sp, 24);
++OFFSET_CHECK(struct rogue_mips_state, debug, 28);
++OFFSET_CHECK(struct rogue_mips_state, depc, 32);
++OFFSET_CHECK(struct rogue_mips_state, bad_instr, 36);
++OFFSET_CHECK(struct rogue_mips_state, unmapped_address, 40);
++OFFSET_CHECK(struct rogue_mips_state, tlb, 44);
++OFFSET_CHECK(struct rogue_mips_state, remap, 300);
++SIZE_CHECK(struct rogue_mips_state, 684);
+ 
+ #endif /* PVR_ROGUE_MIPS_CHECK_H */
+-- 
+2.55.0
+

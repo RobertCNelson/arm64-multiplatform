@@ -459,7 +459,7 @@ post_backports () {
 	fi
 
 	${git_bin} add .
-	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag}" -s
+	${git_bin} commit -a -m "backports ${subsystem} from linux" -m "Reference: ${backport_tag}" -s
 	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
@@ -467,9 +467,38 @@ post_backports () {
 	exit 2
 }
 
-patch_backports () {
+pre_next_backports () {
 	echo "dir: backports/${subsystem}"
-	${git} "${DIR}/patches/backports/${subsystem}/0001-backports-${subsystem}-from-linux.git.patch"
+
+	cd ~/linux-next/
+	${git_bin} pull
+	${git_bin} checkout origin/master -b tmp
+	${git_bin} branch -D master
+	${git_bin} checkout origin/master -b master
+	${git_bin} branch -D tmp
+	if [ ! "x${backport_tag}" = "x" ] ; then
+		echo "${git_bin} checkout ${backport_tag} -b tmp"
+		${git_bin} checkout ${backport_tag} -b tmp
+	fi
+	cd -
+}
+
+post_next_backports () {
+	if [ ! "x${backport_tag}" = "x" ] ; then
+		cd ~/linux-next/
+		${git_bin} branch -D master
+		${git_bin} checkout origin/master -b master
+		${git_bin} branch -D tmp
+		cd -
+	fi
+
+	${git_bin} add .
+	${git_bin} commit -a -m "backports ${subsystem} from linux-next" -m "Reference: ${backport_tag}" -s
+	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
+		mkdir -p ../patches/backports/${subsystem}/
+	fi
+	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
+	exit 2
 }
 
 pre_rpibackports () {
@@ -492,7 +521,7 @@ post_rpibackports () {
 	fi
 
 	${git_bin} add .
-	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag}" -s
+	${git_bin} commit -a -m "backports ${subsystem} from raspberrypi-linux" -m "Reference: ${backport_tag}" -s
 	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
@@ -513,7 +542,22 @@ backports () {
 
 		post_rpibackports
 	else
-		patch_backports
+		dir 'backports/rpi-backports'
+	fi
+
+	backport_tag="next-20260817"
+
+	subsystem="imagination"
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		pre_next_backports
+
+		rsync -av ~/linux-next/drivers/gpu/drm/imagination/ ./drivers/gpu/drm/imagination/
+		cp -v ~/linux-next/include/uapi/drm/pvr_drm.h ./include/uapi/drm/
+
+		post_next_backports
+	else
+		dir 'backports/imagination'
 	fi
 }
 
@@ -537,18 +581,11 @@ drivers () {
 	dir 'drivers/ite'
 	dir 'drivers/mspm0'
 
-	#dir 'external/android'
+	dir 'external/android'
 	dir 'external/cadence'
-	dir 'external/gasket'
 
 	#dir 'drivers/cpufreq'
-	#dir 'drivers/drm/imagination'
 	#dir 'drivers/drm/tidss'
-
-	#echo "dir: drivers/power_sequencing_driver"
-	#b4 am https://lore.kernel.org/linux-pci/20260519-pwrseq-m2-bt-v3-0-b39dc2ae3966@oss.qualcomm.com/
-	#${git} "${DIR}/patches/drivers/power_sequencing_driver/v3_20260519_manivannan_sadhasivam_fixes_improvements_for_the_pci_m_2_power_sequencing_driver.mbx"
-
 #exit 2
 }
 
