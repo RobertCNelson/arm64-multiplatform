@@ -544,21 +544,6 @@ backports () {
 	else
 		dir 'backports/rpi-backports'
 	fi
-
-	backport_tag="next-20260817"
-
-	subsystem="imagination"
-	#regenerate="enable"
-	if [ "x${regenerate}" = "xenable" ] ; then
-		pre_next_backports
-
-		rsync -av ~/linux-next/drivers/gpu/drm/imagination/ ./drivers/gpu/drm/imagination/
-		cp -v ~/linux-next/include/uapi/drm/pvr_drm.h ./include/uapi/drm/
-
-		post_next_backports
-	else
-		dir 'backports/imagination'
-	fi
 }
 
 cc33xx_drivers () {
