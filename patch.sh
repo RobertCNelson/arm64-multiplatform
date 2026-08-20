@@ -278,9 +278,12 @@ beagleboard_dtbs () {
 		device="BB-BBBW-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBGG-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBGW-WL1835-00A0" ; arm_dtbo_makefile_append
+		device="BB-BONE-4D4C-01-00A1" ; arm_dtbo_makefile_append
+		device="BB-BONE-4D5R-01-00A1" ; arm_dtbo_makefile_append
 		device="BB-BONE-eMMC1-01-00A0" ; arm_dtbo_makefile_append
 		device="BB-BONE-LCD4-01-00A1" ; arm_dtbo_makefile_append
 		device="BB-BONE-LCD7-01-00A3" ; arm_dtbo_makefile_append
+		device="BB-BONE-NH7C-01-A0" ; arm_dtbo_makefile_append
 		device="BB-CAN0-00A0" ; arm_dtbo_makefile_append
 		device="BB-CAN1-00A0" ; arm_dtbo_makefile_append
 		device="BB-EHRPWM0-P9_29-P9_31" ; arm_dtbo_makefile_append
@@ -460,40 +463,6 @@ post_backports () {
 
 	${git_bin} add .
 	${git_bin} commit -a -m "backports ${subsystem} from linux" -m "Reference: ${backport_tag}" -s
-	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
-		mkdir -p ../patches/backports/${subsystem}/
-	fi
-	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
-	exit 2
-}
-
-pre_next_backports () {
-	echo "dir: backports/${subsystem}"
-
-	cd ~/linux-next/
-	${git_bin} pull
-	${git_bin} checkout origin/master -b tmp
-	${git_bin} branch -D master
-	${git_bin} checkout origin/master -b master
-	${git_bin} branch -D tmp
-	if [ ! "x${backport_tag}" = "x" ] ; then
-		echo "${git_bin} checkout ${backport_tag} -b tmp"
-		${git_bin} checkout ${backport_tag} -b tmp
-	fi
-	cd -
-}
-
-post_next_backports () {
-	if [ ! "x${backport_tag}" = "x" ] ; then
-		cd ~/linux-next/
-		${git_bin} branch -D master
-		${git_bin} checkout origin/master -b master
-		${git_bin} branch -D tmp
-		cd -
-	fi
-
-	${git_bin} add .
-	${git_bin} commit -a -m "backports ${subsystem} from linux-next" -m "Reference: ${backport_tag}" -s
 	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
