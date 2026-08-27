@@ -534,7 +534,7 @@ drivers () {
 	dir 'external/android'
 	dir 'external/cadence'
 
-	#dir 'drivers/cpufreq'
+	dir 'drivers/cpufreq'
 	dir 'drivers/drm/tidss'
 
 	echo "dir: drivers/power_sequencing_driver"
