@@ -10,19 +10,19 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  2 files changed, 34 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index cd1816a12bb9..1b28404b93da 100644
+index ff1204c666b1..117418df3218 100644
 --- a/drivers/cpufreq/cpufreq-dt-platdev.c
 +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -191,6 +191,7 @@ static const struct of_device_id blocklist[] __initconst = {
+@@ -195,6 +195,7 @@ static const struct of_device_id blocklist[] __initconst = {
+ 	{ .compatible = "ti,dra7", },
+ 	{ .compatible = "ti,omap3", },
+ 	{ .compatible = "ti,am625", },
++	{ .compatible = "ti,j722s", },
  	{ .compatible = "ti,am62a7", },
  	{ .compatible = "ti,am62d2", },
- 	{ .compatible = "ti,am62p5", },
-+	{ .compatible = "ti,j722s", },
- 
- 	{ .compatible = "qcom,ipq5332", },
- 	{ .compatible = "qcom,ipq5424", },
+ 	{ .compatible = "ti,am62l3", },
 diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-index 6ee76f5fe9c5..cd28b5871b0e 100644
+index 0f96492341f2..ed6fcf9bb2e1 100644
 --- a/drivers/cpufreq/ti-cpufreq.c
 +++ b/drivers/cpufreq/ti-cpufreq.c
 @@ -48,6 +48,12 @@
@@ -38,7 +38,7 @@ index 6ee76f5fe9c5..cd28b5871b0e 100644
  enum {
  	AM62A7_EFUSE_M_MPU_OPP =		13,
  	AM62A7_EFUSE_N_MPU_OPP,
-@@ -213,6 +219,22 @@ static unsigned long am625_efuse_xlate(struct ti_cpufreq_data *opp_data,
+@@ -220,6 +226,22 @@ static unsigned long am625_efuse_xlate(struct ti_cpufreq_data *opp_data,
  	return calculated_efuse;
  }
  
@@ -58,19 +58,19 @@ index 6ee76f5fe9c5..cd28b5871b0e 100644
 +	return calculated_efuse;
 +}
 +
- static struct ti_cpufreq_soc_data am3x_soc_data = {
- 	.efuse_xlate = amx3_efuse_xlate,
- 	.efuse_fallback = AM33XX_800M_ARM_MPU_MAX_FREQ,
-@@ -315,6 +337,7 @@ static const struct soc_device_attribute k3_cpufreq_soc[] = {
- 	{ .family = "AM62AX", },
- 	{ .family = "AM62PX", },
- 	{ .family = "AM62DX", },
-+	{ .family = "J722S", },
- 	{ /* sentinel */ }
- };
+ static unsigned long am62l3_efuse_xlate(struct ti_cpufreq_data *opp_data,
+ 				       unsigned long efuse)
+ {
+@@ -335,6 +357,7 @@ static struct ti_cpufreq_soc_data am3517_soc_data = {
  
-@@ -343,6 +366,15 @@ static struct ti_cpufreq_soc_data am62p5_soc_data = {
- 	.multi_regulator = false,
+ static const struct soc_device_attribute k3_cpufreq_soc[] = {
+ 	{ .family = "AM62X", },
++	{ .family = "J722S", },
+ 	{ .family = "AM62AX", },
+ 	{ .family = "AM62DX", },
+ 	{ .family = "AM62LX", },
+@@ -352,6 +375,15 @@ static struct ti_cpufreq_soc_data am625_soc_data = {
+ 	.quirks = TI_QUIRK_SYSCON_IS_SINGLE_REG,
  };
  
 +static struct ti_cpufreq_soc_data j722s_soc_data = {
@@ -82,17 +82,17 @@ index 6ee76f5fe9c5..cd28b5871b0e 100644
 +	.quirks = TI_QUIRK_SYSCON_IS_SINGLE_REG,
 +};
 +
- /**
-  * ti_cpufreq_get_efuse() - Parse and return efuse value present on SoC
-  * @opp_data: pointer to ti_cpufreq_data context
-@@ -464,6 +496,7 @@ static const struct of_device_id ti_cpufreq_of_match[]  __maybe_unused = {
+ static struct ti_cpufreq_soc_data am62a7_soc_data = {
+ 	.efuse_xlate = am62a7_efuse_xlate,
+ 	.efuse_offset = 0x0,
+@@ -502,6 +534,7 @@ static const struct of_device_id ti_cpufreq_of_match[]  __maybe_unused = {
+ 	{ .compatible = "ti,omap34xx", .data = &omap34xx_soc_data, },
+ 	{ .compatible = "ti,omap36xx", .data = &omap36xx_soc_data, },
+ 	{ .compatible = "ti,am625", .data = &am625_soc_data, },
++	{ .compatible = "ti,j722s", .data = &j722s_soc_data, },
  	{ .compatible = "ti,am62a7", .data = &am62a7_soc_data, },
  	{ .compatible = "ti,am62d2", .data = &am62a7_soc_data, },
- 	{ .compatible = "ti,am62p5", .data = &am62p5_soc_data, },
-+	{ .compatible = "ti,j722s", .data = &j722s_soc_data, },
- 	/* legacy */
- 	{ .compatible = "ti,omap3430", .data = &omap34xx_soc_data, },
- 	{ .compatible = "ti,omap3630", .data = &omap36xx_soc_data, },
+ 	{ .compatible = "ti,am62l3", .data = &am62l3_soc_data, },
 -- 
-2.51.0
+2.55.0
 

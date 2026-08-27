@@ -538,9 +538,7 @@ drivers () {
 	dir 'external/android'
 	dir 'external/cadence'
 
-	#dir 'drivers/cpufreq'
-	#dir 'drivers/drm/tidss'
-#exit 2
+	dir 'drivers/cpufreq'
 }
 
 ###
