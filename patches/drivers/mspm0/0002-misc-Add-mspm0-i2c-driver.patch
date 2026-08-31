@@ -15,10 +15,10 @@ Signed-off-by: Ayush Singh <ayush@beagleboard.org>
  create mode 100644 drivers/misc/mspm0-i2c.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 66b274703da6..bc822ff2a8a8 100644
+index 5df439b0fecd..815477295667 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -17561,6 +17561,7 @@ MSPM0 Driver
+@@ -18589,6 +18589,7 @@ MSPM0 Driver
  M:	Ayush Singh <ayush@beagleboard.org>
  S:	Maintained
  F:	Documentation/devicetree/bindings/misc/ti,mspm0l110x.yaml
@@ -27,10 +27,10 @@ index 66b274703da6..bc822ff2a8a8 100644
  MSTAR INTERRUPT CONTROLLER DRIVER
  M:	Mark-PK Tsai <mark-pk.tsai@mediatek.com>
 diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index b9c11f67315f..282c56daf506 100644
+index 7364931dad3a..45a0ac76794e 100644
 --- a/drivers/misc/Kconfig
 +++ b/drivers/misc/Kconfig
-@@ -644,6 +644,17 @@ config MCHP_LAN966X_PCI
+@@ -568,6 +568,17 @@ config MCHP_LAN966X_PCI
  	    - lan966x-miim (MDIO_MSCC_MIIM)
  	    - lan966x-switch (LAN966X_SWITCH)
  
@@ -49,14 +49,15 @@ index b9c11f67315f..282c56daf506 100644
  source "drivers/misc/eeprom/Kconfig"
  source "drivers/misc/cb710/Kconfig"
 diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index b32a2597d246..45cb94327c83 100644
+index e8d8d5d88c0d..e5760d954ee5 100644
 --- a/drivers/misc/Makefile
 +++ b/drivers/misc/Makefile
-@@ -75,3 +75,4 @@ obj-$(CONFIG_MCHP_LAN966X_PCI)	+= lan966x-pci.o
+@@ -70,4 +70,5 @@ obj-$(CONFIG_MCHP_LAN966X_PCI)	+= lan966x-pci.o
  obj-y				+= keba/
  obj-y				+= amd-sbi/
  obj-$(CONFIG_MISC_RP1)		+= rp1/
 +obj-$(CONFIG_MSPM0_I2C)		+= mspm0-i2c.o
+ obj-$(CONFIG_INTEL_SSEI)	+= issei/
 diff --git a/drivers/misc/mspm0-i2c.c b/drivers/misc/mspm0-i2c.c
 new file mode 100644
 index 000000000000..6a0ce9485124
@@ -827,5 +828,5 @@ index 000000000000..6a0ce9485124
 +MODULE_AUTHOR("Ayush Singh <ayush@beagleboard.org>");
 +MODULE_DESCRIPTION("MSPM0 I2C driver");
 -- 
-2.51.0
+2.55.0
 
