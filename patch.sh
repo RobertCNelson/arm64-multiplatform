@@ -295,6 +295,7 @@ beagleboard_dtbs () {
 		device="BB-HDMI-IT66122-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-00A0" ; arm_dtbo_makefile_append
+		device="BB-I2C1-ADS1015-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-FAST-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-MCP7940X-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-RTC-DS3231" ; arm_dtbo_makefile_append
@@ -510,6 +511,23 @@ backports () {
 	else
 		dir 'backports/rpi-backports'
 	fi
+
+	dir 'drivers/ti/uio_revert'
+
+	backport_tag="v6.6.156"
+
+	subsystem="uio"
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		pre_backports
+
+		cp -v ~/linux-src/drivers/uio/uio_pruss.c ./drivers/uio/
+
+		post_backports
+	else
+		dir 'backports/uio'
+		dir 'drivers/ti/uio'
+	fi
 }
 
 cc33xx_drivers () {
@@ -541,8 +559,6 @@ drivers () {
 	echo "dir: drivers/power_sequencing_driver"
 	#b4 am https://lore.kernel.org/linux-pci/20260519-pwrseq-m2-bt-v3-0-b39dc2ae3966@oss.qualcomm.com/
 	${git} "${DIR}/patches/drivers/power_sequencing_driver/v3_20260519_manivannan_sadhasivam_fixes_improvements_for_the_pci_m_2_power_sequencing_driver.mbx"
-
-#exit 2
 }
 
 ###
