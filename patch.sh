@@ -296,6 +296,7 @@ beagleboard_dtbs () {
 		device="BB-HDMI-IT66122-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-00A0" ; arm_dtbo_makefile_append
+		device="BB-I2C1-ADS1015-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-FAST-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-MCP7940X-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-RTC-DS3231" ; arm_dtbo_makefile_append
@@ -509,6 +510,23 @@ backports () {
 		post_rpibackports
 	else
 		dir 'backports/rpi-backports'
+	fi
+
+	dir 'drivers/ti/uio_revert'
+
+	backport_tag="v6.6.156"
+
+	subsystem="uio"
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		pre_backports
+
+		cp -v ~/linux-src/drivers/uio/uio_pruss.c ./drivers/uio/
+
+		post_backports
+	else
+		dir 'backports/uio'
+		dir 'drivers/ti/uio'
 	fi
 
 	backport_tag="v6.19.14"
