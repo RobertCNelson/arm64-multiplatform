@@ -291,9 +291,12 @@ beagleboard_dtbs () {
 		device="BB-BBBW-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBGG-WL1835-00A0" ; arm_dtbo_makefile_append
 		device="BB-BBGW-WL1835-00A0" ; arm_dtbo_makefile_append
+		device="BB-BONE-4D4C-01-00A1" ; arm_dtbo_makefile_append
+		device="BB-BONE-4D5R-01-00A1" ; arm_dtbo_makefile_append
 		device="BB-BONE-eMMC1-01-00A0" ; arm_dtbo_makefile_append
 		device="BB-BONE-LCD4-01-00A1" ; arm_dtbo_makefile_append
 		device="BB-BONE-LCD7-01-00A3" ; arm_dtbo_makefile_append
+		device="BB-BONE-NH7C-01-A0" ; arm_dtbo_makefile_append
 		device="BB-CAN0-00A0" ; arm_dtbo_makefile_append
 		device="BB-CAN1-00A0" ; arm_dtbo_makefile_append
 		device="BB-EHRPWM0-P9_29-P9_31" ; arm_dtbo_makefile_append
@@ -308,6 +311,7 @@ beagleboard_dtbs () {
 		device="BB-HDMI-IT66122-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-00A0" ; arm_dtbo_makefile_append
+		device="BB-I2C1-ADS1015-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-FAST-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-MCP7940X-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-RTC-DS3231" ; arm_dtbo_makefile_append
@@ -473,7 +477,7 @@ post_backports () {
 	fi
 
 	${git_bin} add .
-	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag}" -s
+	${git_bin} commit -a -m "backports ${subsystem} from linux" -m "Reference: ${backport_tag}" -s
 	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
@@ -506,7 +510,7 @@ post_rpibackports () {
 	fi
 
 	${git_bin} add .
-	${git_bin} commit -a -m "backports: ${subsystem}: from: linux.git" -m "Reference: ${backport_tag}" -s
+	${git_bin} commit -a -m "backports ${subsystem} from raspberrypi-linux" -m "Reference: ${backport_tag}" -s
 	if [ ! -d ../patches/backports/${subsystem}/ ] ; then
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
@@ -562,7 +566,24 @@ backports () {
 
 		post_rpibackports
 	else
-		patch_backports
+		dir 'backports/rpi-backports'
+	fi
+
+	dir 'drivers/ti/uio_revert'
+
+	backport_tag="v6.6.156"
+
+	subsystem="uio"
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		pre_backports
+
+		cp -v ~/linux-src/drivers/uio/uio_pruss.c ./drivers/uio/
+
+		post_backports
+	else
+		dir 'backports/uio'
+		dir 'drivers/ti/uio'
 	fi
 }
 
