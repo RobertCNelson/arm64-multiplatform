@@ -88,13 +88,16 @@ external_git () {
 }
 
 mainline_patches () {
-	${git} "${DIR}/patches/mainline/tidss/0001-tidss-pre-revert.patch"
+	dir 'mainline/beagleboneblackrevd'
+	#exit 2
 
-	echo "dir: mainline/v3_20260529_drm_beagley_ai"
+	#${git} "${DIR}/patches/mainline/tidss/0001-tidss-pre-revert.patch"
+
+	#echo "dir: mainline/v3_20260529_drm_beagley_ai"
 	#b4 am https://lore.kernel.org/all/20260529-beagley-ai-display-v3-0-7fefdc5d1adf@ideasonboard.com/
-	${git} "${DIR}/patches/mainline/v3_20260529_drm_beagley_ai/v3_20260529_tomi_valkeinen_drm_tidss_add_beagley_ai_display_support_and_some_more.mbx"
+	#${git} "${DIR}/patches/mainline/v3_20260529_drm_beagley_ai/v3_20260529_tomi_valkeinen_drm_tidss_add_beagley_ai_display_support_and_some_more.mbx"
 
-	${git} "${DIR}/patches/mainline/tidss/0002-tidss-post-revert.patch"
+	#${git} "${DIR}/patches/mainline/tidss/0002-tidss-post-revert.patch"
 }
 
 rt_cleanup () {
@@ -261,6 +264,8 @@ beagleboard_dtbs () {
 		rm -rf arch/arm64/boot/dts/ti/overlays/ || true
 		omap_makefile_patch_of_overlays
 
+		rm -rf ../${work_dir}/src/arm/ti/omap/am335x-boneblack-revd.dts || true
+		rm -rf ../${work_dir}/src/arm/ti/omap/am335x-boneblack-ite-hdmi.dtsi || true
 		cp -v ../${work_dir}/src/arm/ti/omap/*.dts arch/arm/boot/dts/ti/omap/
 		cp -v ../${work_dir}/src/arm/ti/omap/*.dtsi arch/arm/boot/dts/ti/omap/
 		cp -v ../${work_dir}/src/arm64/ti/*.dts arch/arm64/boot/dts/ti/
@@ -299,6 +304,7 @@ beagleboard_dtbs () {
 		device="BB-HDMI-IT66122-00A0" ; arm_dtbo_makefile_append
 		device="BB-HDMI-TDA998x-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-00A0" ; arm_dtbo_makefile_append
+		device="BB-I2C1-ADS1015-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-FAST-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-MCP7940X-00A0" ; arm_dtbo_makefile_append
 		device="BB-I2C1-RTC-DS3231" ; arm_dtbo_makefile_append
@@ -332,7 +338,6 @@ beagleboard_dtbs () {
 
 		#am335x Devices
 		device="am335x-boneblack-uboot.dtb" ; arm_dtb_makefile_append
-		device="am335x-boneblack-revd.dtb" ; arm_dtb_makefile_append
 
 		#regenerate_arm64_dtbo_list
 
@@ -434,7 +439,7 @@ local_patch () {
 }
 
 #external_git
-#mainline_patches
+mainline_patches
 rt
 wireless_regdb
 beagleboard_dtbs
@@ -516,7 +521,7 @@ backports () {
 
 	dir 'drivers/ti/uio_revert'
 
-	backport_tag="v6.6.154"
+	backport_tag="v6.6.156"
 
 	subsystem="uio"
 	#regenerate="enable"
