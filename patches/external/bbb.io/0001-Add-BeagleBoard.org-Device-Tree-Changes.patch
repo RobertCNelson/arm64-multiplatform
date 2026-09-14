@@ -1,11 +1,11 @@
-From 3ed26dffadd01c5a45ab220d62d418e60a21af98 Mon Sep 17 00:00:00 2001
+From b089d82cc3d212cc33d70b22070e40c5d995dbec Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 8 Sep 2026 11:34:26 -0500
+Date: Mon, 14 Sep 2026 12:08:19 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v7.2.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/f7e9c19835eef48325d47c6c9cd1c835fdcfde14
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/43aae81950e485131a9162464f2f5042207d5d29
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso  |   80 ++
