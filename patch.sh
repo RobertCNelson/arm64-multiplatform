@@ -533,7 +533,7 @@ backports () {
 
 		post_rpibackports
 	else
-		patch_backports
+		dir 'backports/rpi-backports'
 	fi
 
 	dir 'greybus/gb-beagleplay'
