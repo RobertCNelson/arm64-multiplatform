@@ -168,6 +168,45 @@ wireless_regdb () {
 	dir 'external/wireless_regdb'
 }
 
+powervr_firmware () {
+	FIRMWARE_TAG="20260916"
+	#https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/powervr
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		cd ../
+		if [ -d ./src ] ; then
+			rm -rf ./src || true
+		fi
+
+		git clone -b ${FIRMWARE_TAG} https://forgejo.gfnd.rcn-ee.org:3000/kernel.org/linux-firmware.git ./src/ --depth=10
+
+		cd ./KERNEL/
+
+		mkdir -p ./firmware/powervr/ || true
+		cp -v ../src/powervr/*.fw ./firmware/powervr/
+		${git_bin} add -f ./firmware/powervr/*.fw
+
+		${git_bin} commit -a -m 'powervr: add firmware for Imagination Technologies ' -m "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/powervr?h=${FIRMWARE_TAG}" -s
+
+		${git_bin} format-patch -1 -o ../patches/external/powervr_firmware/
+		echo "FIRMWARE_TAG: https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/powervr?h=${FIRMWARE_TAG}" > ../patches/external/git/FIRMWARE_TAG
+
+		rm -rf ../src/ || true
+
+		${git_bin} reset --hard HEAD^
+
+		start_cleanup
+
+		${git} "${DIR}/patches/external/powervr_firmware/0001-powervr-add-firmware-for-Imagination-Technologies.patch"
+
+		wdir="external/powervr_firmware"
+		number=1
+		cleanup
+
+	fi
+	dir 'external/powervr_firmware'
+}
+
 cleanup_dts_builds () {
 	rm -rf arch/arm/boot/dts/modules.order || true
 	rm -rf arch/arm/boot/dts/.*cmd || true
@@ -439,6 +478,7 @@ local_patch () {
 mainline_patches
 rt
 wireless_regdb
+powervr_firmware
 beagleboard_dtbs
 #local_patch
 
@@ -497,6 +537,13 @@ post_rpibackports () {
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
 	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
+
+	if [ ! "x${backport_tag}" = "x" ] ; then
+		cd ~/linux-rpi/
+		${git_bin} branch -D ${backport_tag}
+		cd -
+	fi
+
 	exit 2
 }
 
