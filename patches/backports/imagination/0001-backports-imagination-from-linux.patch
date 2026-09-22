@@ -1,24 +1,24 @@
-From 65723c0009ca3fb1e3a12f90a5f31c913f23d629 Mon Sep 17 00:00:00 2001
+From c7b345d179a3d0af9e06d7352451d34087bb80bb Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 24 Aug 2026 12:41:36 -0500
+Date: Tue, 22 Sep 2026 16:40:58 -0500
 Subject: [PATCH] backports imagination from linux
 
 Reference: v6.19.14
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  drivers/gpu/drm/imagination/pvr_ccb.c         |  1 +
- drivers/gpu/drm/imagination/pvr_context.c     | 22 +++----
+ drivers/gpu/drm/imagination/pvr_context.c     | 52 +++++++-------
  drivers/gpu/drm/imagination/pvr_drv.c         | 13 ++--
  drivers/gpu/drm/imagination/pvr_fw.c          |  1 +
  drivers/gpu/drm/imagination/pvr_fw_meta.c     |  2 +
  drivers/gpu/drm/imagination/pvr_fw_trace.c    |  1 +
  drivers/gpu/drm/imagination/pvr_power.c       |  1 +
- drivers/gpu/drm/imagination/pvr_queue.c       | 65 +++++++------------
+ drivers/gpu/drm/imagination/pvr_queue.c       | 72 +++++++------------
  drivers/gpu/drm/imagination/pvr_queue.h       |  2 +-
  drivers/gpu/drm/imagination/pvr_rogue_fwif.h  |  8 +--
  .../drm/imagination/pvr_rogue_fwif_shared.h   |  6 +-
  drivers/gpu/drm/imagination/pvr_vm.c          |  3 +-
- 12 files changed, 52 insertions(+), 73 deletions(-)
+ 12 files changed, 67 insertions(+), 95 deletions(-)
 
 diff --git a/drivers/gpu/drm/imagination/pvr_ccb.c b/drivers/gpu/drm/imagination/pvr_ccb.c
 index 2bbdc05a3b97..9294b4ba1de7 100644
@@ -33,7 +33,7 @@ index 2bbdc05a3b97..9294b4ba1de7 100644
  #include <linux/delay.h>
  #include <linux/jiffies.h>
 diff --git a/drivers/gpu/drm/imagination/pvr_context.c b/drivers/gpu/drm/imagination/pvr_context.c
-index d9066a4fefcf..5edc3c01af72 100644
+index 5befaed562ac..5edc3c01af72 100644
 --- a/drivers/gpu/drm/imagination/pvr_context.c
 +++ b/drivers/gpu/drm/imagination/pvr_context.c
 @@ -161,24 +161,22 @@ ctx_fw_data_init(void *cpu_ptr, void *priv)
@@ -86,16 +86,66 @@ index d9066a4fefcf..5edc3c01af72 100644
  		goto err_free_ctx;
  	}
  
-@@ -358,7 +356,7 @@ int pvr_context_create(struct pvr_file *pvr_file, struct drm_pvr_ioctl_create_co
+@@ -320,13 +318,9 @@ int pvr_context_create(struct pvr_file *pvr_file, struct drm_pvr_ioctl_create_co
+ 		goto err_put_vm;
+ 	}
+ 
+-	err = xa_alloc(&pvr_dev->ctx_ids, &ctx->ctx_id, ctx, xa_limit_32b, GFP_KERNEL);
+-	if (err)
+-		goto err_free_ctx_data;
+-
+ 	err = pvr_context_create_queues(ctx, args, ctx->data);
+ 	if (err)
+-		goto err_free_ctx_id;
++		goto err_free_ctx_data;
+ 
+ 	err = init_fw_objs(ctx, args, ctx->data);
+ 	if (err)
+@@ -335,12 +329,23 @@ int pvr_context_create(struct pvr_file *pvr_file, struct drm_pvr_ioctl_create_co
+ 	err = pvr_fw_object_create(pvr_dev, ctx_size, PVR_BO_FW_FLAGS_DEVICE_UNCACHED,
+ 				   ctx_fw_data_init, ctx, &ctx->fw_obj);
+ 	if (err)
+-		goto err_destroy_queues;
++		goto err_free_ctx_data;
+ 
+-	err = xa_alloc(&pvr_file->ctx_handles, &args->handle, ctx, xa_limit_32b, GFP_KERNEL);
++	err = xa_alloc(&pvr_dev->ctx_ids, &ctx->ctx_id, ctx, xa_limit_32b, GFP_KERNEL);
+ 	if (err)
+ 		goto err_destroy_fw_obj;
+ 
++	err = xa_alloc(&pvr_file->ctx_handles, &args->handle, ctx, xa_limit_32b, GFP_KERNEL);
++	if (err) {
++		/*
++		 * It's possible that another thread could have taken a reference on the context at
++		 * this point as it is in the ctx_ids xarray. Therefore instead of directly
++		 * destroying the context, drop a reference instead.
++		 */
++		pvr_context_put(ctx);
++		return err;
++	}
++
+ 	spin_lock(&pvr_dev->ctx_list_lock);
+ 	list_add_tail(&ctx->file_link, &pvr_file->contexts);
+ 	spin_unlock(&pvr_dev->ctx_list_lock);
+@@ -351,16 +356,7 @@ int pvr_context_create(struct pvr_file *pvr_file, struct drm_pvr_ioctl_create_co
  	pvr_fw_object_destroy(ctx->fw_obj);
  
  err_destroy_queues:
 -	pvr_context_destroy_queues(ctx, true);
+-
+-err_free_ctx_id:
+-	/*
+-	 * Ctx_id is not exposed to userspace and not visible yet within
+-	 * the kernel/FW, plus a matching context handle (exposed to userspace)
+-	 * hasn't been allocated yet, so it is safe to remove ctx_id
+-	 * from the ctx_ids xarray.
+-	 */
+-	xa_erase(&pvr_dev->ctx_ids, ctx->ctx_id);
 +	pvr_context_destroy_queues(ctx);
  
  err_free_ctx_data:
  	kfree(ctx->data);
-@@ -384,7 +382,7 @@ pvr_context_release(struct kref *ref_count)
+@@ -386,7 +382,7 @@ pvr_context_release(struct kref *ref_count)
  	spin_unlock(&pvr_dev->ctx_list_lock);
  
  	xa_erase(&pvr_dev->ctx_ids, ctx->ctx_id);
@@ -179,7 +229,7 @@ index a7994457900d..50ce3668f051 100644
  #include <linux/clk.h>
  #include <linux/interrupt.h>
 diff --git a/drivers/gpu/drm/imagination/pvr_queue.c b/drivers/gpu/drm/imagination/pvr_queue.c
-index bb5835ede666..fc415dd0d7a7 100644
+index 7497bca2e7e8..fc415dd0d7a7 100644
 --- a/drivers/gpu/drm/imagination/pvr_queue.c
 +++ b/drivers/gpu/drm/imagination/pvr_queue.c
 @@ -179,7 +179,7 @@ static const struct dma_fence_ops pvr_queue_job_fence_ops = {
@@ -308,7 +358,28 @@ index bb5835ede666..fc415dd0d7a7 100644
  			continue;
  
  		if (dma_fence_is_signaled(&jfence->base))
-@@ -1401,12 +1386,11 @@ void pvr_queue_kill(struct pvr_queue *queue)
+@@ -818,9 +803,7 @@ static void pvr_queue_start(struct pvr_queue *queue)
+  * the scheduler, and re-assign parent fences in the middle.
+  *
+  * Return:
+- *  *%DRM_GPU_SCHED_STAT_NO_HANG if the job fence has already been
+- *   signaled, or
+- *  *%DRM_GPU_SCHED_STAT_RESET otherwise.
++ *  * DRM_GPU_SCHED_STAT_RESET.
+  */
+ static enum drm_gpu_sched_stat
+ pvr_queue_timedout_job(struct drm_sched_job *s_job)
+@@ -831,9 +814,6 @@ pvr_queue_timedout_job(struct drm_sched_job *s_job)
+ 	struct pvr_job *job;
+ 	u32 job_count = 0;
+ 
+-	if (dma_fence_is_signaled(s_job->s_fence->parent))
+-		return DRM_GPU_SCHED_STAT_NO_HANG;
+-
+ 	dev_err(sched->dev, "Job timeout\n");
+ 
+ 	/* Before we stop the scheduler, make sure the queue is out of any list, so
+@@ -1406,12 +1386,11 @@ void pvr_queue_kill(struct pvr_queue *queue)
  /**
   * pvr_queue_destroy() - Destroy a queue.
   * @queue: The queue to destroy.
@@ -322,7 +393,7 @@ index bb5835ede666..fc415dd0d7a7 100644
  {
  	if (!queue)
  		return;
-@@ -1416,8 +1400,7 @@ void pvr_queue_destroy(struct pvr_queue *queue, bool cleanup_queue_entity)
+@@ -1421,8 +1400,7 @@ void pvr_queue_destroy(struct pvr_queue *queue, bool cleanup_queue_entity)
  	mutex_unlock(&queue->ctx->pvr_dev->queues.lock);
  
  	drm_sched_fini(&queue->scheduler);
