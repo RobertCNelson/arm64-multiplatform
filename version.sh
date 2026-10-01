@@ -18,7 +18,6 @@ branch_postfix=".x-arm64-k3"
 #Cross Compilers
 #https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/
 
-
 # Options: arm, arm64, riscv
 KERNEL_ARCH=arm64
 
