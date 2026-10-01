@@ -93,7 +93,6 @@ after_script:
       echo "Verifying: $CHECK_PATH"
       if [ -e "$CHECK_PATH" ]; then
         echo "Success: $CHECK_PATH found."
-        # Use du directly on the specific path instead of using find
         du -sh "$CHECK_PATH"
       else
         echo "Error: $CHECK_PATH NOT FOUND!"
