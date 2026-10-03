@@ -207,9 +207,10 @@ cc33xx_firmware () {
 	dir 'external/cc33xx_firmware'
 }
 
-powervr_firmware () {
+linux_firmware () {
 	FIRMWARE_TAG="20260916"
-	#https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/powervr
+	#https://packages.debian.org/source/sid/firmware-nonfree
+	#https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=20260916
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
 		cd ../
@@ -221,14 +222,19 @@ powervr_firmware () {
 
 		cd ./KERNEL/
 
+		mkdir -p ./firmware/cadence/ || true
+		cp -v ../src/cadence/mhdp8546.bin ./firmware/cadence/
+
 		mkdir -p ./firmware/powervr/ || true
 		cp -v ../src/powervr/*.fw ./firmware/powervr/
+
+		${git_bin} add -f ./firmware/cadence/*.bin
 		${git_bin} add -f ./firmware/powervr/*.fw
 
-		${git_bin} commit -a -m 'powervr: add firmware for Imagination Technologies ' -m "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/powervr?h=${FIRMWARE_TAG}" -s
+		${git_bin} commit -a -m 'linux-firmware: add firmware for embedded cores' -m "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=${FIRMWARE_TAG}" -s
 
-		${git_bin} format-patch -1 -o ../patches/external/powervr_firmware/
-		echo "FIRMWARE_TAG: https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/powervr?h=${FIRMWARE_TAG}" > ../patches/external/git/FIRMWARE_TAG
+		${git_bin} format-patch -1 -o ../patches/external/linux_firmware/
+		echo "FIRMWARE_TAG: https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=${FIRMWARE_TAG}" > ../patches/external/git/FIRMWARE_TAG
 
 		rm -rf ../src/ || true
 
@@ -236,14 +242,14 @@ powervr_firmware () {
 
 		start_cleanup
 
-		${git} "${DIR}/patches/external/powervr_firmware/0001-powervr-add-firmware-for-Imagination-Technologies.patch"
+		${git} "${DIR}/patches/external/linux_firmware/0001-linux-firmware-add-firmware-for-embedded-cores.patch"
 
-		wdir="external/powervr_firmware"
+		wdir="external/linux_firmware"
 		number=1
 		cleanup
 
 	fi
-	dir 'external/powervr_firmware'
+	dir 'external/linux_firmware'
 }
 
 cleanup_dts_builds () {
@@ -516,7 +522,7 @@ local_patch () {
 #mainline_patches
 rt
 wireless_regdb
-powervr_firmware
+linux_firmware
 beagleboard_dtbs
 #local_patch
 
@@ -593,7 +599,9 @@ backports () {
 	if [ "x${regenerate}" = "xenable" ] ; then
 		pre_rpibackports
 
+		cp -v ~/linux-rpi/drivers/gpu/drm/panel/panel-ilitek-ili9881c.c ./drivers/gpu/drm/panel/
 		cp -v ~/linux-rpi/drivers/input/touchscreen/edt-ft5x06.c ./drivers/input/touchscreen/
+		cp -v ~/linux-rpi/drivers/input/touchscreen/goodix.c ./drivers/input/touchscreen/
 		cp -v ~/linux-rpi/drivers/regulator/rpi-panel-v2-regulator.c ./drivers/regulator/
 
 		post_rpibackports
@@ -656,14 +664,8 @@ drivers () {
 	dir 'drivers/mspm0'
 
 	dir 'external/android'
-	dir 'external/cadence'
 
 	dir 'drivers/cpufreq'
-
-	#b4 am https://lore.kernel.org/all/20260114-thames-v2-2-e94a6636e050@tomeuvizoso.net/#t
-	#git am ./v2_20260114_tomeu_new_drm_accel_driver_for_texas_instruments_c7x_dsps.mbx
-	#exit 2
-	dir 'drivers/thames'
 }
 
 ###
