@@ -112,12 +112,6 @@ rt () {
 			xzcat patch-${rt_patch}.patch.xz | patch -p1 || rt_cleanup
 			rm -f patch-${rt_patch}.patch.xz
 			rm -f localversion-rt
-			#v6.12.101
-			rm -f kernel/locking/spinlock_rt.c.orig
-			#v6.12.103
-			rm -f kernel/trace/trace.c.orig
-			#v6.12.106
-			rm -f include/linux/sched.h.orig
 			${git_bin} add .
 			${git_bin} commit -a -m 'merge: CONFIG_PREEMPT_RT Patch Set' -m "patch-${rt_patch}.patch.xz" -s
 			${git_bin} format-patch -1 -o ../patches/external/rt/
@@ -169,6 +163,93 @@ wireless_regdb () {
 		cleanup
 	fi
 	dir 'external/wireless_regdb'
+}
+
+cc33xx_firmware () {
+	FIRMWARE_VERSION="1_0_2_10"
+	CC33XX_FIRMWARE="1.0.2.10"
+	#https://www.ti.com/tool/CC33XX-SOFTWARE
+	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.10
+	#https://github.com/beagleboard/CC33XX-LINUX-MPU
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		cd ../
+		if [ -d ./src ] ; then
+			rm -rf ./src || true
+		fi
+
+		git clone https://github.com/beagleboard/CC33XX-LINUX-MPU.git ./src/ --depth=10
+
+		cd ./KERNEL/
+
+		mkdir -p ./firmware/ti-connectivity/ || true
+		cp -v ../src/${FIRMWARE_VERSION}/firmware/ti-connectivity/*.bin ./firmware/ti-connectivity/
+		${git_bin} add -f ./firmware/ti-connectivity/*.bin
+
+		${git_bin} commit -a -m 'ti: add CC33XX-LINUX-MPU firmware' -m "https://www.ti.com/tool/download/CC33XX-LINUX-MPU/${CC33XX_FIRMWARE}" -s
+
+		${git_bin} format-patch -1 -o ../patches/external/cc33xx_firmware/
+		echo "CC33XX_FIRMWARE: https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.10" > ../patches/external/git/CC33XX_FIRMWARE
+
+		rm -rf ../src/ || true
+
+		${git_bin} reset --hard HEAD^
+
+		start_cleanup
+
+		${git} "${DIR}/patches/external/cc33xx_firmware/0001-ti-add-CC33XX-LINUX-MPU-firmware.patch"
+
+		wdir="external/cc33xx_firmware"
+		number=1
+		cleanup
+
+	fi
+	dir 'external/cc33xx_firmware'
+}
+
+linux_firmware () {
+	FIRMWARE_TAG="20260916"
+	#https://packages.debian.org/source/sid/firmware-nonfree
+	#https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=20260916
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+		cd ../
+		if [ -d ./src ] ; then
+			rm -rf ./src || true
+		fi
+
+		git clone -b ${FIRMWARE_TAG} https://forgejo.gfnd.rcn-ee.org:3000/kernel.org/linux-firmware.git ./src/ --depth=10
+
+		cd ./KERNEL/
+
+		mkdir -p ./firmware/cadence/ || true
+		cp -v ../src/cadence/mhdp8546.bin ./firmware/cadence/
+
+		mkdir -p ./firmware/powervr/ || true
+		cp -v ../src/powervr/*.fw ./firmware/powervr/
+
+		${git_bin} add -f ./firmware/cadence/*.bin
+		${git_bin} add -f ./firmware/powervr/*.fw
+
+		${git_bin} commit -a -m 'linux-firmware: add firmware for embedded cores' -m "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=${FIRMWARE_TAG}" -s
+
+		${git_bin} format-patch -1 -o ../patches/external/linux_firmware/
+		echo "FIRMWARE_TAG: https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=${FIRMWARE_TAG}" > ../patches/external/git/FIRMWARE_TAG
+
+		rm -rf ../src/ || true
+
+		${git_bin} reset --hard HEAD^
+
+		start_cleanup
+
+		${git} "${DIR}/patches/external/linux_firmware/0001-linux-firmware-add-firmware-for-embedded-cores.patch"
+
+		wdir="external/linux_firmware"
+		number=1
+		cleanup
+
+	fi
+	dir 'external/linux_firmware'
 }
 
 cleanup_dts_builds () {
@@ -458,6 +539,7 @@ local_patch () {
 mainline_patches
 rt
 wireless_regdb
+linux_firmware
 beagleboard_dtbs
 #local_patch
 
@@ -521,6 +603,13 @@ post_rpibackports () {
 		mkdir -p ../patches/backports/${subsystem}/
 	fi
 	${git_bin} format-patch -1 -o ../patches/backports/${subsystem}/
+
+	if [ ! "x${backport_tag}" = "x" ] ; then
+		cd ~/linux-rpi/
+		${git_bin} branch -D ${backport_tag}
+		cd -
+	fi
+
 	exit 2
 }
 
@@ -567,7 +656,9 @@ backports () {
 	if [ "x${regenerate}" = "xenable" ] ; then
 		pre_rpibackports
 
+		cp -v ~/linux-rpi/drivers/gpu/drm/panel/panel-ilitek-ili9881c.c ./drivers/gpu/drm/panel/
 		cp -v ~/linux-rpi/drivers/input/touchscreen/edt-ft5x06.c ./drivers/input/touchscreen/
+		cp -v ~/linux-rpi/drivers/input/touchscreen/goodix.c ./drivers/input/touchscreen/
 		cp -v ~/linux-rpi/drivers/regulator/rpi-panel-v2-regulator.c ./drivers/regulator/
 
 		post_rpibackports
@@ -600,7 +691,9 @@ cc33xx_drivers () {
 
 	#exit 2
 	#start_cleanup
+	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.10
 	dir 'drivers/cc33xx/1.0.2.10'
+	cc33xx_firmware
 }
 
 drivers () {
@@ -609,8 +702,6 @@ drivers () {
 	dir 'drivers/ite'
 
 	dir 'external/android'
-	dir 'external/cadence'
-	dir 'external/gasket'
 }
 
 ###
