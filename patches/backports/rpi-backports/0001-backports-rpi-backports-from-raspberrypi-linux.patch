@@ -1,6 +1,6 @@
-From 0adc71b6baebfcc40876ead6fe23c2241cb11e7d Mon Sep 17 00:00:00 2001
+From c38575832db2e69fe946e6eb8d26cd5c3ca04409 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Sun, 4 Oct 2026 12:15:12 -0500
+Date: Thu, 8 Oct 2026 18:51:45 -0500
 Subject: [PATCH] backports rpi-backports from raspberrypi-linux
 
 Reference: rpi-6.6.y

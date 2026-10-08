@@ -1,8 +1,9 @@
-From b50d32b92e6034b2687011ca166d0aa577ee48e6 Mon Sep 17 00:00:00 2001
+From 1bc9d5b27fe8a7d4a923bf2436ecbc8d44b60bbe Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Wed, 26 Jun 2024 17:05:07 -0500
-Subject: [PATCH] firmware: add cadence/mhdp8546.bin
+Date: Thu, 8 Oct 2026 18:50:58 -0500
+Subject: [PATCH] linux-firmware: add firmware for embedded cores
 
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=20260916
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  firmware/cadence/mhdp8546.bin | Bin 0 -> 131072 bytes
@@ -485,5 +486,5 @@ literal 0
 HcmV?d00001
 
 -- 
-2.39.2
+2.55.0
 
