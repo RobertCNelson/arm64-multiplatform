@@ -25,5 +25,6 @@ ignore:
   - vulnerability: CVE-2019-3819	# https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/hid/hid-debug.c?id=13054abbaa4f1fd4e6f3b4b63439ec033b4c8035
   - vulnerability: CVE-2019-3887	# https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=acff78477b9b4f26ecdf65733a4ed77fe837e9dc
   - vulnerability: CVE-2020-16119	# https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=d9ea761fdd197351890418acd462c51f241014a7
+  - vulnerability: CVE-2020-27815	# https://nvd.nist.gov/vuln/detail/cve-2020-27815 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=c61b3e4839007668360ed8b87d7da96d2e59fc6c
   - vulnerability: CVE-2020-1749	# https://security-tracker.debian.org/tracker/CVE-2020-1749 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=6c8991f41546c3c472503dff1ea9daaddf9331c2
   - vulnerability: CVE-2021-20265	# https://security-tracker.debian.org/tracker/CVE-2021-20265 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=fa0dc04df259ba2df3ce1920e9690c7842f8fa4b

@@ -2,13 +2,12 @@
 
 - Name: unknown
 - Type: cpe
-- Date: 2026-10-12T16:29:13.0821631-05:00
+- Date: 2026-10-12T16:42:23.845526387-05:00
 - Kernel Version: 7.3-rc7
 
 | Package | Vulnerability ID | Severity | Fixed | Fixed in Kernel Version | Summary |
 |---------|------------------|----------|-------|-------------------------|---------|
 | linux_kernel | [CVE-2019-14899](https://nvd.nist.gov/vuln/detail/CVE-2019-14899) | High |  | [] | A vulnerability was discovered in Linux, FreeBSD, OpenBSD, M |
-| linux_kernel | [CVE-2020-27815](https://nvd.nist.gov/vuln/detail/CVE-2020-27815) | High | fixed | [4.9.249 4.14.213 4.19.164 5.4.86 5.10.4] | A flaw was found in the JFS filesystem code in the Linux Ker |
 | linux_kernel | [CVE-2021-3564](https://nvd.nist.gov/vuln/detail/CVE-2021-3564) | Medium |  | [] | A flaw double-free memory corruption in the Linux kernel HCI |
 | linux_kernel | [CVE-2021-3714](https://nvd.nist.gov/vuln/detail/CVE-2021-3714) | Medium |  | [] | A flaw was found in the Linux kernels memory deduplication m |
 | linux_kernel | [CVE-2021-3759](https://nvd.nist.gov/vuln/detail/CVE-2021-3759) | Medium |  | [] | A memory overflow vulnerability was found in the Linux kerne |
