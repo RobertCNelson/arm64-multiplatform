@@ -43,6 +43,9 @@ ignore:
   - vulnerability: CVE-2022-3629	# https://security-tracker.debian.org/tracker/CVE-2022-3629 https://git.kernel.org/linus/7e97cfed9929eaabc41829c395eb0d1350fccb9d (6.0-rc1)
   - vulnerability: CVE-2022-3630	# https://security-tracker.debian.org/tracker/CVE-2022-3630 https://git.kernel.org/linus/fb24771faf72a2fd62b3b6287af3c610c3ec9cf1 (6.0-rc1)
   - vulnerability: CVE-2022-3633	# https://security-tracker.debian.org/tracker/CVE-2022-3633 https://git.kernel.org/linus/8c21c54a53ab21842f5050fa090f26b03c0313d6 (6.0-rc1)
-  - vulnerability: CVE-2022-3633	# https://security-tracker.debian.org/tracker/CVE-2022-3636 https://git.kernel.org/linus/17a5f6a78dc7b8db385de346092d7d9f9dc24df6
+  - vulnerability: CVE-2022-3636	# https://security-tracker.debian.org/tracker/CVE-2022-3636 https://git.kernel.org/linus/17a5f6a78dc7b8db385de346092d7d9f9dc24df6
   - vulnerability: CVE-2022-36402	# https://security-tracker.debian.org/tracker/CVE-2022-36402 https://git.kernel.org/linus/14abdfae508228a7307f7491b5c4215ae70c6542 (6.5)
-  - vulnerability: CVE-2022-36402	# https://security-tracker.debian.org/tracker/CVE-2022-3646 https://git.kernel.org/linus/d0d51a97063db4704a5ef6bc978dddab1636a306 (6.1-rc1)
+  - vulnerability: CVE-2022-3646	# https://security-tracker.debian.org/tracker/CVE-2022-3646 https://git.kernel.org/linus/d0d51a97063db4704a5ef6bc978dddab1636a306 (6.1-rc1)
+  - vulnerability: CVE-2022-38096	# https://security-tracker.debian.org/tracker/CVE-2022-38096 https://git.kernel.org/linus/517621b7060096e48e42f545fa6646fc00252eac (6.9-rc1)
+  - vulnerability: CVE-2022-42895	# https://security-tracker.debian.org/tracker/CVE-2022-42895 https://git.kernel.org/linus/b1a2cd50c0357f243b7435a732b4e62ba3157a2e
+  - vulnerability: CVE-2022-4382	# https://security-tracker.debian.org/tracker/CVE-2022-4382 https://git.kernel.org/linus/d18dcfe9860e842f394e37ba01ca9440ab2178f4 (6.2-rc5)

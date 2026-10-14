@@ -2,7 +2,7 @@
 
 - Name: unknown
 - Type: cpe
-- Date: 2026-10-14T13:31:28.620819409-05:00
+- Date: 2026-10-14T13:38:37.37514112-05:00
 - Kernel Version: 7.3-rc7
 
 | Package | Vulnerability ID | Severity | Fixed | Fixed in Kernel Version | Summary |
@@ -12,11 +12,6 @@
 | linux_kernel | [CVE-2021-3714](https://security-tracker.debian.org/tracker/CVE-2021-3714) | Medium |  | [] | A flaw was found in the Linux kernels memory deduplication m |
 | linux_kernel | [CVE-2021-3864](https://security-tracker.debian.org/tracker/CVE-2021-3864) | High |  | [] | A flaw was found in the way the dumpable flag setting was ha |
 | linux_kernel | [CVE-2022-0400](https://security-tracker.debian.org/tracker/CVE-2022-0400) | High |  | [] | An out-of-bounds read vulnerability was discovered in linux  |
-| linux_kernel | [CVE-2022-3636](https://security-tracker.debian.org/tracker/CVE-2022-3636) | High |  | [] | A vulnerability was identified in Linux Kernel 33fc42de33278 |
-| linux_kernel | [CVE-2022-3646](https://security-tracker.debian.org/tracker/CVE-2022-3646) | Medium |  | [] | A vulnerability, which was classified as problematic, has be |
-| linux_kernel | [CVE-2022-38096](https://security-tracker.debian.org/tracker/CVE-2022-38096) | Medium |  | [] | A NULL pointer dereference vulnerability was found in vmwgfx |
-| linux_kernel | [CVE-2022-42895](https://security-tracker.debian.org/tracker/CVE-2022-42895) | Medium |  | [] | There is an infoleak vulnerability in the Linux kernel's net |
-| linux_kernel | [CVE-2022-4382](https://security-tracker.debian.org/tracker/CVE-2022-4382) | Medium |  | [] | A use-after-free flaw caused by a race among the superblock  |
 | linux_kernel | [CVE-2022-4543](https://security-tracker.debian.org/tracker/CVE-2022-4543) | Medium |  | [] | A flaw named "EntryBleed" was found in the Linux Kernel Page |
 | linux_kernel | [CVE-2023-1073](https://security-tracker.debian.org/tracker/CVE-2023-1073) | Medium |  | [] | A memory corruption flaw was found in the Linux kernel’s h |
 | linux_kernel | [CVE-2023-1074](https://security-tracker.debian.org/tracker/CVE-2023-1074) | Medium |  | [] | A memory leak flaw was found in the Linux kernel's Stream Co |
