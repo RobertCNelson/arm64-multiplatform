@@ -2,7 +2,7 @@
 
 - Name: unknown
 - Type: cpe
-- Date: 2026-10-12T16:42:23.845526387-05:00
+- Date: 2026-10-14T13:30:17.048545439-05:00
 - Kernel Version: 7.3-rc7
 
 | Package | Vulnerability ID | Severity | Fixed | Fixed in Kernel Version | Summary |
@@ -10,25 +10,9 @@
 | linux_kernel | [CVE-2019-14899](https://nvd.nist.gov/vuln/detail/CVE-2019-14899) | High |  | [] | A vulnerability was discovered in Linux, FreeBSD, OpenBSD, M |
 | linux_kernel | [CVE-2021-3564](https://nvd.nist.gov/vuln/detail/CVE-2021-3564) | Medium |  | [] | A flaw double-free memory corruption in the Linux kernel HCI |
 | linux_kernel | [CVE-2021-3714](https://nvd.nist.gov/vuln/detail/CVE-2021-3714) | Medium |  | [] | A flaw was found in the Linux kernels memory deduplication m |
-| linux_kernel | [CVE-2021-3759](https://nvd.nist.gov/vuln/detail/CVE-2021-3759) | Medium |  | [] | A memory overflow vulnerability was found in the Linux kerne |
 | linux_kernel | [CVE-2021-3864](https://nvd.nist.gov/vuln/detail/CVE-2021-3864) | High |  | [] | A flaw was found in the way the dumpable flag setting was ha |
-| linux_kernel | [CVE-2021-4218](https://nvd.nist.gov/vuln/detail/CVE-2021-4218) | Medium |  | [] | A flaw was found in the Linux kernel’s implementation of r |
-| linux_kernel | [CVE-2022-0286](https://nvd.nist.gov/vuln/detail/CVE-2022-0286) | Medium |  | [] | A flaw was found in the Linux kernel. A null pointer derefer |
 | linux_kernel | [CVE-2022-0400](https://nvd.nist.gov/vuln/detail/CVE-2022-0400) | High |  | [] | An out-of-bounds read vulnerability was discovered in linux  |
-| linux_kernel | [CVE-2022-1247](https://nvd.nist.gov/vuln/detail/CVE-2022-1247) | High |  | [] | An issue found in linux-kernel that leads to a race conditio |
-| linux_kernel | [CVE-2022-2308](https://nvd.nist.gov/vuln/detail/CVE-2022-2308) | Medium |  | [] | A flaw was found in vDPA with VDUSE backend. There are curre |
-| linux_kernel | [CVE-2022-2663](https://nvd.nist.gov/vuln/detail/CVE-2022-2663) | Medium |  | [] | An issue was found in the Linux kernel in nf_conntrack_irc w |
-| linux_kernel | [CVE-2022-3435](https://nvd.nist.gov/vuln/detail/CVE-2022-3435) | Medium |  | [] | A vulnerability classified as problematic has been found in  |
-| linux_kernel | [CVE-2022-3523](https://nvd.nist.gov/vuln/detail/CVE-2022-3523) | Medium |  | [] | A vulnerability was found in Linux Kernel. It has been class |
-| linux_kernel | [CVE-2022-3567](https://nvd.nist.gov/vuln/detail/CVE-2022-3567) | Medium |  | [] | A vulnerability has been found in Linux Kernel and classifie |
-| linux_kernel | [CVE-2022-3619](https://nvd.nist.gov/vuln/detail/CVE-2022-3619) | Medium |  | [] | A vulnerability has been found in Linux Kernel and classifie |
-| linux_kernel | [CVE-2022-3621](https://nvd.nist.gov/vuln/detail/CVE-2022-3621) | Medium |  | [] | A vulnerability was found in Linux Kernel. It has been class |
-| linux_kernel | [CVE-2022-3624](https://nvd.nist.gov/vuln/detail/CVE-2022-3624) | Low |  | [] | A vulnerability was found in Linux Kernel and classified as  |
-| linux_kernel | [CVE-2022-3629](https://nvd.nist.gov/vuln/detail/CVE-2022-3629) | Low |  | [] | A vulnerability was found in Linux Kernel. It has been decla |
-| linux_kernel | [CVE-2022-3630](https://nvd.nist.gov/vuln/detail/CVE-2022-3630) | Medium |  | [] | A vulnerability was found in Linux Kernel. It has been rated |
-| linux_kernel | [CVE-2022-3633](https://nvd.nist.gov/vuln/detail/CVE-2022-3633) | Low |  | [] | A vulnerability classified as problematic has been found in  |
 | linux_kernel | [CVE-2022-3636](https://nvd.nist.gov/vuln/detail/CVE-2022-3636) | High |  | [] | A vulnerability was identified in Linux Kernel 33fc42de33278 |
-| linux_kernel | [CVE-2022-36402](https://nvd.nist.gov/vuln/detail/CVE-2022-36402) | Medium |  | [] | An integer overflow vulnerability was found in vmwgfx driver |
 | linux_kernel | [CVE-2022-3646](https://nvd.nist.gov/vuln/detail/CVE-2022-3646) | Medium |  | [] | A vulnerability, which was classified as problematic, has be |
 | linux_kernel | [CVE-2022-38096](https://nvd.nist.gov/vuln/detail/CVE-2022-38096) | Medium |  | [] | A NULL pointer dereference vulnerability was found in vmwgfx |
 | linux_kernel | [CVE-2022-42895](https://nvd.nist.gov/vuln/detail/CVE-2022-42895) | Medium |  | [] | There is an infoleak vulnerability in the Linux kernel's net |
