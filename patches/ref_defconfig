@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 7.3.0-rc7 Kernel Configuration
+# Linux/arm64 7.3.0 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 16.2.0"
 CONFIG_CC_IS_GCC=y
@@ -8514,7 +8514,7 @@ CONFIG_DMA_ENGINE_RAID=y
 CONFIG_SYNC_FILE=y
 # CONFIG_SW_SYNC is not set
 # CONFIG_UDMABUF is not set
-CONFIG_DMABUF_DEBUG=y
+# CONFIG_DMABUF_DEBUG is not set
 CONFIG_DMABUF_HEAPS=y
 CONFIG_DMABUF_HEAPS_SYSTEM=m
 CONFIG_DMABUF_HEAPS_CMA=m
