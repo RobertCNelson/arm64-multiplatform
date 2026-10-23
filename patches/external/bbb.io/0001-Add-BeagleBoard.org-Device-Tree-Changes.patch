@@ -1,11 +1,11 @@
-From 511601903bba75cca2c6e8cd94a7bc09a5e16c86 Mon Sep 17 00:00:00 2001
+From bf5ea7bdb1f3b83c26f7d30a4b2393119234e247 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 23 Oct 2026 11:45:02 -0500
+Date: Fri, 23 Oct 2026 12:05:23 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v7.2.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/f3861f7640b3ea29b12612026c600db4bbe21bea
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/edebaf0fd8acf5abe435dcf4088aad9a316e8ed9
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso  |   80 ++
@@ -122,7 +122,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../boot/dts/ti/k3-am625-sancloud-bbe-2.dts   | 1119 +++++++++++++++++
  .../arm64/boot/dts/ti/k3-am625-sk-common.dtsi |    3 +-
  .../boot/dts/ti/k3-am62l3-beaglebadge.dts     |  657 ++++++++++
- .../dts/ti/k3-am62p-j722s-common-main.dtsi    |   19 +
+ .../dts/ti/k3-am62p-j722s-common-main.dtsi    |   23 +-
  .../dts/ti/k3-am62p-j722s-common-mcu.dtsi     |    2 +-
  .../boot/dts/ti/k3-am62p-ti-ipc-firmware.dtsi |    1 +
  .../arm64/boot/dts/ti/k3-am62x-sk-common.dtsi |    2 +-
@@ -192,7 +192,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |   12 +
  .../dt-bindings/clock/spacemit,k3-clocks.h    |    4 +
  include/uapi/linux/input-event-codes.h        |    6 +
- 184 files changed, 15442 insertions(+), 76 deletions(-)
+ 184 files changed, 15444 insertions(+), 78 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
@@ -12713,7 +12713,7 @@ index 000000000000..ee2d562baf51
 +	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
-index 9f584e49ef58..6d68ebbcb59a 100644
+index 9f584e49ef58..790badc834d4 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
 @@ -64,6 +64,11 @@ audio_refclk1: clock-controller@82e4 {
@@ -12748,6 +12748,24 @@ index 9f584e49ef58..6d68ebbcb59a 100644
  	hwspinlock: spinlock@2a000000 {
  		compatible = "ti,am64-hwspinlock";
  		reg = <0x00 0x2a000000 0x00 0x1000>;
+@@ -1134,7 +1152,7 @@ dss0: dss@30200000 {
+ 			 <&k3_clks 186 2>;
+ 		clock-names = "fck", "vp1", "vp2";
+ 		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+-		ti,dpi-io-ctrl = <&main_conf 0x8300>;
++		#ti,dpi-io-ctrl = <&main_conf 0x8300>;
+ 		status = "disabled";
+ 
+ 		oldi-transmitters {
+@@ -1179,7 +1197,7 @@ dss1: dss@30220000 {
+ 			 <&k3_clks 232 4>;
+ 		clock-names = "fck", "vp1", "vp2";
+ 		interrupts = <GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
+-		ti,dpi-io-ctrl = <&main_conf 0x8300>;
++		#ti,dpi-io-ctrl = <&main_conf 0x8300>;
+ 		status = "disabled";
+ 
+ 		oldi-transmitters {
 @@ -1229,6 +1247,7 @@ vpu: video-codec@30210000 {
  		interrupts = <GIC_SPI 225 IRQ_TYPE_LEVEL_HIGH>;
  		clocks = <&k3_clks 204 2>;
