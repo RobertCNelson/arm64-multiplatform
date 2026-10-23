@@ -18,8 +18,16 @@ cat_files () {
 		cat ./patches/external/git/RT >> ${wfile}
 	fi
 
+	if [ -f ./patches/external/git/CC33XX_FIRMWARE ] ; then
+		cat ./patches/external/git/CC33XX_FIRMWARE >> ${wfile}
+	fi
+
 	if [ -f ./patches/external/git/WIRELESS_REGDB ] ; then
 		cat ./patches/external/git/WIRELESS_REGDB >> ${wfile}
+	fi
+
+	if [ -f ./patches/external/git/FIRMWARE_TAG ] ; then
+		cat ./patches/external/git/FIRMWARE_TAG >> ${wfile}
 	fi
 }
 
@@ -30,6 +38,8 @@ repo="ssh://git@forgejo.gfnd.rcn-ee.org:222/Production/linux-stable-rcn-ee.git"
 example="rcn-ee"
 
 if [ -e ${DIR}/version.sh ]; then
+	./tools/get_vulnerability.sh
+
 	unset BRANCH
 	. ${DIR}/version.sh
 
