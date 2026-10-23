@@ -1,6 +1,6 @@
-From ec6c0249a4504b4f40dfdd2d49e95920cb7df157 Mon Sep 17 00:00:00 2001
+From 200219fe9fd4d3281f46cf9387fbf42bf61837a7 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Sat, 25 Apr 2026 12:47:10 -0500
+Date: Sat, 25 Apr 2026 09:43:31 -0500
 Subject: [PATCH 1/2] wifi: cc33xx: update driver to match cc33xx SDK 1.0.2.10
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
@@ -8,27 +8,27 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  drivers/net/wireless/ti/cc33xx/Kconfig    |   12 +
  drivers/net/wireless/ti/cc33xx/Makefile   |    4 +-
  drivers/net/wireless/ti/cc33xx/acx.c      |  482 ++++-
- drivers/net/wireless/ti/cc33xx/acx.h      |  411 ++---
+ drivers/net/wireless/ti/cc33xx/acx.h      |  416 ++---
  drivers/net/wireless/ti/cc33xx/boot.c     |   38 +
  drivers/net/wireless/ti/cc33xx/cc33xx.h   |   14 +-
  drivers/net/wireless/ti/cc33xx/cc33xx_i.h |    5 +-
- drivers/net/wireless/ti/cc33xx/cmd.c      |  107 +-
+ drivers/net/wireless/ti/cc33xx/cmd.c      |  109 +-
  drivers/net/wireless/ti/cc33xx/cmd.h      |   13 +-
- drivers/net/wireless/ti/cc33xx/conf.h     |  917 ++++------
- drivers/net/wireless/ti/cc33xx/debugfs.c  | 1988 +++++++++++++++++++++
- drivers/net/wireless/ti/cc33xx/debugfs.h  |  100 ++
+ drivers/net/wireless/ti/cc33xx/conf.h     |  921 ++++------
+ drivers/net/wireless/ti/cc33xx/debugfs.c  | 1990 +++++++++++++++++++++
+ drivers/net/wireless/ti/cc33xx/debugfs.h  |  101 ++
  drivers/net/wireless/ti/cc33xx/event.c    |    5 +-
  drivers/net/wireless/ti/cc33xx/event.h    |    3 +
  drivers/net/wireless/ti/cc33xx/io.c       |    8 +-
  drivers/net/wireless/ti/cc33xx/io.h       |    1 +
- drivers/net/wireless/ti/cc33xx/main.c     |  280 ++-
+ drivers/net/wireless/ti/cc33xx/main.c     |  266 ++-
  drivers/net/wireless/ti/cc33xx/ps.c       |    2 -
  drivers/net/wireless/ti/cc33xx/rx.c       |    3 +
  drivers/net/wireless/ti/cc33xx/rx.h       |    6 +-
- drivers/net/wireless/ti/cc33xx/sdio.c     |   56 +-
- drivers/net/wireless/ti/cc33xx/spi.c      |  684 +++++++
+ drivers/net/wireless/ti/cc33xx/sdio.c     |   51 +-
+ drivers/net/wireless/ti/cc33xx/spi.c      |  690 +++++++
  drivers/net/wireless/ti/cc33xx/tx.c       |    4 +
- 23 files changed, 4123 insertions(+), 1020 deletions(-)
+ 23 files changed, 4131 insertions(+), 1013 deletions(-)
  create mode 100644 drivers/net/wireless/ti/cc33xx/debugfs.c
  create mode 100644 drivers/net/wireless/ti/cc33xx/debugfs.h
  create mode 100644 drivers/net/wireless/ti/cc33xx/spi.c
@@ -75,7 +75,7 @@ index 6156f778edee..caefe742ae6b 100644
 +obj-$(CONFIG_CC33XX_SPI)			+= cc33xx_spi.o
  obj-$(CONFIG_CC33XX_SDIO)			+= cc33xx_sdio.o
 diff --git a/drivers/net/wireless/ti/cc33xx/acx.c b/drivers/net/wireless/ti/cc33xx/acx.c
-index 882a6ccbf24e..ffb998acb5c4 100644
+index 882a6ccbf24e..dc8f25a30be7 100644
 --- a/drivers/net/wireless/ti/cc33xx/acx.c
 +++ b/drivers/net/wireless/ti/cc33xx/acx.c
 @@ -5,28 +5,6 @@
@@ -293,7 +293,7 @@ index 882a6ccbf24e..ffb998acb5c4 100644
 +	}
 +
 +	ret = cc33xx_cmd_interrogate(cc, GET_ANT_DIV_STATUS, get_diversity_status_cmd,
-+				     sizeof(struct acx_header), sizeof(*get_diversity_status_cmd));
++				sizeof(struct acx_header), sizeof(*get_diversity_status_cmd));
 +	if (ret < 0) {
 +		cc33xx_warning("acx get antenna diversity status failed: %d", ret);
 +		goto out;
@@ -322,7 +322,7 @@ index 882a6ccbf24e..ffb998acb5c4 100644
 +	set_diversity_status_cmd->enable = enable;
 +
 +	ret = cc33xx_cmd_configure(cc, ANT_DIV_ENABLE, set_diversity_status_cmd,
-+				   sizeof(*set_diversity_status_cmd));
++							sizeof(*set_diversity_status_cmd));
 +	if (ret < 0) {
 +		cc33xx_warning("acx set antenna diversity status failed: %d", ret);
 +		goto out;
@@ -347,7 +347,7 @@ index 882a6ccbf24e..ffb998acb5c4 100644
 +	}
 +
 +	ret = cc33xx_cmd_interrogate(cc, GET_ANT_DIV_RSSI_THRESHOLD, get_rssi_threshold_cmd,
-+				     sizeof(struct acx_header), sizeof(*get_rssi_threshold_cmd));
++				sizeof(struct acx_header), sizeof(*get_rssi_threshold_cmd));
 +	if (ret < 0) {
 +		cc33xx_warning("acx antenna diversity get rssi threshold failed: %d", ret);
 +		goto out;
@@ -367,7 +367,7 @@ index 882a6ccbf24e..ffb998acb5c4 100644
 +	int ret;
 +
 +	cc33xx_debug(DEBUG_ACX, "acx antenna diversity set rssi threshold to %d",
-+		     rssi_threshold);
++					rssi_threshold);
 +
 +	set_rssi_threshold_cmd = kzalloc(sizeof(*set_rssi_threshold_cmd), GFP_KERNEL);
 +	if (!set_rssi_threshold_cmd) {
@@ -378,7 +378,7 @@ index 882a6ccbf24e..ffb998acb5c4 100644
 +	set_rssi_threshold_cmd->rssi_threshold = rssi_threshold;
 +
 +	ret = cc33xx_cmd_configure(cc, ANT_DIV_SET_RSSI_THRESHOLD, set_rssi_threshold_cmd,
-+				   sizeof(*set_rssi_threshold_cmd));
++					sizeof(*set_rssi_threshold_cmd));
 +	if (ret < 0) {
 +		cc33xx_warning("acx antenna diversity set rssi threshold failed: %d", ret);
 +		goto out;
@@ -403,7 +403,7 @@ index 882a6ccbf24e..ffb998acb5c4 100644
 +	}
 +
 +	ret = cc33xx_cmd_interrogate(cc, GET_ANT_DIV_DEFAULT_ANTENNA, get_default_antenna_cmd,
-+				     sizeof(struct acx_header), sizeof(*get_default_antenna_cmd));
++				sizeof(struct acx_header), sizeof(*get_default_antenna_cmd));
 +	if (ret < 0) {
 +		cc33xx_warning("acx antenna diversity get default antenna failed: %d", ret);
 +		goto out;
@@ -421,8 +421,7 @@ index 882a6ccbf24e..ffb998acb5c4 100644
 +	struct acx_diversity_default_antenna *select_default_antenna_cmd;
 +	int ret;
 +
-+	cc33xx_debug(DEBUG_ACX, "acx antenna diversity select default antenna. default_antenna = %d",
-+		     default_antenna);
++	cc33xx_debug(DEBUG_ACX, "acx antenna diversity select default antenna. default_antenna = %d", default_antenna);
 +
 +	select_default_antenna_cmd = kzalloc(sizeof(*select_default_antenna_cmd), GFP_KERNEL);
 +	if (!select_default_antenna_cmd) {
@@ -432,9 +431,7 @@ index 882a6ccbf24e..ffb998acb5c4 100644
 +
 +	select_default_antenna_cmd->default_antenna = default_antenna;
 +
-+	ret = cc33xx_cmd_configure(cc, ANT_DIV_SELECT_DEFAULT_ANTENNA,
-+				   select_default_antenna_cmd,
-+				   sizeof(*select_default_antenna_cmd));
++	ret = cc33xx_cmd_configure(cc, ANT_DIV_SELECT_DEFAULT_ANTENNA, select_default_antenna_cmd, sizeof(*select_default_antenna_cmd));
 +	if (ret < 0) {
 +		cc33xx_warning("acx antenna diversity select default antenna failed: %d", ret);
 +		goto out;
@@ -479,17 +476,20 @@ index 882a6ccbf24e..ffb998acb5c4 100644
 +}
 +
 +int cc33xx_acx_twt_setup(struct cc33xx *cc, u32 min_wake_duration_usec,
-+			 u32 min_wake_interval_mantissa, u32 min_wake_interval_exponent,
-+			 u32 max_wake_interval_mantissa, u32 max_wake_interval_exponent,
-+			 u8 valid_params)
++		       u32 min_wake_interval_mantissa, u32 min_wake_interval_exponent,
++			   u32 max_wake_interval_mantissa, u32 max_wake_interval_exponent,
++			   u8 valid_params)
 +{
 +	struct acx_twt_setup *acx;
 +	int ret;
 +
-+	cc33xx_debug(DEBUG_ACX, "acx config twt setup. valid_params: %d, min_wake_duration_usec: %d, min_wake_interval_mantissa: %d, min_wake_interval_exponent: %d, max_wake_interval_mantissa: %d, max_wake_interval_exponent: %d",
-+		     valid_params, min_wake_duration_usec,
-+		     min_wake_interval_mantissa, min_wake_interval_exponent,
-+		     max_wake_interval_mantissa, max_wake_interval_exponent);
++	cc33xx_debug(DEBUG_ACX, "acx config twt setup. valid_params: %d, "
++				"min_wake_duration_usec: %d, min_wake_interval_mantissa: %d, "
++				"min_wake_interval_exponent: %d, max_wake_interval_mantissa: %d, "
++				"max_wake_interval_exponent: %d",
++				valid_params, min_wake_duration_usec,
++				min_wake_interval_mantissa, min_wake_interval_exponent,
++				max_wake_interval_mantissa, max_wake_interval_exponent);
 +
 +	acx = kzalloc(sizeof(*acx), GFP_KERNEL);
 +	if (!acx) {
@@ -593,7 +593,7 @@ index 882a6ccbf24e..ffb998acb5c4 100644
 +	return ret;
 +}
 diff --git a/drivers/net/wireless/ti/cc33xx/acx.h b/drivers/net/wireless/ti/cc33xx/acx.h
-index f250758c3da5..ce55867e1db6 100644
+index f250758c3da5..ed5ff819c89b 100644
 --- a/drivers/net/wireless/ti/cc33xx/acx.h
 +++ b/drivers/net/wireless/ti/cc33xx/acx.h
 @@ -327,8 +327,9 @@ struct cc33xx_acx_fw_versions {
@@ -921,10 +921,14 @@ index f250758c3da5..ce55867e1db6 100644
  struct acx_preamble_and_tx_rate {
  	struct acx_header header;
  	u16 tx_rate;
-@@ -782,6 +619,114 @@ struct acx_preamble_and_tx_rate {
+@@ -782,6 +619,119 @@ struct acx_preamble_and_tx_rate {
  	u8 role_id;
  } __packed;
  
++static const u16 cc33xx_idx_to_rate_100Kbps[] = {
++	10, 20, 55, 110, 60, 90, 120, 180, 240, 360, 480, 540
++};
++
 +struct cc33xx_coex_statistics {
 +	__le32 wifi_request_assertion_log;
 +	__le32 wifi_request_de_assertion_log;
@@ -955,6 +959,7 @@ index f250758c3da5..ce55867e1db6 100644
 +	struct cc33xx_coex_statistics coex_statistics;
 +} __packed;
 +
++
 +struct cc33xx_acx_coex_statistics {
 +	struct acx_header header;
 +
@@ -971,21 +976,21 @@ index f250758c3da5..ce55867e1db6 100644
 +struct acx_diversity_status {
 +	struct acx_header header;
 +
-+	u8 enable;
++    u8 enable;
 +	u8 padding[3];
 +} __packed;
 +
 +struct acx_diversity_rssi_threshold {
 +	struct acx_header header;
 +
-+	s8 rssi_threshold;
++    s8 rssi_threshold;
 +	u8 padding[3];
 +} __packed;
 +
 +struct acx_diversity_default_antenna {
 +	struct acx_header header;
 +
-+	u8 default_antenna;
++    u8 default_antenna;
 +	u8 padding[3];
 +} __packed;
 +
@@ -1036,7 +1041,7 @@ index f250758c3da5..ce55867e1db6 100644
  int cc33xx_acx_wake_up_conditions(struct cc33xx *cc, struct cc33xx_vif *wlvif,
  				  u8 wake_up_event, u8 listen_interval);
  int cc33xx_acx_sleep_auth(struct cc33xx *cc, u8 sleep_auth);
-@@ -799,7 +744,6 @@ int cc33xx_acx_set_preamble(struct cc33xx *cc, struct cc33xx_vif *wlvif,
+@@ -799,7 +749,6 @@ int cc33xx_acx_set_preamble(struct cc33xx *cc, struct cc33xx_vif *wlvif,
  			    enum acx_preamble_type preamble);
  int cc33xx_acx_cts_protect(struct cc33xx *cc, struct cc33xx_vif *wlvif,
  			   enum acx_ctsprotect_type ctsprotect);
@@ -1044,7 +1049,7 @@ index f250758c3da5..ce55867e1db6 100644
  int cc33xx_tx_param_cfg(struct cc33xx *cc, struct cc33xx_vif *wlvif, u8 ac,
  			u8 cw_min, u16 cw_max, u8 aifsn, u16 txop, bool acm,
  			u8 ps_scheme, u8 is_mu_edca, u8 mu_edca_aifs,
-@@ -813,9 +757,6 @@ int cc33xx_acx_set_ht_information(struct cc33xx *cc, struct cc33xx_vif *wlvif,
+@@ -813,9 +762,6 @@ int cc33xx_acx_set_ht_information(struct cc33xx *cc, struct cc33xx_vif *wlvif,
  				  u16 he_oper_nss_set);
  int cc33xx_acx_set_ba_receiver_session(struct cc33xx *cc, u8 tid_index, u16 ssn,
  				       bool enable, u8 peer_hlid, u8 win_size);
@@ -1054,7 +1059,7 @@ index f250758c3da5..ce55867e1db6 100644
  int cc33xx_acx_get_tx_rate(struct cc33xx *cc, struct cc33xx_vif *wlvif,
  			   struct station_info *sinfo);
  int cc33xx_acx_average_rssi(struct cc33xx *cc,
-@@ -824,12 +765,32 @@ int cc33xx_acx_default_rx_filter_enable(struct cc33xx *cc, bool enable,
+@@ -824,12 +770,32 @@ int cc33xx_acx_default_rx_filter_enable(struct cc33xx *cc, bool enable,
  					enum rx_filter_action action);
  int cc33xx_acx_set_rx_filter(struct cc33xx *cc, u8 index, bool enable,
  			     struct cc33xx_rx_filter *filter);
@@ -1089,7 +1094,7 @@ index f250758c3da5..ce55867e1db6 100644
  
  #endif /* __CC33XX_ACX_H__ */
 diff --git a/drivers/net/wireless/ti/cc33xx/boot.c b/drivers/net/wireless/ti/cc33xx/boot.c
-index 25efbe937837..bb4fbe527bec 100644
+index 25efbe937837..7a0b738250d5 100644
 --- a/drivers/net/wireless/ti/cc33xx/boot.c
 +++ b/drivers/net/wireless/ti/cc33xx/boot.c
 @@ -13,6 +13,7 @@
@@ -1133,7 +1138,7 @@ index 25efbe937837..bb4fbe527bec 100644
 +	union hw_info hw_info;
 +	u64 mac_address;
 +
-+	ret = cmd_get_device_info(cc, hw_info.bytes, sizeof(hw_info.bytes));
++	ret = cmd_get_device_info(cc, hw_info.bytes, sizeof hw_info.bytes);
 +	if (ret < 0)
 +		return ret;
 +
@@ -1166,14 +1171,14 @@ index 25efbe937837..bb4fbe527bec 100644
  					  HINT_FW_WAKEUP_COMPLETE);
  	if (ret < 0)
 diff --git a/drivers/net/wireless/ti/cc33xx/cc33xx.h b/drivers/net/wireless/ti/cc33xx/cc33xx.h
-index e756dc6a7d41..3fd71853b3c1 100644
+index e756dc6a7d41..351d6c64ff17 100644
 --- a/drivers/net/wireless/ti/cc33xx/cc33xx.h
 +++ b/drivers/net/wireless/ti/cc33xx/cc33xx.h
 @@ -16,6 +16,8 @@
  #define CC33XX_INI_PARAM_COMMAND_SIZE (16UL)
  #define CC33XX_INI_CMD_MAX_SIZE      (CC33X_CONF_SIZE + CC33XX_INI_PARAM_COMMAND_SIZE + sizeof(int))
  
-+#define CC33XX_MAX_FW_LOGS_BUFFER_SIZE    ((0x1000) - (sizeof(struct NAB_header)))
++#define CC33XX_MAX_FW_LOGS_BUFFER_SIZE    ((0x1000) - (sizeof(struct NAB_header))) //a bit under ~4KB
 +
  #define CC33XX_CMD_BUFFER_SIZE ((CC33XX_INI_CMD_MAX_SIZE > CC33XX_CMD_MAX_SIZE)\
  				? CC33XX_INI_CMD_MAX_SIZE : CC33XX_CMD_MAX_SIZE)
@@ -1191,7 +1196,7 @@ index e756dc6a7d41..3fd71853b3c1 100644
  	/*ble_enable value - 1=enabled, 0=disabled. */
  	int ble_enable;
  
-+	/*fw_crash_logs, allocated upon successfully receiving FW Logs after general error */
++	/*fw_crash_logs, allocated upon successfully receiving FW Logs after general error (ie FW assert)*/
 +	u8  *fw_crash_logs;
 +
  	/* parameters for joining a TWT agreement */
@@ -1221,7 +1226,7 @@ index e756dc6a7d41..3fd71853b3c1 100644
  
  struct control_info_descriptor {
 diff --git a/drivers/net/wireless/ti/cc33xx/cc33xx_i.h b/drivers/net/wireless/ti/cc33xx/cc33xx_i.h
-index 99a296a5e94e..0f2159f8895b 100644
+index 99a296a5e94e..2e1616a1106f 100644
 --- a/drivers/net/wireless/ti/cc33xx/cc33xx_i.h
 +++ b/drivers/net/wireless/ti/cc33xx/cc33xx_i.h
 @@ -58,6 +58,7 @@ enum cc33xx_state {
@@ -1236,7 +1241,7 @@ index 99a296a5e94e..0f2159f8895b 100644
  	void (*set_irq_handler)(struct device *child, void *irq_handler);
  	void (*enable_irq)(struct device *child);
  	void (*disable_irq)(struct device *child);
-+	void (*sync_irq)(struct device *child);
++	void (*sync_irq) (struct device *child);
  };
  
  struct cc33xx_platdev_data {
@@ -1258,7 +1263,7 @@ index 99a296a5e94e..0f2159f8895b 100644
  {
  	WARN_ON(!vif);
 diff --git a/drivers/net/wireless/ti/cc33xx/cmd.c b/drivers/net/wireless/ti/cc33xx/cmd.c
-index bcdca2435dfd..06ba8110e231 100644
+index bcdca2435dfd..f533a7a5b658 100644
 --- a/drivers/net/wireless/ti/cc33xx/cmd.c
 +++ b/drivers/net/wireless/ti/cc33xx/cmd.c
 @@ -8,7 +8,7 @@
@@ -1275,22 +1280,23 @@ index bcdca2435dfd..06ba8110e231 100644
  	case CMD_TEST_MODE:
  	case CMD_BM_READ_DEVICE_INFO:
 +	case CMD_SET_PROBE_IE:
-+	case CMD_DEBUG:
++    case CMD_DEBUG:
  		if (!res_len)
  			break; /* Response should be discarded */
  
-@@ -310,6 +312,85 @@ int cc33xx_set_link(struct cc33xx *cc, struct cc33xx_vif *wlvif, u8 link)
+@@ -310,6 +312,87 @@ int cc33xx_set_link(struct cc33xx *cc, struct cc33xx_vif *wlvif, u8 link)
  	return 0;
  }
  
 +static u8 cc33xx_check_is_dfs_channel(struct cc33xx *cc,
-+				      enum nl80211_band rate_band, u8 channel)
++						enum nl80211_band rate_band, u8 channel)
 +{
 +	struct ieee80211_supported_band *band;
 +	u8 is_dfs = 0;
 +
-+	if (rate_band != NL80211_BAND_5GHZ)
++	if (rate_band != NL80211_BAND_5GHZ) {
 +		return is_dfs;
++	}
 +
 +	band = cc->hw->wiphy->bands[NL80211_BAND_5GHZ];
 +
@@ -1362,10 +1368,11 @@ index bcdca2435dfd..06ba8110e231 100644
 +	return 0xff;
 +}
 +
++
  void cc33xx_clear_link(struct cc33xx *cc, struct cc33xx_vif *wlvif, u8 *hlid)
  {
  	unsigned long flags;
-@@ -586,6 +667,7 @@ int cc33xx_cmd_role_start_sta(struct cc33xx *cc, struct cc33xx_vif *wlvif)
+@@ -586,6 +669,7 @@ int cc33xx_cmd_role_start_sta(struct cc33xx *cc, struct cc33xx_vif *wlvif)
  	cmd->role_id = wlvif->role_id;
  	cmd->role_type = CC33XX_ROLE_STA;
  	cmd->channel = wlvif->channel;
@@ -1373,7 +1380,7 @@ index bcdca2435dfd..06ba8110e231 100644
  	if (wlvif->band == NL80211_BAND_5GHZ) {
  		cmd->band = CC33XX_BAND_5GHZ;
  		cmd->sta.basic_rate_set = cpu_to_le32(wlvif->basic_rate_set
-@@ -607,8 +689,7 @@ int cc33xx_cmd_role_start_sta(struct cc33xx *cc, struct cc33xx_vif *wlvif)
+@@ -607,8 +691,7 @@ int cc33xx_cmd_role_start_sta(struct cc33xx *cc, struct cc33xx_vif *wlvif)
  		supported_rates &= ~CONF_TX_CCK_RATES;
  
  	cmd->sta.local_rates = cpu_to_le32(supported_rates);
@@ -1383,7 +1390,7 @@ index bcdca2435dfd..06ba8110e231 100644
  
  	/* We don't have the correct remote rates in this stage.  The
  	 * rates will be reconfigured later, after association, if the
-@@ -712,6 +793,7 @@ int cc33xx_cmd_role_start_ap(struct cc33xx *cc, struct cc33xx_vif *wlvif)
+@@ -712,6 +795,7 @@ int cc33xx_cmd_role_start_ap(struct cc33xx *cc, struct cc33xx_vif *wlvif)
  	cmd->ap.wmm = wlvif->wmm_enabled;
  	cmd->channel = wlvif->channel;
  	cmd->channel_type = cc33xx_get_native_channel_type(wlvif->channel_type);
@@ -1391,7 +1398,7 @@ index bcdca2435dfd..06ba8110e231 100644
  
  	supported_rates = CONF_TX_ENABLED_RATES | CONF_TX_MCS_RATES;
  	if (wlvif->p2p)
-@@ -983,6 +1065,7 @@ static int cc33xx_cmd_debug_failsafe(struct cc33xx *cc, u16 id, void *buf,
+@@ -983,6 +1067,7 @@ static int cc33xx_cmd_debug_failsafe(struct cc33xx *cc, u16 id, void *buf,
  				     size_t len, unsigned long valid_rets)
  {
  	struct debug_header *acx = buf;
@@ -1399,7 +1406,7 @@ index bcdca2435dfd..06ba8110e231 100644
  	int ret;
  
  	if (WARN_ON_ONCE(len < sizeof(*acx)))
-@@ -993,13 +1076,19 @@ static int cc33xx_cmd_debug_failsafe(struct cc33xx *cc, u16 id, void *buf,
+@@ -993,13 +1078,19 @@ static int cc33xx_cmd_debug_failsafe(struct cc33xx *cc, u16 id, void *buf,
  	/* payload length, does not include any headers */
  	acx->len = cpu_to_le16(len - sizeof(*acx));
  
@@ -1412,7 +1419,7 @@ index bcdca2435dfd..06ba8110e231 100644
  	}
  
 +	//check fw status code
-+	if (!(acx->cmd.status == CMD_STATUS_SUCCESS)) {
++    if (!(acx->cmd.status == CMD_STATUS_SUCCESS)) {
 +		cc33xx_error("command execute failure %d", acx->cmd.status);
 +		ret = -EINVAL;
 +	}
@@ -1420,7 +1427,7 @@ index bcdca2435dfd..06ba8110e231 100644
  	return ret;
  }
  
-@@ -1364,12 +1453,12 @@ static int cc33xx_get_reg_conf_ch_idx(enum nl80211_band band, u16 ch)
+@@ -1364,12 +1455,12 @@ static int cc33xx_get_reg_conf_ch_idx(enum nl80211_band band, u16 ch)
  		case 52 ... 64:
  			/* channels 52,56..64 are mapped to 29..32 */
  			return 29 + (ch - 52) / 4;
@@ -1496,7 +1503,7 @@ index f6e4877cf7b4..27bae1ff4df5 100644
  
  struct cmd_set_bd_addr {
 diff --git a/drivers/net/wireless/ti/cc33xx/conf.h b/drivers/net/wireless/ti/cc33xx/conf.h
-index bc6eeb7a82c4..135144810f31 100644
+index bc6eeb7a82c4..2998134d3bb0 100644
 --- a/drivers/net/wireless/ti/cc33xx/conf.h
 +++ b/drivers/net/wireless/ti/cc33xx/conf.h
 @@ -7,15 +7,25 @@
@@ -1520,10 +1527,10 @@ index bc6eeb7a82c4..135144810f31 100644
 -#define CC33X_CONF_SIZE	(sizeof(struct cc33xx_conf_file))
 +#define CC33XX_CONF_MAGIC				0x10e100ca
 +
-+#define CC33XX_CONF_FW_MAJOR_VERSION	0x0001
-+#define CC33XX_CONF_FW_MINOR_VERSION	0x0007
-+#define CC33XX_CONF_FW_API_VERSION		0x0000
-+#define CC33XX_CONF_FW_BUILD_VERSION	0x013C
++#define CC33XX_CONF_FW_MAJOR_VERSION 	0x0001
++#define CC33XX_CONF_FW_MINOR_VERSION 	0x0007
++#define CC33XX_CONF_FW_API_VERSION   	0x0000
++#define CC33XX_CONF_FW_BUILD_VERSION 	0x013C
 +
 +#define CC33XX_CONF_MASK				0x0000ffff
 +#define CC33X_CONF_SIZE					(sizeof(struct cc33xx_conf_file))
@@ -2236,7 +2243,7 @@ index bc6eeb7a82c4..135144810f31 100644
  enum cc33xx_ht_mode {
  	/* Default - use MIMO, fallback to SISO20 */
  	HT_MODE_DEFAULT = 0,
-@@ -1011,77 +523,191 @@ enum cc33xx_ht_mode {
+@@ -1011,78 +523,192 @@ enum cc33xx_ht_mode {
  	HT_MODE_SISO20 = 2,
  };
  
@@ -2318,8 +2325,9 @@ index bc6eeb7a82c4..135144810f31 100644
  	 *
  	 * Range: 1 - YES, 0 - NO
  	 */
- 	u8 disable_coex;
+-	u8 disable_coex;
 -	/* Yes/No Choose if External SoC entity is connected
++	u8 Disable_coex;
 +
 +	/*
 +	 * Tie breaker configuration
@@ -2361,7 +2369,7 @@ index bc6eeb7a82c4..135144810f31 100644
 +	 * 0 - NO
 +	 * 1 - YES
 +	 */
-+	u8 is_ext_soc_enable;
++	u8 is_Ext_soc_enable;
 +	/*
 +	 * External SoC PTA signalling mode
  	 *
@@ -2462,14 +2470,16 @@ index bc6eeb7a82c4..135144810f31 100644
  
 -	u8 ext_soc_to_wifi_grant_delay;
 -	u8 ext_soc_to_ble_grant_delay;
+-} __packed;
 +	struct coex_wifi_group_priorities wifi_group_priorities;
 +	struct coex_ble_group_priorities ble_group_priorities;
 +	struct coex_external_soc_priorities external_soc_priorities;
 +
- } __packed;
++} __attribute__((__packed__));
  
  struct conf_iomux_configuration {
-@@ -1165,6 +791,74 @@ struct conf_ant_diversity {
+ 	/* For any iomux pull value:
+@@ -1165,8 +791,76 @@ struct conf_ant_diversity {
  	/* The antenna to use when the diversity mechanism is not in charge.
  	 */
  	u8 default_antenna;
@@ -2515,8 +2525,8 @@ index bc6eeb7a82c4..135144810f31 100644
 +	u8 ant_sel_1;
 +	u8 ant_sel_2;
 +	u8 ant_sel_3;
-+} __packed;
-+
+ } __packed;
+ 
 +struct conf_thermal_thresholds {
 +	s16 high_threshold_24G;
 +	s16 low_threshold_24G;
@@ -2524,26 +2534,28 @@ index bc6eeb7a82c4..135144810f31 100644
 +	s16 low_threshold_5G;
 +	s16 high_sample_threshold;
 +	u8 enable_value;
-+} __packed;
++} __attribute__((__packed__));
 +
 +struct conf_limit105c_params {
 +	u8 enable_value;
-+	u8 max_mcs;
-+	u8 max_ofdm;
-+} __packed;
++	u8 maxMCS;
++	u8 maxOFDM;
++} __attribute__((__packed__));
 +
 +struct conf_gpadc_params {
-+	u8 override_en;
-+	u8 disable_measuring;
-+	u8 pmcio_slop;
-+	u16 pmcio_intercept;
-+	u8 rfcio_slop;
-+	u16 rfcio_intercept;
-+	u32 measure_period_usec;
-+	u8 dc_slop_exponent;
- } __packed;
- 
++	u8  overrideEn;
++	u8  disable_measuring;
++	u8 pmcioSlop;
++	u16 pmcioIntercept;
++	u8 rfcioSlop;
++	u16 rfcioIntercept;
++	u32 measurePeriodUsec;
++	u8 dcSlopExponent;
++} __attribute__((__packed__));
++
  struct cc33xx_core_conf {
+ 	u8 enable_5ghz;
+ 	u8 enable_ble;
 @@ -1174,15 +868,17 @@ struct cc33xx_core_conf {
  	u8 disable_beamforming_fftp;
  	u32 ble_uart_baudrate;
@@ -2591,13 +2603,13 @@ index bc6eeb7a82c4..135144810f31 100644
  	u8 num_of_antennas;
  	u8 reg_domain;
  	u16 calib_period;
-+	u8 tx_psat_compensation_2_4ghz;
-+	u8 tx_psat_compensation_5ghz;
++	u8 tx_psat_compensation_2_4GHz;
++	u8 tx_psat_compensation_5GHz;
 +	u8 psat_reserved;
-+	u8 is_85c_device;
++	u8 Is85cDevice;
 +	u16 product_type;
 +	u32 gpio_data[4];
-+	u16 xtal_corr_above95c;
++	u16 xtalCorrAbove95C;
 +	u8 reserved[6];
  } __packed;
  
@@ -2621,7 +2633,7 @@ index bc6eeb7a82c4..135144810f31 100644
  } __packed;
  
 +struct cc33xx_crc_conf {
-+	u32 user_checksum;
++	u32 userChecksum;
 +} __packed;
 +
  struct cc33xx_conf_file {
@@ -2636,10 +2648,10 @@ index bc6eeb7a82c4..135144810f31 100644
  #endif
 diff --git a/drivers/net/wireless/ti/cc33xx/debugfs.c b/drivers/net/wireless/ti/cc33xx/debugfs.c
 new file mode 100644
-index 000000000000..996e8ae30d2f
+index 000000000000..c9fb8c05148c
 --- /dev/null
 +++ b/drivers/net/wireless/ti/cc33xx/debugfs.c
-@@ -0,0 +1,1988 @@
+@@ -0,0 +1,1990 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * This file is part of cc33xx
@@ -2898,6 +2910,7 @@ index 000000000000..996e8ae30d2f
 +static void cc33xx_debugfs_add_files_helper(struct dentry *moddir) {}
 +#endif /* CFG80211_CERTIFICATION_ONUS */
 +
++
 +/* debugfs macros idea from mac80211 */
 +int cc33xx_format_buffer(char __user *userbuf, size_t count,
 +			 loff_t *ppos, char *fmt, ...)
@@ -3071,8 +3084,8 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t dynamic_ps_timeout_read(struct file *file,
-+				       char __user *user_buf,
-+				       size_t count, loff_t *ppos)
++					      char __user *user_buf,
++					      size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +
@@ -3128,7 +3141,7 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t ps_mode_read(struct file *file, char __user *user_buf,
-+			    size_t count, loff_t *ppos)
++				     size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +
@@ -3137,7 +3150,7 @@ index 000000000000..996e8ae30d2f
 +}
 +
 +static ssize_t ps_mode_write(struct file *file, const char __user *user_buf,
-+			     size_t count, loff_t *ppos)
++			       size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +	struct cc33xx_vif *wlvif;
@@ -3186,11 +3199,10 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t split_scan_timeout_read(struct file *file,
-+				       char __user *user_buf,
-+				       size_t count, loff_t *ppos)
++					      char __user *user_buf,
++					      size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
-+
 +	return cc33xx_format_buffer(user_buf, count, ppos, "%d\n",
 +				    wl->conf.host_conf.scan.split_scan_timeout / 1000);
 +}
@@ -3251,6 +3263,7 @@ index 000000000000..996e8ae30d2f
 +	ssize_t ret;
 +	char *buf;
 +	struct cc33xx_vif *wlvif;
++
 +
 +	buf = kmalloc(DRIVER_STATE_BUF_LEN, GFP_KERNEL);
 +	if (!buf)
@@ -3485,15 +3498,15 @@ index 000000000000..996e8ae30d2f
 +			vif = cc33xx_wlvif_to_vif(wlvif);
 +			sdata = vif_to_sdata(vif);
 +			cc33xx_debug(DEBUG_CMD, "Setting LSI on interface %s",
-+				     sdata->name);
++						sdata->name);
 +			ret = cc33xx_acx_wake_up_conditions(wl, wlvif,
-+							    wl->conf.core.wake_up_event,
-+							    wl->conf.core.listen_interval);
++						wl->conf.core.wake_up_event,
++						wl->conf.core.listen_interval);
 +			if (ret < 0) {
 +				vif = cc33xx_wlvif_to_vif(wlvif);
 +				sdata = vif_to_sdata(vif);
-+				cc33xx_warning("Failed to set LSI on interface %s",
-+					       sdata->name);
++				cc33xx_warning("Failed to set LSI on "
++					"interface %s", sdata->name);
 +				return ret;
 +			}
 +		}
@@ -3672,10 +3685,9 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t sleep_auth_read(struct file *file, char __user *user_buf,
-+			       size_t count, loff_t *ppos)
++				size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
-+
 +	return cc33xx_format_buffer(user_buf, count, ppos, "%d\n",
 +				    wl->sleep_auth);
 +}
@@ -3725,10 +3737,9 @@ index 000000000000..996e8ae30d2f
 +
 +//ble_enable
 +static ssize_t ble_enable_read(struct file *file, char __user *user_buf,
-+			       size_t count, loff_t *ppos)
++					size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
-+
 +	return cc33xx_format_buffer(user_buf, count, ppos, "%d\n",
 +				wl->ble_enable);
 +}
@@ -3777,13 +3788,13 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t fw_crash_log_read(struct file *file, char __user *user_buf,
-+				 size_t count, loff_t *ppos)
++			size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *cc = file->private_data;
 +	size_t len;
 +	int ret;
 +
-+	if (!cc->fw_crash_logs)
++	if (cc->fw_crash_logs == NULL)
 +		return 0;
 +
 +	len = CC33XX_MAX_FW_LOGS_BUFFER_SIZE;
@@ -3805,7 +3816,7 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t set_tsf_read(struct file *file, char __user *user_buf,
-+			    size_t count, loff_t *ppos)
++			size_t count, loff_t *ppos)
 +{
 +	return cc33xx_format_buffer(user_buf, count, ppos, "%llx\n", 0LL);
 +}
@@ -3825,8 +3836,9 @@ index 000000000000..996e8ae30d2f
 +
 +	mutex_lock(&wl->mutex);
 +
-+	if (unlikely(wl->state != CC33XX_STATE_ON))
++	if (unlikely(wl->state != CC33XX_STATE_ON)) {
 +		goto out;
++	}
 +
 +	cc33xx_acx_set_tsf(wl, value);
 +
@@ -3841,6 +3853,7 @@ index 000000000000..996e8ae30d2f
 +	.write = set_tsf_write,
 +	.llseek = default_llseek,
 +};
++
 +
 +static ssize_t twt_action_read(struct file *file, char __user *user_buf,
 +			       size_t count, loff_t *ppos)
@@ -3885,8 +3898,8 @@ index 000000000000..996e8ae30d2f
 +	}
 +
 +	arg_count = sscanf(buffer, "%d %d %d %d %d %d", &twt_action_type, &min_wake_duration_usec,
-+			   &min_wake_interval_mantissa, &min_wake_interval_exponent,
-+			   &max_wake_interval_mantissa, &max_wake_interval_exponent);
++					&min_wake_interval_mantissa, &min_wake_interval_exponent,
++					&max_wake_interval_mantissa, &max_wake_interval_exponent);
 +
 +	kfree(buffer);
 +
@@ -3896,7 +3909,7 @@ index 000000000000..996e8ae30d2f
 +#define TWT_ACTION_TERMINATE	(4)
 +
 +	valid_params = 0;
-+	if (twt_action_type == TWT_ACTION_SETUP && arg_count > 1) {
++	if ((twt_action_type == TWT_ACTION_SETUP) && (arg_count > 1)) {
 +		if (min_wake_duration_usec < 256) {
 +			cc33xx_warning("error in twt_action: duration cannot be under 256 ");
 +			return count;
@@ -3906,8 +3919,7 @@ index 000000000000..996e8ae30d2f
 +			cc33xx_warning("error in twt_action: interval mantissa must be over 0 ");
 +			return count;
 +		}
-+		if (min_wake_interval_exponent < 0 || max_wake_interval_mantissa < 0 ||
-+		    max_wake_interval_exponent < 0) {
++		if (min_wake_interval_exponent < 0 || max_wake_interval_mantissa < 0 || max_wake_interval_exponent < 0) {
 +			cc33xx_warning("error in twt_action: negative value not allowed ");
 +			return count;
 +		}
@@ -3917,6 +3929,7 @@ index 000000000000..996e8ae30d2f
 +
 +	if (unlikely(wl->state != CC33XX_STATE_ON))
 +		goto out;
++
 +
 +	// valid input is twt_action [min_wake_duration_usec min_wake_interval_mantissa
 +	// min_wake_interval_exponent [max_wake_interval_mantissa max_wake_interval_exponent]]
@@ -3929,39 +3942,39 @@ index 000000000000..996e8ae30d2f
 +		case TWT_ACTION_SETUP: {
 +			if (arg_count == 1) {
 +			} else if (arg_count == 4) {
-+				valid_params |= (MIN_WAKE_DURATION_VALID |
-+						 MIN_WAKE_INTERVAL_MANTISSA_VALID |
-+						 MIN_WAKE_INTERVAL_EXPONENT_VALID);
++				valid_params |= (MIN_WAKE_DURATION_VALID | MIN_WAKE_INTERVAL_MANTISSA_VALID |
++						MIN_WAKE_INTERVAL_EXPONENT_VALID);
 +			} else if (arg_count == 6) {
-+				valid_params |= (MIN_WAKE_DURATION_VALID |
-+						 MIN_WAKE_INTERVAL_MANTISSA_VALID |
-+						 MIN_WAKE_INTERVAL_EXPONENT_VALID |
-+						 MAX_WAKE_INTERVAL_MANTISSA_VALID |
-+						 MAX_WAKE_INTERVAL_EXPONENT_VALID);
++				valid_params |= (MIN_WAKE_DURATION_VALID | MIN_WAKE_INTERVAL_MANTISSA_VALID |
++					MIN_WAKE_INTERVAL_EXPONENT_VALID | MAX_WAKE_INTERVAL_MANTISSA_VALID |
++					MAX_WAKE_INTERVAL_EXPONENT_VALID);
 +			} else {
 +				cc33xx_warning("illegal number of params for twt action setup");
 +				goto out;
 +			}
 +
 +			ret = cc33xx_acx_twt_setup(wl, min_wake_duration_usec,
-+						   min_wake_interval_mantissa,
-+						   min_wake_interval_exponent,
-+						   max_wake_interval_mantissa,
-+						   max_wake_interval_exponent,
-+						   valid_params);
++					min_wake_interval_mantissa, min_wake_interval_exponent,
++					max_wake_interval_mantissa, max_wake_interval_exponent,
++					valid_params);
 +
 +			break;
 +		}
 +		case TWT_ACTION_SUSPEND: {
++
 +			ret = cc33xx_acx_twt_suspend(wl);
 +			break;
 +		}
 +		case TWT_ACTION_RESUME: {
++
 +			ret = cc33xx_acx_twt_resume(wl);
++
 +			break;
 +		}
 +		case TWT_ACTION_TERMINATE: {
++
 +			ret = cc33xx_acx_twt_terminate(wl);
++
 +			break;
 +		}
 +
@@ -3970,6 +3983,7 @@ index 000000000000..996e8ae30d2f
 +			goto out;
 +		}
 +	}
++
 +
 +out:
 +	mutex_unlock(&wl->mutex);
@@ -3983,15 +3997,16 @@ index 000000000000..996e8ae30d2f
 +	.llseek = default_llseek,
 +};
 +
++
 +static ssize_t dev_mem_read(struct file *file, char __user *user_buf,
-+			    size_t count, loff_t *ppos)
++				   size_t count, loff_t *ppos)
 +{
 +	return 0;
 +}
 +
 +static ssize_t dev_mem_write(struct file *file,
-+			     const char __user *user_buf,
-+			     size_t count, loff_t *ppos)
++				    const char __user *user_buf,
++				    size_t count, loff_t *ppos)
 +{
 +	return 0;
 +}
@@ -4013,7 +4028,7 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t fw_logger_read(struct file *file, char __user *user_buf,
-+			      size_t count, loff_t *ppos)
++				     size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +
@@ -4040,7 +4055,8 @@ index 000000000000..996e8ae30d2f
 +	}
 +
 +	if (wl->conf.host_conf.fwlog.output == 0) {
-+		cc33xx_warning("invalid operation - fw logger disabled by default");
++		cc33xx_warning("invalid operation - fw logger disabled by default, "
++			       "please change mode via wlconf");
 +		return -EINVAL;
 +	}
 +
@@ -4062,11 +4078,10 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t antenna_select_read(struct file *file,
-+				   char __user *user_buf,
-+				   size_t count, loff_t *ppos)
++					  char __user *user_buf,
++					  size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
-+
 +	return cc33xx_format_buffer(user_buf, count, ppos, "%d\n",
 +				    wl->antenna_selection);
 +}
@@ -4158,7 +4173,7 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t burst_mode_read(struct file *file, char __user *user_buf,
-+			       size_t count, loff_t *ppos)
++				      size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +
@@ -4224,8 +4239,8 @@ index 000000000000..996e8ae30d2f
 +
 +	cc33xx_debug(DEBUG_CMD, "coex_statistics_read");
 +
-+	coex_stats_cmd = kzalloc(sizeof(*coex_stats_cmd),
-+				 GFP_KERNEL);
++	coex_stats_cmd = kzalloc(sizeof(struct cc33xx_acx_coex_statistics),
++					GFP_KERNEL);
 +	if (!coex_stats_cmd)
 +		return -ENOMEM;
 +
@@ -4314,31 +4329,31 @@ index 000000000000..996e8ae30d2f
 +{
 +	struct cc33xx *wl = file->private_data;
 +	unsigned int value;
-+	struct cc33xx_acx_coex_statistics_cfg *p_coex_statistics;
++	struct cc33xx_acx_coex_statistics_cfg *pCoexStatictics;
 +	int ret;
 +
 +	ret = kstrtouint_from_user(user_buf, count, 0, &value);
 +	if (value > 2) {
-+		cc33xx_warning("Parameter value must be one of 0, 1, or 2");
-+		cc33xx_warning("0-Disable, 1-Enable, 2-Reset");
++		cc33xx_warning("Parameter value must be 0-Disable Coex counters, "
++			       "1-Enable Coex counters, 2-Reset Coex counters");
 +		return -ERANGE;
 +	}
 +
 +	cc33xx_debug(DEBUG_CMD, "coex statistics (%d)", value);
 +
-+	p_coex_statistics = kzalloc(sizeof(*p_coex_statistics),
-+				    GFP_KERNEL);
-+	if (!p_coex_statistics) {
++	pCoexStatictics = kzalloc(sizeof(struct cc33xx_acx_coex_statistics_cfg),
++				  GFP_KERNEL);
++	if (!pCoexStatictics) {
 +		ret = -ENOMEM;
 +		goto out;
 +	}
 +
-+	p_coex_statistics->coex_statictics = value;
++	pCoexStatictics->coex_statictics = value;
 +
 +	mutex_lock(&wl->mutex);
 +
 +	ret = cc33xx_cmd_configure(wl, START_COEX_STATISTICS_CFG,
-+				   p_coex_statistics,
++				   pCoexStatictics,
 +				   sizeof(struct cc33xx_acx_coex_statistics_cfg));
 +	if (ret < 0) {
 +		cc33xx_error("failed to initiate coex statictics");
@@ -4346,7 +4361,7 @@ index 000000000000..996e8ae30d2f
 +	}
 +
 +out_free:
-+	kfree(p_coex_statistics);
++	kfree(pCoexStatictics);
 +
 +out:
 +	mutex_unlock(&wl->mutex);
@@ -4362,7 +4377,7 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t antenna_diversity_enable_read(struct file *file,
-+					     char __user *user_buf, size_t count, loff_t *ppos)
++					char __user *user_buf, size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +	int ret;
@@ -4377,8 +4392,7 @@ index 000000000000..996e8ae30d2f
 +}
 +
 +static ssize_t antenna_diversity_enable_write(struct file *file,
-+					      const char __user *user_buf,
-+					      size_t count, loff_t *ppos)
++				const char __user *user_buf, size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +	int ret;
@@ -4390,7 +4404,7 @@ index 000000000000..996e8ae30d2f
 +		return -EINVAL;
 +	}
 +
-+	if (wl->conf.phy.num_of_antennas == 1 && diversity_enable == 1) {
++	if ((wl->conf.phy.num_of_antennas == 1) && (diversity_enable == 1)) {
 +		cc33xx_warning("diversity cannot be enabled when only one antenna on board");
 +		return -EINVAL;
 +	}
@@ -4402,8 +4416,9 @@ index 000000000000..996e8ae30d2f
 +
 +	mutex_lock(&wl->mutex);
 +
-+	if (unlikely(wl->state != CC33XX_STATE_ON))
++	if (unlikely(wl->state != CC33XX_STATE_ON)) {
 +		goto out;
++	}
 +
 +	cc33xx_acx_set_antenna_diversity_status(wl, diversity_enable);
 +
@@ -4420,7 +4435,7 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static ssize_t antenna_diversity_set_rssi_threshold_read(struct file *file, char __user *user_buf,
-+							 size_t count, loff_t *ppos)
++			    size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +	int ret;
@@ -4436,8 +4451,7 @@ index 000000000000..996e8ae30d2f
 +}
 +
 +static ssize_t antenna_diversity_set_rssi_threshold_write(struct file *file,
-+							  const char __user *user_buf,
-+							  size_t count, loff_t *ppos)
++				const char __user *user_buf, size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +	int ret;
@@ -4451,8 +4465,9 @@ index 000000000000..996e8ae30d2f
 +
 +	mutex_lock(&wl->mutex);
 +
-+	if (unlikely(wl->state != CC33XX_STATE_ON))
++	if (unlikely(wl->state != CC33XX_STATE_ON)) {
 +		goto out;
++	}
 +
 +	cc33xx_acx_antenna_diversity_set_rssi_threshold(wl, rssi_threshold);
 +
@@ -4468,9 +4483,8 @@ index 000000000000..996e8ae30d2f
 +	.llseek = default_llseek,
 +};
 +
-+static ssize_t antenna_diversity_select_default_antenna_read(struct file *file,
-+							     char __user *user_buf,
-+							     size_t count, loff_t *ppos)
++static ssize_t antenna_diversity_select_default_antenna_read(struct file *file, char __user *user_buf,
++			size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +	int ret;
@@ -4485,8 +4499,7 @@ index 000000000000..996e8ae30d2f
 +}
 +
 +static ssize_t antenna_diversity_select_default_antenna_write(struct file *file,
-+							      const char __user *user_buf,
-+							      size_t count, loff_t *ppos)
++				const char __user *user_buf, size_t count, loff_t *ppos)
 +{
 +	struct cc33xx *wl = file->private_data;
 +	int ret;
@@ -4510,8 +4523,9 @@ index 000000000000..996e8ae30d2f
 +
 +	mutex_lock(&wl->mutex);
 +
-+	if (unlikely(wl->state != CC33XX_STATE_ON))
++	if (unlikely(wl->state != CC33XX_STATE_ON)) {
 +		goto out;
++	}
 +
 +	cc33xx_acx_antenna_diversity_select_default_antenna(wl, default_antenna);
 +
@@ -4528,7 +4542,7 @@ index 000000000000..996e8ae30d2f
 +};
 +
 +static int cc33xx_debugfs_add_files(struct cc33xx *wl,
-+				    struct dentry *rootdir)
++			     struct dentry *rootdir)
 +{
 +	struct dentry *stats, *moddir;
 +
@@ -4630,10 +4644,10 @@ index 000000000000..996e8ae30d2f
 +}
 diff --git a/drivers/net/wireless/ti/cc33xx/debugfs.h b/drivers/net/wireless/ti/cc33xx/debugfs.h
 new file mode 100644
-index 000000000000..4021c01d275e
+index 000000000000..d003e32cef08
 --- /dev/null
 +++ b/drivers/net/wireless/ti/cc33xx/debugfs.h
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,101 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * This file is part of cc33xx
@@ -4678,6 +4692,7 @@ index 000000000000..4021c01d275e
 +		debugfs_create_file(#name, 0400, parent,		\
 +				    wl, &name## _ops);			\
 +	} while (0)
++
 +
 +#define DEBUGFS_ADD_PREFIX(prefix, name, parent)			\
 +	do {								\
@@ -4799,7 +4814,7 @@ index cc5abd428d99..4fac5cf89359 100644
  void cc33xx_io_init(struct cc33xx *cc);
  int __must_check cc33xx_raw_read(struct cc33xx *cc, int addr,
 diff --git a/drivers/net/wireless/ti/cc33xx/main.c b/drivers/net/wireless/ti/cc33xx/main.c
-index 983ee08cb717..bc39a3243383 100644
+index 983ee08cb717..668cab80bf0e 100644
 --- a/drivers/net/wireless/ti/cc33xx/main.c
 +++ b/drivers/net/wireless/ti/cc33xx/main.c
 @@ -20,8 +20,11 @@
@@ -4922,53 +4937,55 @@ index 983ee08cb717..bc39a3243383 100644
  static void __cc33xx_op_remove_interface(struct cc33xx *cc,
  					 struct ieee80211_vif *vif,
  					 bool reset_tx_queues);
-@@ -800,6 +836,71 @@ static int read_control_message(struct cc33xx *cc, u8 *read_buffer,
+@@ -800,6 +836,74 @@ static int read_control_message(struct cc33xx *cc, u8 *read_buffer,
  	return le16_to_cpu(nab_header->len);
  }
  
 +static int general_error_event_get_log(struct cc33xx *cc,
-+				       struct core_status *core_status)
++			struct core_status *core_status)
 +{
 +	int ret = 0;
 +	u8 *read_buffer;
 +	const size_t buffer_size = 5000;
 +	unsigned long end_time = jiffies + msecs_to_jiffies(CC33XX_GENERAL_ERROR_READ_TIMEOUT_MSEC);
-+	u8 is_general_error = 0;
-+	u32 is_timeout = 0;
-+	void *pfw_crash_logs;
++	u8 isGeneralError = 0;
++	u32 isTimeout = 0;
++	void *pFwCrashLogs;
++
 +
 +	read_buffer = kmalloc(buffer_size, GFP_KERNEL);
 +	if (!read_buffer)
 +		return -ENOMEM;
 +
++
 +	cc33xx_debug(DEBUG_CMD, "Attempting to Get FW Crash Logs Before Starting Recovery Work");
-+	while ((is_general_error == 0) && (is_timeout == 0)) {
++	while ((isGeneralError != true) && (isTimeout != true)) {
 +		ret = read_control_message(cc, read_buffer, buffer_size);
 +		if (ret > 0) {
 +			struct NAB_header *nab_header = (struct NAB_header *)read_buffer;
-+
 +			if (nab_header->opcode == NAB_GENERAL_ERROR_FW_LOGS_OPCODE) {
 +				cc33xx_debug(DEBUG_CMD, "successfully received GENERAL ERROR CRASH FW_LOGS");
-+				is_general_error = 1;
++				isGeneralError = 1;
 +				break;
 +			}
 +		}
 +		//should sleep here for 100ms if reading is zero
-+		if (is_general_error == 0) {
++		if (isGeneralError != true) {
 +			msleep(100);
-+			is_timeout = time_is_before_eq_jiffies(end_time);
++			isTimeout = time_is_before_eq_jiffies(end_time);
 +		}
++
 +	}
 +
-+	if (is_timeout) {
++	if (isTimeout) {
 +		cc33xx_debug(DEBUG_CMD, "Timed Out Attempting to read  CRASH FW Logs");
 +		goto out;
 +	}
 +
-+	pfw_crash_logs = read_buffer;
-+	pfw_crash_logs += sizeof(struct NAB_header);
++	pFwCrashLogs = read_buffer;
++	pFwCrashLogs += sizeof(struct NAB_header);
 +
-+	if (!cc->fw_crash_logs) {
++	if (cc->fw_crash_logs == NULL) {
 +		cc->fw_crash_logs = kzalloc(CC33XX_MAX_FW_LOGS_BUFFER_SIZE, GFP_KERNEL);
 +		if (!cc->fw_crash_logs) {
 +			ret = -ENOMEM;
@@ -4979,8 +4996,9 @@ index 983ee08cb717..bc39a3243383 100644
 +	}
 +
 +	//store crash logs into WL
-+	memcpy(cc->fw_crash_logs, pfw_crash_logs, CC33XX_MAX_FW_LOGS_BUFFER_SIZE);
++	memcpy(cc->fw_crash_logs, pFwCrashLogs, CC33XX_MAX_FW_LOGS_BUFFER_SIZE);
 +	goto out;
++
 +
 +err_crashfwlog:
 +	kfree(cc->fw_crash_logs);
@@ -4994,7 +5012,7 @@ index 983ee08cb717..bc39a3243383 100644
  static int process_event_and_cmd_result(struct cc33xx *cc,
  					struct core_status *core_status)
  {
-@@ -979,10 +1080,15 @@ static void cc33xx_get_vif_count(struct ieee80211_hw *hw,
+@@ -979,10 +1083,15 @@ static void cc33xx_get_vif_count(struct ieee80211_hw *hw,
  void cc33xx_queue_recovery_work(struct cc33xx *cc)
  {
  	/* Avoid a recursive recovery */
@@ -5011,7 +5029,7 @@ index 983ee08cb717..bc39a3243383 100644
  	}
  }
  
-@@ -1035,6 +1141,11 @@ static void cc33xx_recovery_work(struct work_struct *work)
+@@ -1035,6 +1144,11 @@ static void cc33xx_recovery_work(struct work_struct *work)
  
  	if (cc->conf.core.no_recovery) {
  		cc33xx_info("Recovery disabled by configuration, driver will not restart.");
@@ -5023,7 +5041,7 @@ index 983ee08cb717..bc39a3243383 100644
  		return;
  	}
  
-@@ -1047,6 +1158,9 @@ static void cc33xx_recovery_work(struct work_struct *work)
+@@ -1047,6 +1161,9 @@ static void cc33xx_recovery_work(struct work_struct *work)
  	set_bit(CC33XX_FLAG_RECOVERY_IN_PROGRESS, &cc->flags);
  
  	mutex_lock(&cc->mutex);
@@ -5033,7 +5051,7 @@ index 983ee08cb717..bc39a3243383 100644
  	while (!list_empty(&cc->wlvif_list)) {
  		wlvif = list_first_entry(&cc->wlvif_list,
  					 struct cc33xx_vif, list);
-@@ -1059,6 +1173,8 @@ static void cc33xx_recovery_work(struct work_struct *work)
+@@ -1059,6 +1176,8 @@ static void cc33xx_recovery_work(struct work_struct *work)
  	}
  	mutex_unlock(&cc->mutex);
  
@@ -5042,7 +5060,7 @@ index 983ee08cb717..bc39a3243383 100644
  	cc33xx_turn_off(cc);
  	msleep(500);
  
-@@ -1809,11 +1925,6 @@ static void cc33xx_turn_off(struct cc33xx *cc)
+@@ -1809,11 +1928,6 @@ static void cc33xx_turn_off(struct cc33xx *cc)
  	 */
  	cc->state = CC33XX_STATE_OFF;
  
@@ -5054,7 +5072,7 @@ index 983ee08cb717..bc39a3243383 100644
  	mutex_unlock(&cc->mutex);
  
  	if (!test_bit(CC33XX_FLAG_RECOVERY_IN_PROGRESS, &cc->flags))
-@@ -1864,6 +1975,8 @@ static void cc33xx_turn_off(struct cc33xx *cc)
+@@ -1864,6 +1978,8 @@ static void cc33xx_turn_off(struct cc33xx *cc)
  	for (i = 0; i < NUM_TX_QUEUES; i++)
  		cc->tx_allocated_pkts[i] = 0;
  
@@ -5063,7 +5081,7 @@ index 983ee08cb717..bc39a3243383 100644
  	kfree(cc->target_mem_map);
  	cc->target_mem_map = NULL;
  
-@@ -2291,11 +2404,6 @@ static int cc33xx_op_add_interface(struct ieee80211_hw *hw,
+@@ -2291,11 +2407,6 @@ static int cc33xx_op_add_interface(struct ieee80211_hw *hw,
  					     &wlvif->dev_role_id);
  		if (ret < 0)
  			goto out;
@@ -5075,16 +5093,7 @@ index 983ee08cb717..bc39a3243383 100644
  	}
  
  	list_add(&wlvif->list, &cc->wlvif_list);
-@@ -2690,7 +2798,7 @@ static int cc33xx_config_vif(struct cc33xx *cc, struct cc33xx_vif *wlvif,
- 	return 0;
- }
- 
--static int cc33xx_op_config(struct ieee80211_hw *hw, u32 changed)
-+static int cc33xx_op_config(struct ieee80211_hw *hw, int radio_idx, u32 changed)
- {
- 	struct cc33xx *cc = hw->priv;
- 	struct cc33xx_vif *wlvif;
-@@ -2988,6 +3096,7 @@ static int cc33xx_set_key(struct cc33xx *cc, enum set_key_cmd cmd,
+@@ -2988,6 +3099,7 @@ static int cc33xx_set_key(struct cc33xx *cc, enum set_key_cmd cmd,
  	case WLAN_CIPHER_SUITE_TKIP:
  		key_type = KEY_TKIP;
  		key_conf->hw_key_idx = key_conf->keyidx;
@@ -5092,24 +5101,7 @@ index 983ee08cb717..bc39a3243383 100644
  		break;
  	case WLAN_CIPHER_SUITE_CCMP:
  		key_type = KEY_AES;
-@@ -3296,12 +3405,14 @@ static int cc33xx_op_sched_scan_stop(struct ieee80211_hw *hw,
- 	return 0;
- }
- 
--static int cc33xx_op_set_frag_threshold(struct ieee80211_hw *hw, u32 value)
-+static int cc33xx_op_set_frag_threshold(struct ieee80211_hw *hw,
-+					int radio_idx, u32 value)
- {
- 	return 0;
- }
- 
--static int cc33xx_op_set_rts_threshold(struct ieee80211_hw *hw, u32 value)
-+static int cc33xx_op_set_rts_threshold(struct ieee80211_hw *hw,
-+				       int radio_idx, u32 value)
- {
- 	return 0;
- }
-@@ -3737,35 +3848,19 @@ static void cc33xx_bss_info_changed_sta(struct cc33xx *cc,
+@@ -3737,35 +3849,20 @@ static void cc33xx_bss_info_changed_sta(struct cc33xx *cc,
  	}
  
  	if (changed & BSS_CHANGED_PS) {
@@ -5143,10 +5135,11 @@ index 983ee08cb717..bc39a3243383 100644
 -			if (ret < 0)
 -				cc33xx_warning("exit auto ps failed %d", ret);
 +		if (cc->conf.mac.ps_mode == STATION_AUTO_PS_MODE) {
-+			if (vif->cfg.ps && test_bit(WLVIF_FLAG_STA_ASSOCIATED, &wlvif->flags))
++			if (vif->cfg.ps && test_bit(WLVIF_FLAG_STA_ASSOCIATED, &wlvif->flags)) {
 +				ret = cc33xx_ps_set_mode(cc, wlvif, STATION_AUTO_PS_MODE);
-+			else if (!vif->cfg.ps)
++			} else if (!vif->cfg.ps) {
 +				ret = cc33xx_ps_set_mode(cc, wlvif, STATION_ACTIVE_MODE);
++			}
 +		} else {
 +			ret = cc33xx_ps_set_mode(cc, wlvif, cc->conf.mac.ps_mode);
  		}
@@ -5156,7 +5149,7 @@ index 983ee08cb717..bc39a3243383 100644
  	}
  
  	/* Handle new association with HT. Do this after join. */
-@@ -4091,7 +4186,6 @@ static int cc33xx_op_conf_tx(struct ieee80211_hw *hw,
+@@ -4091,7 +4188,6 @@ static int cc33xx_op_conf_tx(struct ieee80211_hw *hw,
  static u64 cc33xx_op_get_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
  {
  	struct cc33xx *cc = hw->priv;
@@ -5164,7 +5157,7 @@ index 983ee08cb717..bc39a3243383 100644
  	u64 mactime = ULLONG_MAX;
  
  	cc33xx_debug(DEBUG_MAC80211, "mac80211 get tsf");
-@@ -4101,8 +4195,6 @@ static u64 cc33xx_op_get_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
+@@ -4101,8 +4197,6 @@ static u64 cc33xx_op_get_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
  	if (unlikely(cc->state != CC33XX_STATE_ON))
  		goto out;
  
@@ -5173,7 +5166,28 @@ index 983ee08cb717..bc39a3243383 100644
  out:
  	mutex_unlock(&cc->mutex);
  
-@@ -5026,6 +5118,8 @@ static int cc33xx_register_hw(struct cc33xx *cc)
+@@ -4733,10 +4827,9 @@ static int cc33xx_op_cancel_remain_on_channel(struct ieee80211_hw *hw,
+ 
+ static void cc33xx_op_sta_rc_update(struct ieee80211_hw *hw,
+ 				    struct ieee80211_vif *vif,
+-				    struct ieee80211_link_sta *link_sta,
++				    struct ieee80211_sta *sta,
+ 				    u32 changed)
+ {
+-	struct ieee80211_sta *sta = link_sta->sta;
+ 	struct cc33xx_vif *wlvif = cc33xx_vif_to_data(vif);
+ 
+ 	if (!(changed & IEEE80211_RC_BW_CHANGED))
+@@ -4892,7 +4985,7 @@ static const struct ieee80211_ops cc33xx_ops = {
+ 	.assign_vif_chanctx = cc33xx_op_assign_vif_chanctx,
+ 	.unassign_vif_chanctx = cc33xx_op_unassign_vif_chanctx,
+ 	.switch_vif_chanctx = cc33xx_op_switch_vif_chanctx,
+-	.link_sta_rc_update = cc33xx_op_sta_rc_update,
++	.sta_rc_update = cc33xx_op_sta_rc_update,
+ 	.sta_statistics = cc33xx_op_sta_statistics,
+ 	.get_expected_throughput = cc33xx_op_get_expected_throughput,
+ 	CFG80211_TESTMODE_CMD(cc33xx_tm_cmd)
+@@ -5026,6 +5119,8 @@ static int cc33xx_register_hw(struct cc33xx *cc)
  
  	cc->mac80211_registered = true;
  
@@ -5182,7 +5196,7 @@ index 983ee08cb717..bc39a3243383 100644
  out:
  	return ret;
  }
-@@ -5120,7 +5214,7 @@ static int cc33xx_init_ieee80211(struct cc33xx *cc)
+@@ -5120,7 +5215,7 @@ static int cc33xx_init_ieee80211(struct cc33xx *cc)
  	/* clear channel flags from the previous usage
  	 * and restore max_power & max_antenna_gain values.
  	 */
@@ -5191,12 +5205,12 @@ index 983ee08cb717..bc39a3243383 100644
  		cc33xx_band_2ghz.channels[i].flags = 0;
  		cc33xx_band_2ghz.channels[i].max_power = CC33XX_MAX_TXPWR;
  		cc33xx_band_2ghz.channels[i].max_antenna_gain = 0;
-@@ -5133,7 +5227,11 @@ static int cc33xx_init_ieee80211(struct cc33xx *cc)
+@@ -5133,7 +5228,11 @@ static int cc33xx_init_ieee80211(struct cc33xx *cc)
  	}
  
  	/* Enable/Disable He based on conf file params */
 -	if (!cc->conf.mac.he_enable) {
-+	if (!cc->disable_wifi6 && cc->conf.mac.he_enable) {
++	if ((!cc->disable_wifi6) && (cc->conf.mac.he_enable)) {
 +		cc->hw->wiphy->iftype_ext_capab = he_iftypes_ext_capa;
 +		cc->hw->wiphy->num_iftype_ext_capab =
 +			ARRAY_SIZE(he_iftypes_ext_capa);
@@ -5204,57 +5218,45 @@ index 983ee08cb717..bc39a3243383 100644
  		cc33xx_band_2ghz.iftype_data = NULL;
  		cc33xx_band_2ghz.n_iftype_data = 0;
  
-@@ -5144,23 +5242,36 @@ static int cc33xx_init_ieee80211(struct cc33xx *cc)
+@@ -5144,17 +5243,31 @@ static int cc33xx_init_ieee80211(struct cc33xx *cc)
  	/* We keep local copies of the band structs because we need to
  	 * modify them on a per-device basis.
  	 */
 -	memcpy(&cc->bands[NL80211_BAND_2GHZ], &cc33xx_band_2ghz,
 -	       sizeof(cc33xx_band_2ghz));
 -	memcpy(&cc->bands[NL80211_BAND_2GHZ].ht_cap,
--	       &cc->ht_cap[NL80211_BAND_2GHZ],
--	       sizeof(*cc->ht_cap));
--
++	if (!cc->disable_wifi6 && (cc->conf.mac.he_enable)) {
++		memcpy(&cc->bands[NL80211_BAND_2GHZ], &cc33xx_band_2ghz,
++			sizeof(cc33xx_band_2ghz));
++		memcpy(&cc->bands[NL80211_BAND_2GHZ].ht_cap,
++			&cc->ht_cap[NL80211_BAND_2GHZ],
++			sizeof(*cc->ht_cap));
++
++		memcpy(&cc->bands[NL80211_BAND_5GHZ], &cc33xx_band_5ghz,
++			sizeof(cc33xx_band_5ghz));
++		memcpy(&cc->bands[NL80211_BAND_5GHZ].ht_cap,
++			&cc->ht_cap[NL80211_BAND_5GHZ],
++			sizeof(*cc->ht_cap));
++	} else {
++		memcpy(&cc->bands[NL80211_BAND_2GHZ], &cc33xx_band_2ghz_non_he,
++	       sizeof(cc33xx_band_2ghz_non_he));
++	    memcpy(&cc->bands[NL80211_BAND_2GHZ].ht_cap,
+ 	       &cc->ht_cap[NL80211_BAND_2GHZ],
+ 	       sizeof(*cc->ht_cap));
+ 
 -	memcpy(&cc->bands[NL80211_BAND_5GHZ], &cc33xx_band_5ghz,
 -	       sizeof(cc33xx_band_5ghz));
 -	memcpy(&cc->bands[NL80211_BAND_5GHZ].ht_cap,
--	       &cc->ht_cap[NL80211_BAND_5GHZ],
--	       sizeof(*cc->ht_cap));
-+	if (!cc->disable_wifi6 && cc->conf.mac.he_enable) {
-+		memcpy(&cc->bands[NL80211_BAND_2GHZ], &cc33xx_band_2ghz,
-+		       sizeof(cc33xx_band_2ghz));
-+		memcpy(&cc->bands[NL80211_BAND_2GHZ].ht_cap,
-+		       &cc->ht_cap[NL80211_BAND_2GHZ],
-+		       sizeof(*cc->ht_cap));
-+
-+		memcpy(&cc->bands[NL80211_BAND_5GHZ], &cc33xx_band_5ghz,
-+		       sizeof(cc33xx_band_5ghz));
-+		memcpy(&cc->bands[NL80211_BAND_5GHZ].ht_cap,
-+		       &cc->ht_cap[NL80211_BAND_5GHZ],
-+		       sizeof(*cc->ht_cap));
-+	} else {
-+		memcpy(&cc->bands[NL80211_BAND_2GHZ], &cc33xx_band_2ghz_non_he,
-+		       sizeof(cc33xx_band_2ghz_non_he));
-+		memcpy(&cc->bands[NL80211_BAND_2GHZ].ht_cap,
-+		       &cc->ht_cap[NL80211_BAND_2GHZ],
-+		       sizeof(*cc->ht_cap));
-+
-+		memcpy(&cc->bands[NL80211_BAND_5GHZ], &cc33xx_band_5ghz_non_he,
-+		       sizeof(cc33xx_band_5ghz_non_he));
-+		memcpy(&cc->bands[NL80211_BAND_5GHZ].ht_cap,
-+		       &cc->ht_cap[NL80211_BAND_5GHZ],
-+		       sizeof(*cc->ht_cap));
++	    memcpy(&cc->bands[NL80211_BAND_5GHZ], &cc33xx_band_5ghz_non_he,
++	       sizeof(cc33xx_band_5ghz_non_he));
++	    memcpy(&cc->bands[NL80211_BAND_5GHZ].ht_cap,
+ 	       &cc->ht_cap[NL80211_BAND_5GHZ],
+ 	       sizeof(*cc->ht_cap));
 +	}
  
  	ieee80211_set_sband_iftype_data(&cc->bands[NL80211_BAND_2GHZ], iftype_data_2ghz);
  	ieee80211_set_sband_iftype_data(&cc->bands[NL80211_BAND_5GHZ], iftype_data_5ghz);
- 
--	cc->hw->wiphy->bands[NL80211_BAND_2GHZ] =
--		&cc->bands[NL80211_BAND_2GHZ];
-+	cc->hw->wiphy->bands[NL80211_BAND_2GHZ] = &cc->bands[NL80211_BAND_2GHZ];
- 
- 	if (!cc->disable_5g && cc->conf.core.enable_5ghz)
- 		cc->hw->wiphy->bands[NL80211_BAND_5GHZ] =
-@@ -5210,7 +5321,7 @@ static int cc33xx_init_ieee80211(struct cc33xx *cc)
+@@ -5210,7 +5323,7 @@ static int cc33xx_init_ieee80211(struct cc33xx *cc)
  static struct ieee80211_hw *cc33xx_alloc_hw(u32 aggr_buf_size)
  {
  	struct ieee80211_hw *hw;
@@ -5263,7 +5265,7 @@ index 983ee08cb717..bc39a3243383 100644
  	int i, j;
  	unsigned int order;
  
-@@ -5268,6 +5379,8 @@ static struct ieee80211_hw *cc33xx_alloc_hw(u32 aggr_buf_size)
+@@ -5268,6 +5381,8 @@ static struct ieee80211_hw *cc33xx_alloc_hw(u32 aggr_buf_size)
  	cc->active_link_count = 0;
  	cc->fwlog_size = 0;
  
@@ -5272,7 +5274,7 @@ index 983ee08cb717..bc39a3243383 100644
  	/* The system link is always allocated */
  	__set_bit(CC33XX_SYSTEM_HLID, cc->links_map);
  
-@@ -5327,6 +5440,7 @@ static struct ieee80211_hw *cc33xx_alloc_hw(u32 aggr_buf_size)
+@@ -5327,6 +5442,7 @@ static struct ieee80211_hw *cc33xx_alloc_hw(u32 aggr_buf_size)
  	destroy_workqueue(cc->freezable_netstack_wq);
  
  err_hw_alloc:
@@ -5280,7 +5282,7 @@ index 983ee08cb717..bc39a3243383 100644
  	return NULL;
  }
  
-@@ -5339,10 +5453,16 @@ static int cc33xx_free_hw(struct cc33xx *cc)
+@@ -5339,10 +5455,16 @@ static int cc33xx_free_hw(struct cc33xx *cc)
  
  	kfree(cc->buffer_32);
  	kfree(cc->core_status);
@@ -5297,7 +5299,7 @@ index 983ee08cb717..bc39a3243383 100644
  	kfree(cc->nvs_mac_addr);
  	cc->nvs_mac_addr = NULL;
  
-@@ -5390,7 +5510,9 @@ static int read_version_info(struct cc33xx *cc)
+@@ -5390,7 +5512,9 @@ static int read_version_info(struct cc33xx *cc)
  		     cc->fw_ver->api_version,
  		     cc->fw_ver->build_version);
  
@@ -5308,7 +5310,7 @@ index 983ee08cb717..bc39a3243383 100644
  		     cc->fw_ver->phy_version[5],
  		     cc->fw_ver->phy_version[4],
  		     cc->fw_ver->phy_version[3],
-@@ -5549,6 +5671,16 @@ static int cc33xx_setup(struct cc33xx *cc)
+@@ -5549,6 +5673,16 @@ static int cc33xx_setup(struct cc33xx *cc)
  	if (ret < 0)
  		return ret;
  
@@ -5325,7 +5327,7 @@ index 983ee08cb717..bc39a3243383 100644
  	if (cc->conf.host_conf.ht.mode == HT_MODE_DEFAULT) {
  		cc33xx_set_ht_cap(cc, NL80211_BAND_2GHZ,
  				  &cc33xx_siso40_ht_cap_2ghz);
-@@ -5649,6 +5781,8 @@ static void cc33xx_remove(struct platform_device *pdev)
+@@ -5649,6 +5783,8 @@ static void cc33xx_remove(struct platform_device *pdev)
  
  	device_init_wakeup(cc->dev, false);
  	cc33xx_unregister_hw(cc);
@@ -5334,15 +5336,6 @@ index 983ee08cb717..bc39a3243383 100644
  	cc33xx_turn_off(cc);
  
  out:
-@@ -5678,7 +5812,7 @@ MODULE_PARM_DESC(debug_level, "cc33xx debugging level");
- module_param(no_recovery, int, 0600);
- MODULE_PARM_DESC(no_recovery, "Prevent HW recovery. FW will remain stuck.");
- 
--MODULE_LICENSE("GPL v2");
-+MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("Texas Instruments CC33xx WLAN driver");
- MODULE_AUTHOR("Michael Nemanov <michael.nemanov@ti.com>");
- MODULE_AUTHOR("Sabeeh Khan <sabeeh-khan@ti.com>");
 diff --git a/drivers/net/wireless/ti/cc33xx/ps.c b/drivers/net/wireless/ti/cc33xx/ps.c
 index 768f1f2fc3f1..9f53f0d4081d 100644
 --- a/drivers/net/wireless/ti/cc33xx/ps.c
@@ -5400,7 +5393,7 @@ index 46ff6867749f..523a35288d15 100644
  
  /* Account for the padding inserted by the FW in case of RX_ALIGNMENT
 diff --git a/drivers/net/wireless/ti/cc33xx/sdio.c b/drivers/net/wireless/ti/cc33xx/sdio.c
-index 835e627e2514..8bd4017d8698 100644
+index 835e627e2514..9e76b9795ff8 100644
 --- a/drivers/net/wireless/ti/cc33xx/sdio.c
 +++ b/drivers/net/wireless/ti/cc33xx/sdio.c
 @@ -22,6 +22,7 @@
@@ -5411,7 +5404,7 @@ index 835e627e2514..8bd4017d8698 100644
  };
  
  static void cc33xx_sdio_claim(struct device *child)
-@@ -130,6 +131,18 @@ static int cc33xx_sdio_power_on(struct cc33xx_sdio_glue *glue)
+@@ -130,6 +131,16 @@ static int cc33xx_sdio_power_on(struct cc33xx_sdio_glue *glue)
  	return 0;
  }
  
@@ -5419,10 +5412,8 @@ index 835e627e2514..8bd4017d8698 100644
 +{
 +	struct mmc_host *host = func->card->host;
 +
-+	/*
-+	 * Indicates the MMC host uses a dedicated thread to poll
-+	 * for SDIO in-band IRQs and run the IRQ handlers
-+	 */
++	/* Indicates the MMC host uses a dedicated thread to poll
++	for SDIO in-band IRQs and run the IRQ handlers */
 +
 +	return !(host->caps2 & MMC_CAP2_SDIO_IRQ_NOTHREAD);
 +}
@@ -5430,14 +5421,13 @@ index 835e627e2514..8bd4017d8698 100644
  static int cc33xx_sdio_power_off(struct cc33xx_sdio_glue *glue)
  {
  	struct sdio_func *func = dev_to_sdio_func(glue->dev);
-@@ -154,6 +167,16 @@ static int cc33xx_sdio_set_power(struct device *child, bool enable)
+@@ -154,6 +165,15 @@ static int cc33xx_sdio_set_power(struct device *child, bool enable)
  		return cc33xx_sdio_power_off(glue);
  }
  
 +static void inband_irq_work(struct work_struct *work)
 +{
-+	struct cc33xx_sdio_glue *glue = container_of(work, struct cc33xx_sdio_glue,
-+						     inband_irq_work);
++	struct cc33xx_sdio_glue *glue = container_of(work, struct cc33xx_sdio_glue, inband_irq_work);
 +	struct platform_device *pdev = glue->core;
 +	struct cc33xx_platdev_data *pdev_data = dev_get_platdata(&pdev->dev);
 +
@@ -5447,7 +5437,7 @@ index 835e627e2514..8bd4017d8698 100644
  /**
   *	inband_irq_handler - Called from the MMC subsystem when the
   *	function's IRQ is signaled.
-@@ -170,7 +193,10 @@ static void inband_irq_handler(struct sdio_func *func)
+@@ -170,7 +190,10 @@ static void inband_irq_handler(struct sdio_func *func)
  	if (WARN_ON(!pdev_data->irq_handler))
  		return;
  
@@ -5459,7 +5449,7 @@ index 835e627e2514..8bd4017d8698 100644
  }
  
  static void cc33xx_enable_async_interrupt(struct sdio_func *func)
-@@ -205,6 +231,18 @@ static void cc33xx_sdio_disable_irq(struct device *child)
+@@ -205,6 +228,18 @@ static void cc33xx_sdio_disable_irq(struct device *child)
  	sdio_release_host(func);
  }
  
@@ -5478,7 +5468,7 @@ index 835e627e2514..8bd4017d8698 100644
  static void cc33xx_enable_line_irq(struct device *child)
  {
  	struct cc33xx_sdio_glue *glue = dev_get_drvdata(child->parent);
-@@ -223,6 +261,15 @@ static void cc33xx_disable_line_irq(struct device *child)
+@@ -223,6 +258,15 @@ static void cc33xx_disable_line_irq(struct device *child)
  	disable_irq_nosync(pdev_data->gpio_irq_num);
  }
  
@@ -5494,7 +5484,7 @@ index 835e627e2514..8bd4017d8698 100644
  static void cc33xx_set_irq_handler(struct device *child, void *handler)
  {
  	struct cc33xx_sdio_glue *glue = dev_get_drvdata(child->parent);
-@@ -242,6 +289,7 @@ static const struct cc33xx_if_operations sdio_ops_gpio_irq = {
+@@ -242,6 +286,7 @@ static const struct cc33xx_if_operations sdio_ops_gpio_irq = {
  	.set_irq_handler	= cc33xx_set_irq_handler,
  	.disable_irq		= cc33xx_disable_line_irq,
  	.enable_irq		= cc33xx_enable_line_irq,
@@ -5502,7 +5492,7 @@ index 835e627e2514..8bd4017d8698 100644
  };
  
  static const struct cc33xx_if_operations sdio_ops_inband_irq = {
-@@ -254,6 +302,7 @@ static const struct cc33xx_if_operations sdio_ops_inband_irq = {
+@@ -254,6 +299,7 @@ static const struct cc33xx_if_operations sdio_ops_inband_irq = {
  	.set_irq_handler	= cc33xx_set_irq_handler,
  	.disable_irq		= cc33xx_sdio_disable_irq,
  	.enable_irq		= cc33xx_sdio_enable_irq,
@@ -5510,7 +5500,7 @@ index 835e627e2514..8bd4017d8698 100644
  };
  
  #ifdef CONFIG_OF
-@@ -389,6 +438,9 @@ static int sdio_cc33xx_probe(struct sdio_func *func,
+@@ -389,6 +435,9 @@ static int sdio_cc33xx_probe(struct sdio_func *func,
  
  		pdev_data->if_ops = &sdio_ops_gpio_irq;
  	} else {
@@ -5520,21 +5510,12 @@ index 835e627e2514..8bd4017d8698 100644
  		pdev_data->if_ops = &sdio_ops_inband_irq;
  	}
  
-@@ -524,7 +576,7 @@ static struct sdio_driver cc33xx_sdio_driver = {
- 
- module_sdio_driver(cc33xx_sdio_driver);
- 
--MODULE_LICENSE("GPL v2");
-+MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("SDIO transport for Texas Instruments CC33xx WLAN driver");
- MODULE_AUTHOR("Michael Nemanov <michael.nemanov@ti.com>");
- MODULE_AUTHOR("Sabeeh Khan <sabeeh-khan@ti.com>");
 diff --git a/drivers/net/wireless/ti/cc33xx/spi.c b/drivers/net/wireless/ti/cc33xx/spi.c
 new file mode 100644
-index 000000000000..027b350f5024
+index 000000000000..dc8469438f53
 --- /dev/null
 +++ b/drivers/net/wireless/ti/cc33xx/spi.c
-@@ -0,0 +1,684 @@
+@@ -0,0 +1,690 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * This file is part of cc33xx
@@ -5619,8 +5600,8 @@ index 000000000000..027b350f5024
 +
 +static void __cc33xx_spi_unlock(struct cc33xx_spi_glue *glue)
 +{
-+	WARN_ON(glue->locking_pid != current->pid);
-+	WARN_ON(!glue->lock_count);
++	BUG_ON(glue->locking_pid != current->pid);
++	BUG_ON(!glue->lock_count);
 +
 +	glue->lock_count--;
 +	if (!glue->lock_count) {
@@ -5637,8 +5618,11 @@ index 000000000000..027b350f5024
 +	struct spi_message m;
 +
 +	cmd = kzalloc(WSPI_INIT_CMD_LEN, GFP_KERNEL);
-+	if (!cmd)
++	if (!cmd) {
++		dev_err(child->parent,
++			"could not allocate cmd for spi reset\n");
 +		return;
++	}
 +
 +	memset(&t, 0, sizeof(t));
 +	spi_message_init(&m);
@@ -5662,8 +5646,11 @@ index 000000000000..027b350f5024
 +	struct spi_device *spi = to_spi_device(glue->dev);
 +	u8 *cmd = kzalloc(WSPI_INIT_CMD_LEN, GFP_KERNEL);
 +
-+	if (!cmd)
++	if (!cmd) {
++		dev_err(child->parent,
++			"could not allocate cmd for spi init\n");
 +		return;
++	}
 +
 +	memset(&t, 0, sizeof(t));
 +	spi_message_init(&m);
@@ -6033,7 +6020,7 @@ index 000000000000..027b350f5024
 +	struct platform_device *pdev = glue->core;
 +	struct cc33xx_platdev_data *pdev_data = dev_get_platdata(&pdev->dev);
 +
-+	WARN_ON(!pdev_data->irq_handler);
++	BUG_ON(!pdev_data->irq_handler);
 +	pdev_data->irq_handler(pdev);
 +
 +	return IRQ_HANDLED;
@@ -6142,9 +6129,9 @@ index 000000000000..027b350f5024
 +	if (irq_flags & (IRQF_TRIGGER_HIGH | IRQF_TRIGGER_LOW))
 +		irq_flags |= IRQF_ONESHOT;
 +
-+	ret = request_threaded_irq(gpio_irq, cc33xx_spi_irq_hard_handler,
-+				   cc33xx_spi_irq_handler, irq_flags,
-+				   pdev_data->family->name, spi);
++	ret = request_threaded_irq(
++		gpio_irq, cc33xx_spi_irq_hard_handler, cc33xx_spi_irq_handler,
++		irq_flags, pdev_data->family->name, spi);
 +	if (ret) {
 +		dev_err(glue->dev, "can't register GPIO IRQ handler\n");
 +		goto out_dev_put;
@@ -6235,5 +6222,5 @@ index 37f8b63c99e0..9837e806b489 100644
  				      struct cc33xx_vif *wlvif, u8 id)
  {
 -- 
-2.53.0
+2.55.0
 

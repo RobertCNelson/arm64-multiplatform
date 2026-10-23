@@ -1,6 +1,6 @@
-From 5c4a32ea2bf92c2351923ab864afb50d462ca870 Mon Sep 17 00:00:00 2001
+From 10ace29082a4a50765d64e4145ca6a57d17d85a2 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 23 Oct 2026 14:01:05 -0500
+Date: Fri, 23 Oct 2026 14:32:32 -0500
 Subject: [PATCH] wifi: cc33xx: update driver to match cc33xx SDK 1.0.2.14
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
@@ -36,7 +36,7 @@ index caefe742ae6b..960896af51f5 100644
  cc33xx_spi-objs 	= spi.o
  cc33xx_sdio-objs	= sdio.o
 diff --git a/drivers/net/wireless/ti/cc33xx/acx.c b/drivers/net/wireless/ti/cc33xx/acx.c
-index ffb998acb5c4..6616ebedac7f 100644
+index dc8f25a30be7..9095d1a6257b 100644
 --- a/drivers/net/wireless/ti/cc33xx/acx.c
 +++ b/drivers/net/wireless/ti/cc33xx/acx.c
 @@ -689,10 +689,12 @@ int cc33xx_acx_default_rx_filter_enable(struct cc33xx *cc, bool enable,
@@ -117,7 +117,7 @@ index ffb998acb5c4..6616ebedac7f 100644
  {
  	struct debug_set_tsf *set_tsf_cmd;
 diff --git a/drivers/net/wireless/ti/cc33xx/acx.h b/drivers/net/wireless/ti/cc33xx/acx.h
-index ce55867e1db6..cf59f59fee59 100644
+index ed5ff819c89b..99294891d780 100644
 --- a/drivers/net/wireless/ti/cc33xx/acx.h
 +++ b/drivers/net/wireless/ti/cc33xx/acx.h
 @@ -474,6 +474,7 @@ enum cfg {
@@ -150,7 +150,7 @@ index ce55867e1db6..cf59f59fee59 100644
  struct debug_set_tsf {
  	struct debug_header header;
  
-@@ -792,5 +808,6 @@ int cc33xx_acx_twt_resume(struct cc33xx *wl);
+@@ -797,5 +813,6 @@ int cc33xx_acx_twt_resume(struct cc33xx *wl);
  int cc33xx_acx_twt_suspend(struct cc33xx *wl);
  int cc33xx_acx_statistics(struct cc33xx *cc, void *stats);
  int cc33xx_acx_clear_statistics(struct cc33xx *cc);
@@ -158,7 +158,7 @@ index ce55867e1db6..cf59f59fee59 100644
  
  #endif /* __CC33XX_ACX_H__ */
 diff --git a/drivers/net/wireless/ti/cc33xx/cc33xx.h b/drivers/net/wireless/ti/cc33xx/cc33xx.h
-index 3fd71853b3c1..306a82c5430d 100644
+index 351d6c64ff17..17c832dc7ef8 100644
 --- a/drivers/net/wireless/ti/cc33xx/cc33xx.h
 +++ b/drivers/net/wireless/ti/cc33xx/cc33xx.h
 @@ -47,6 +47,12 @@ struct cc33xx_stats {
@@ -185,7 +185,7 @@ index 3fd71853b3c1..306a82c5430d 100644
  	 * are always active.
  	 */
 diff --git a/drivers/net/wireless/ti/cc33xx/cc33xx_i.h b/drivers/net/wireless/ti/cc33xx/cc33xx_i.h
-index 0f2159f8895b..843acbd91ace 100644
+index 2e1616a1106f..bf251e047955 100644
 --- a/drivers/net/wireless/ti/cc33xx/cc33xx_i.h
 +++ b/drivers/net/wireless/ti/cc33xx/cc33xx_i.h
 @@ -190,6 +190,8 @@ struct cc33xx_link {
@@ -207,18 +207,18 @@ index 0f2159f8895b..843acbd91ace 100644
  	/* save the current encryption type for auto-arp config */
  	u8 encryption_type;
 diff --git a/drivers/net/wireless/ti/cc33xx/cmd.c b/drivers/net/wireless/ti/cc33xx/cmd.c
-index 06ba8110e231..8d5ab4789300 100644
+index f533a7a5b658..b7b582957d11 100644
 --- a/drivers/net/wireless/ti/cc33xx/cmd.c
 +++ b/drivers/net/wireless/ti/cc33xx/cmd.c
 @@ -112,6 +112,7 @@ static int __cc33xx_cmd_send(struct cc33xx *cc, u16 id, void *buf,
  	case CMD_BM_READ_DEVICE_INFO:
  	case CMD_SET_PROBE_IE:
- 	case CMD_DEBUG:
+     case CMD_DEBUG:
 +	case CMD_CQM_RSSI_CONFIG:
  		if (!res_len)
  			break; /* Response should be discarded */
  
-@@ -2007,3 +2008,44 @@ int cmd_download_container_chunk(struct cc33xx *cc, u8 *chunk,
+@@ -2009,3 +2010,44 @@ int cmd_download_container_chunk(struct cc33xx *cc, u8 *chunk,
  
  	return ret;
  }
@@ -403,7 +403,7 @@ index 46f12be78686..d334758af313 100644
  	}
  }
 diff --git a/drivers/net/wireless/ti/cc33xx/main.c b/drivers/net/wireless/ti/cc33xx/main.c
-index bc39a3243383..6f16cd31fdba 100644
+index 668cab80bf0e..5d402ea7e910 100644
 --- a/drivers/net/wireless/ti/cc33xx/main.c
 +++ b/drivers/net/wireless/ti/cc33xx/main.c
 @@ -19,11 +19,15 @@
@@ -422,7 +422,7 @@ index bc39a3243383..6f16cd31fdba 100644
  
  static int no_recovery     = -1;
  
-@@ -1490,7 +1494,12 @@ static int cc33xx_validate_wowlan_pattern(struct cfg80211_pkt_pattern *p)
+@@ -1493,7 +1497,12 @@ static int cc33xx_validate_wowlan_pattern(struct cfg80211_pkt_pattern *p)
  	return 0;
  }
  
@@ -436,7 +436,7 @@ index bc39a3243383..6f16cd31fdba 100644
  {
  	int i;
  
-@@ -1503,11 +1512,12 @@ static void cc33xx_rx_filter_free(struct cc33xx_rx_filter *filter)
+@@ -1506,11 +1515,12 @@ static void cc33xx_rx_filter_free(struct cc33xx_rx_filter *filter)
  	kfree(filter);
  }
  
@@ -450,7 +450,7 @@ index bc39a3243383..6f16cd31fdba 100644
  
  	if (filter->num_fields == CC33XX_RX_FILTER_MAX_FIELDS) {
  		cc33xx_warning("Max fields per RX filter. can't alloc another");
-@@ -1516,7 +1526,8 @@ static int cc33xx_rx_filter_alloc_field(struct cc33xx_rx_filter *filter,
+@@ -1519,7 +1529,8 @@ static int cc33xx_rx_filter_alloc_field(struct cc33xx_rx_filter *filter,
  
  	field = &filter->fields[filter->num_fields];
  
@@ -460,7 +460,7 @@ index bc39a3243383..6f16cd31fdba 100644
  	if (!field->pattern)
  		return -ENOMEM;
  
-@@ -1525,7 +1536,7 @@ static int cc33xx_rx_filter_alloc_field(struct cc33xx_rx_filter *filter,
+@@ -1528,7 +1539,7 @@ static int cc33xx_rx_filter_alloc_field(struct cc33xx_rx_filter *filter,
  	field->offset = cpu_to_le16(offset);
  	field->flags = flags;
  	field->len = len;
@@ -469,7 +469,7 @@ index bc39a3243383..6f16cd31fdba 100644
  
  	return 0;
  }
-@@ -1595,7 +1606,57 @@ cc33xx_convert_wowlan_pattern_to_rx_filter(struct cfg80211_pkt_pattern *p,
+@@ -1598,7 +1609,57 @@ cc33xx_convert_wowlan_pattern_to_rx_filter(struct cfg80211_pkt_pattern *p,
  	return ret;
  }
  
@@ -528,7 +528,7 @@ index bc39a3243383..6f16cd31fdba 100644
  				   struct cfg80211_wowlan *wow)
  {
  	int i, ret;
-@@ -1676,6 +1737,15 @@ static int cc33xx_configure_wowlan(struct cc33xx *cc,
+@@ -1679,6 +1740,15 @@ static int cc33xx_configure_wowlan(struct cc33xx *cc,
  	return ret;
  }
  
@@ -544,7 +544,7 @@ index bc39a3243383..6f16cd31fdba 100644
  static int cc33xx_configure_suspend_sta(struct cc33xx *cc,
  					struct cc33xx_vif *wlvif,
  					struct cfg80211_wowlan *wow)
-@@ -1779,7 +1849,7 @@ static int __maybe_unused cc33xx_op_suspend(struct ieee80211_hw *hw,
+@@ -1782,7 +1852,7 @@ static int __maybe_unused cc33xx_op_suspend(struct ieee80211_hw *hw,
  	unsigned long flags;
  	int ret = 0;
  
@@ -553,7 +553,7 @@ index bc39a3243383..6f16cd31fdba 100644
  
  	/* we want to perform the recovery before suspending */
  	if (test_bit(CC33XX_FLAG_RECOVERY_IN_PROGRESS, &cc->flags)) {
-@@ -2239,6 +2309,7 @@ static int cc33xx_init_vif_data(struct cc33xx *cc, struct ieee80211_vif *vif)
+@@ -2242,6 +2312,7 @@ static int cc33xx_init_vif_data(struct cc33xx *cc, struct ieee80211_vif *vif)
  	wlvif->bitrate_masks[NL80211_BAND_2GHZ] = tx_settings->basic_rate;
  	wlvif->bitrate_masks[NL80211_BAND_5GHZ] = tx_settings->basic_rate_5;
  	wlvif->beacon_int = CC33XX_DEFAULT_BEACON_INT;
@@ -561,7 +561,7 @@ index bc39a3243383..6f16cd31fdba 100644
  
  	/* mac80211 configures some values globally, while we treat them
  	 * per-interface. thus, on init, we have to copy them from cc
-@@ -2463,6 +2534,16 @@ static void __cc33xx_op_remove_interface(struct cc33xx *cc,
+@@ -2466,6 +2537,16 @@ static void __cc33xx_op_remove_interface(struct cc33xx *cc,
  
  	if (!test_bit(CC33XX_FLAG_RECOVERY_IN_PROGRESS, &cc->flags)) {
  		/* disable active roles */
@@ -578,7 +578,7 @@ index bc39a3243383..6f16cd31fdba 100644
  
  		if (wlvif->bss_type == BSS_TYPE_STA_BSS ||
  		    wlvif->bss_type == BSS_TYPE_IBSS) {
-@@ -3700,6 +3781,64 @@ static void cc33xx_sta_set_he(struct cc33xx *cc, struct cc33xx_vif *wlvif, bool
+@@ -3701,6 +3782,64 @@ static void cc33xx_sta_set_he(struct cc33xx *cc, struct cc33xx_vif *wlvif, bool
  		cc33xx_error("Both station interfaces has HE enabled!");
  }
  
@@ -643,7 +643,7 @@ index bc39a3243383..6f16cd31fdba 100644
  /* STA/IBSS mode changes */
  static void cc33xx_bss_info_changed_sta(struct cc33xx *cc,
  					struct ieee80211_vif *vif,
-@@ -3751,8 +3890,11 @@ static void cc33xx_bss_info_changed_sta(struct cc33xx *cc,
+@@ -3752,8 +3891,11 @@ static void cc33xx_bss_info_changed_sta(struct cc33xx *cc,
  	if (changed & BSS_CHANGED_IDLE && !is_ibss)
  		cc33xx_sta_handle_idle(cc, wlvif, vif->cfg.idle);
  
@@ -657,7 +657,7 @@ index bc39a3243383..6f16cd31fdba 100644
  
  	if (changed & (BSS_CHANGED_BSSID | BSS_CHANGED_HT | BSS_CHANGED_ASSOC)) {
  		rcu_read_lock();
-@@ -5451,6 +5593,11 @@ static int cc33xx_free_hw(struct cc33xx *cc)
+@@ -5453,6 +5595,11 @@ static int cc33xx_free_hw(struct cc33xx *cc)
  	cc->fwlog_size = -1;
  	mutex_unlock(&cc->mutex);
  
@@ -669,7 +669,7 @@ index bc39a3243383..6f16cd31fdba 100644
  	kfree(cc->buffer_32);
  	kfree(cc->core_status);
  
-@@ -5587,6 +5734,10 @@ static void cc33xx_nvs_cb(const struct firmware *fw, void *context)
+@@ -5589,6 +5736,10 @@ static void cc33xx_nvs_cb(const struct firmware *fw, void *context)
  	if (ret)
  		goto out_irq;
  
