@@ -1,11 +1,11 @@
-From 6c0918a32fcc64dd3b22b21b5b3b1629c94101bb Mon Sep 17 00:00:00 2001
+From 511601903bba75cca2c6e8cd94a7bc09a5e16c86 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Thu, 22 Oct 2026 14:14:20 -0500
+Date: Fri, 23 Oct 2026 11:45:02 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v7.2.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/a4f9ced7420f96cf5713058014744cc6c56dba2d
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/f3861f7640b3ea29b12612026c600db4bbe21bea
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso  |   80 ++
@@ -122,7 +122,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../boot/dts/ti/k3-am625-sancloud-bbe-2.dts   | 1119 +++++++++++++++++
  .../arm64/boot/dts/ti/k3-am625-sk-common.dtsi |    3 +-
  .../boot/dts/ti/k3-am62l3-beaglebadge.dts     |  657 ++++++++++
- .../dts/ti/k3-am62p-j722s-common-main.dtsi    |   35 +-
+ .../dts/ti/k3-am62p-j722s-common-main.dtsi    |   19 +
  .../dts/ti/k3-am62p-j722s-common-mcu.dtsi     |    2 +-
  .../boot/dts/ti/k3-am62p-ti-ipc-firmware.dtsi |    1 +
  .../arm64/boot/dts/ti/k3-am62x-sk-common.dtsi |    2 +-
@@ -159,7 +159,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso  |   50 +
  .../dts/ti/k3-am67a-beagley-ai-spidev0.dtso   |   52 +
  .../ti/k3-am67a-beagley-ai-uart-ttyama0.dtso  |   29 +
- .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  417 +++++-
+ .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  413 +++++-
  .../k3-j721e-beagleboneai64-BBORG_MOTOR.dtso  |   95 ++
  .../dts/ti/k3-j721e-beagleboneai64-ecap0.dtso |   40 +
  .../dts/ti/k3-j721e-beagleboneai64-ecap1.dtso |   40 +
@@ -192,7 +192,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |   12 +
  .../dt-bindings/clock/spacemit,k3-clocks.h    |    4 +
  include/uapi/linux/input-event-codes.h        |    6 +
- 184 files changed, 15455 insertions(+), 83 deletions(-)
+ 184 files changed, 15442 insertions(+), 76 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
@@ -12713,7 +12713,7 @@ index 000000000000..ee2d562baf51
 +	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
-index 9f584e49ef58..61a6e80d9395 100644
+index 9f584e49ef58..6d68ebbcb59a 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
 @@ -64,6 +64,11 @@ audio_refclk1: clock-controller@82e4 {
@@ -12748,51 +12748,7 @@ index 9f584e49ef58..61a6e80d9395 100644
  	hwspinlock: spinlock@2a000000 {
  		compatible = "ti,am64-hwspinlock";
  		reg = <0x00 0x2a000000 0x00 0x1000>;
-@@ -1116,6 +1134,17 @@ dphy0: phy@30110000 {
- 		status = "disabled";
- 	};
- 
-+	gpu: gpu@fd80000 {
-+		compatible = "ti,am62p-gpu", "img,img-bxs-4-64", "img,img-rogue";
-+		reg = <0x00 0x0fd80000 0x00 0x80000>;
-+		clocks = <&k3_clks 237 3>;
-+		clock-names = "core";
-+		interrupts = <GIC_SPI 241 IRQ_TYPE_LEVEL_HIGH>;
-+		power-domains = <&k3_pds 237 TI_SCI_PD_EXCLUSIVE>,
-+				<&k3_pds 242 TI_SCI_PD_EXCLUSIVE>;
-+		power-domain-names = "a", "b";
-+	};
-+
- 	dss0: dss@30200000 {
- 		compatible = "ti,am62p-dss";
- 		reg = <0x00 0x30200000 0x00 0x1000>, /* common */
-@@ -1134,7 +1163,6 @@ dss0: dss@30200000 {
- 			 <&k3_clks 186 2>;
- 		clock-names = "fck", "vp1", "vp2";
- 		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
--		ti,dpi-io-ctrl = <&main_conf 0x8300>;
- 		status = "disabled";
- 
- 		oldi-transmitters {
-@@ -1152,9 +1180,6 @@ dss0_oldi0: oldi@0 {
- 
- 			dss0_oldi1: oldi@1 {
- 				reg = <1>;
--				clocks = <&k3_clks 186 0>;
--				clock-names = "serial";
--				ti,oldi-io-ctrl = <&dss_oldi_io_ctrl>;
- 				status = "disabled";
- 				power-domains = <&k3_pds 244 TI_SCI_PD_EXCLUSIVE>; /* OLDI1_VD */
- 			};
-@@ -1179,7 +1204,6 @@ dss1: dss@30220000 {
- 			 <&k3_clks 232 4>;
- 		clock-names = "fck", "vp1", "vp2";
- 		interrupts = <GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
--		ti,dpi-io-ctrl = <&main_conf 0x8300>;
- 		status = "disabled";
- 
- 		oldi-transmitters {
-@@ -1229,6 +1253,7 @@ vpu: video-codec@30210000 {
+@@ -1229,6 +1247,7 @@ vpu: video-codec@30210000 {
  		interrupts = <GIC_SPI 225 IRQ_TYPE_LEVEL_HIGH>;
  		clocks = <&k3_clks 204 2>;
  		power-domains = <&k3_pds 204 TI_SCI_PD_EXCLUSIVE>;
@@ -15255,7 +15211,7 @@ index 000000000000..bf41c0488af1
 +	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
-index f97e3bddf28f..0f72a6f124a4 100644
+index f97e3bddf28f..86a7f9d7faf0 100644
 --- a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 @@ -10,7 +10,11 @@
@@ -15637,15 +15593,6 @@ index f97e3bddf28f..0f72a6f124a4 100644
  &wkup_i2c0 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&wkup_i2c0_pins_default>;
-@@ -496,7 +751,7 @@ ports {
- 			/*
- 			 * HDMI can be serviced with 3 potential VPs -
- 			 * (DSS0 VP1 / DSS1 VP0 / DSS1 VP1).
--			 * For now, we will service it with DSS1 VP0.
-+			 * For now, we will service it with DSS1 VP1.
- 			 */
- 			port@0 {
- 				reg = <0>;
 @@ -540,6 +795,51 @@ &sdhci1 {
  	status = "okay";
  };
@@ -15698,15 +15645,6 @@ index f97e3bddf28f..0f72a6f124a4 100644
  &dss1 {
  	status = "okay";
  	pinctrl-names = "default";
-@@ -561,7 +861,7 @@ ports {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
--		/* DSS1-VP0: DPI/HDMI Output */
-+		/* DSS1-VP1: DPI/HDMI Output */
- 		port@0 {
- 			reg = <0>;
- 
 @@ -590,4 +890,107 @@ &mcasp1 {
  	rx-num-evt = <32>;
  };
