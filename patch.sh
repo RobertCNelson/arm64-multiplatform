@@ -625,6 +625,7 @@ cc33xx_drivers () {
 
 	#exit 2
 	dir 'drivers/cc33xx/fixes'
+	#exit 2
 }
 
 drivers () {
