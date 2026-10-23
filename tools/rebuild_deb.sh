@@ -52,6 +52,18 @@ make_menuconfig () {
 make_deb () {
 	cd "${DIR}/KERNEL" || exit
 
+	case "${KERNEL_ARCH}" in
+		arm)
+			DEBARCH="armhf"
+			;;
+		arm64)
+			DEBARCH="arm64"
+			;;
+		riscv)
+			DEBARCH="riscv64"
+			;;
+	esac
+
 	deb_distro=$(lsb_release -cs | sed 's/\//_/g')
 	if [ "x${deb_distro}" = "xn_a" ] ; then
 		deb_distro="unstable"
@@ -114,7 +126,7 @@ fi
 . "${DIR}/.CC"
 echo "CROSS_COMPILE=${CC}"
 if [ -f /usr/bin/ccache ] ; then
-	echo "ccache [enabled]"
+	echo "ccache: $(ccache --print-version)"
 	CC="ccache ${CC}"
 fi
 
