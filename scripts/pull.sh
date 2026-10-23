@@ -3,7 +3,7 @@
 # SPDX-FileCopyrightText: Robert Nelson <robertcnelson@gmail.com>
 # SPDX-License-Identifier: MIT
 
-BRANCH="v7.3.x-arm64-k3"
+BRANCH="v7.4.x-arm64-k3"
 REPO="arm64-multiplatform"
 
 git pull --no-edit https://github.com/RobertCNelson/${REPO}.git ${BRANCH}
