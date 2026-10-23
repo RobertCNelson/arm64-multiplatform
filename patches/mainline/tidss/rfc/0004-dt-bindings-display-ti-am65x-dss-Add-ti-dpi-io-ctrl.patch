@@ -1,0 +1,57 @@
+From ef8cf3dede641c7c38dd186dc1f56609db72351c Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Fri, 29 May 2026 11:45:34 +0300
+Subject: [PATCH 04/15] dt-bindings: display: ti,am65x-dss: Add ti,dpi-io-ctrl
+
+The DPI output pipeline in K3 SoCs contains the display subsystem (DSS)
+which produces the in-SoC parallel video signal, and a DPI block which
+adjusts the signal to the external MIPI DPI output.
+
+The DSS IP has registers to configure whether the data and sync signals
+are driven on rising or falling clock edge, and on some SoCs these are
+automatically conveyed to the DPI block which needs that configuration
+to properly output the MIPI DPI signal.
+
+However, on some SoCs the DPI block configuration has to be done
+manually, using an extra register outside the DSS, DPI0_CLK_CTRL in
+MAIN_CTRL_MMR_CFG0 block, which controls the DPI block's behavior.
+
+Currently the DPI0_CLK_CTRL is never written, so it's always 0, meaning
+the data and sync are always driven on a rising clock edge regardless of
+the DSS configuration.
+
+Add 'ti,dpi-io-ctrl' property, which contains phandle to the
+MAIN_CTRL_MMR_CFG0 block and the offset to the DPI0_CLK_CTRL register,
+so that the DSS driver can configure the data and sync signals
+correctly.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ .../devicetree/bindings/display/ti/ti,am65x-dss.yaml  | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+index 588d72d4ec0d..902ae2122d86 100644
+--- a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
++++ b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+@@ -113,6 +113,17 @@ properties:
+       and OLDI_CLK_IO_CTRL registers. This property is needed for OLDI
+       interface to work.
+ 
++  ti,dpi-io-ctrl:
++    $ref: /schemas/types.yaml#/definitions/phandle-array
++    description:
++      phandle to a syscon device node containing the DPI0_CLK_CTRL register,
++      with the offset to DPI0_CLK_CTRL as an argument.
++    maxItems: 1
++    items:
++      items:
++        - description: phandle to the syscon node
++        - description: DPI0_CLK_CTRL register offset
++
+   max-memory-bandwidth:
+     $ref: /schemas/types.yaml#/definitions/uint32
+     description:
+-- 
+2.55.0
+
