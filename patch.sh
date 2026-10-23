@@ -166,10 +166,10 @@ wireless_regdb () {
 }
 
 cc33xx_firmware () {
-	FIRMWARE_VERSION="1_0_2_10"
-	CC33XX_FIRMWARE="1.0.2.10"
+	FIRMWARE_VERSION="1_0_2_14"
+	CC33XX_FIRMWARE="1.0.2.14"
 	#https://www.ti.com/tool/CC33XX-SOFTWARE
-	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.10
+	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.14
 	#https://github.com/beagleboard/CC33XX-LINUX-MPU
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
@@ -189,7 +189,7 @@ cc33xx_firmware () {
 		${git_bin} commit -a -m 'ti: add CC33XX-LINUX-MPU firmware' -m "https://www.ti.com/tool/download/CC33XX-LINUX-MPU/${CC33XX_FIRMWARE}" -s
 
 		${git_bin} format-patch -1 -o ../patches/external/cc33xx_firmware/
-		echo "CC33XX_FIRMWARE: https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.10" > ../patches/external/git/CC33XX_FIRMWARE
+		echo "CC33XX_FIRMWARE: https://www.ti.com/tool/download/CC33XX-LINUX-MPU/${CC33XX_FIRMWARE}" > ../patches/external/git/CC33XX_FIRMWARE
 
 		rm -rf ../src/ || true
 
@@ -652,6 +652,12 @@ cc33xx_drivers () {
 	#start_cleanup
 	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.10
 	dir 'drivers/cc33xx/1.0.2.10'
+
+	#start_cleanup
+	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.14
+	dir 'drivers/cc33xx/1.0.2.14'
+
+	#exit 2
 	cc33xx_firmware
 
 	#exit 2
