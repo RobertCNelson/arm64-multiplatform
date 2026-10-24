@@ -1,4 +1,4 @@
-From e6b7d85302f9f23d9cd7873dcf79851daeeeeb25 Mon Sep 17 00:00:00 2001
+From f7a8e4dff21275bcfd1345ae7838e2b493968a1d Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Sat, 25 Apr 2026 09:47:14 -0500
 Subject: [PATCH 2/2] bluetooth: cc33xx: update driver to match cc33xx SDK
