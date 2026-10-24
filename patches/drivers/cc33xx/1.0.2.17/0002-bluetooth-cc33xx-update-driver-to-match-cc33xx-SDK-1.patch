@@ -1,0 +1,35 @@
+From 5d9e22d66e943a4884cd5443c2b0ac919f3853a2 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Fri, 23 Oct 2026 19:01:42 -0500
+Subject: [PATCH 2/2] bluetooth: cc33xx: update driver to match cc33xx SDK
+ 1.0.2.17
+
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+---
+ drivers/bluetooth/btti_sdio.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/bluetooth/btti_sdio.c b/drivers/bluetooth/btti_sdio.c
+index f50253f8a4bf..3f2f7bad41b4 100644
+--- a/drivers/bluetooth/btti_sdio.c
++++ b/drivers/bluetooth/btti_sdio.c
+@@ -685,6 +685,7 @@ static int btti_sdio_tx_packet(struct btti_private *private_data,
+ 	payload = skb->data;
+ 	data_send_size = roundup(packet_len, BTSDIO_TX_ALIGN);
+ 	alignment_required = (data_send_size != packet_len);
++	alignment_required |= !IS_ALIGNED((unsigned long) skb->data, 4);
+ 
+ 	if (alignment_required) {
+ 		tmpbuf = kzalloc(data_send_size, GFP_KERNEL);
+@@ -692,7 +693,7 @@ static int btti_sdio_tx_packet(struct btti_private *private_data,
+ 			BT_ERR("[bt sdio] TX allocation failed");
+ 			return -ENOMEM;
+ 		}
+-		memcpy(tmpbuf, payload, data_send_size);
++		memcpy(tmpbuf, payload, packet_len);
+ 	} else {
+ 		tmpbuf = payload;
+ 	}
+-- 
+2.55.0
+
