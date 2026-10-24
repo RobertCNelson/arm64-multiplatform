@@ -1,11 +1,11 @@
-From e22f47c1d5499b497a4b780c98b0b342079d54b1 Mon Sep 17 00:00:00 2001
+From 077f17c3e36654e29c78a41a9149547ca907f744 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Tue, 12 May 2026 14:12:58 -0500
+Date: Fri, 23 Oct 2026 21:05:34 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v6.19.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/5b056ee78aab93475608d957f629166acf374158
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/cd9d83a20b83ca1b3009b6b5022d244a97515cf3
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso  |   80 ++
@@ -13,6 +13,10 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso |  123 ++
  .../boot/dts/ti/omap/BB-BBGG-WL1835-00A0.dtso |  249 ++++
  .../boot/dts/ti/omap/BB-BBGW-WL1835-00A0.dtso |  217 ++++
+ .../dts/ti/omap/BB-BONE-4D4C-01-00A1.dtso     |  190 +++
+ .../dts/ti/omap/BB-BONE-4D5R-01-00A1.dtso     |  190 +++
+ .../dts/ti/omap/BB-BONE-LCD4-01-00A1.dtso     |  243 ++++
+ .../dts/ti/omap/BB-BONE-LCD7-01-00A3.dtso     |  243 ++++
  .../dts/ti/omap/BB-BONE-eMMC1-01-00A0.dtso    |   61 +
  arch/arm/boot/dts/ti/omap/BB-CAN0-00A0.dtso   |   48 +
  arch/arm/boot/dts/ti/omap/BB-CAN1-00A0.dtso   |   44 +
@@ -24,8 +28,8 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm/boot/dts/ti/omap/BB-EQEP2.dtso       |   39 +
  arch/arm/boot/dts/ti/omap/BB-EQEP2B.dtso      |   39 +
  .../boot/dts/ti/omap/BB-GREEN-HDMI-00A0.dtso  |  156 +++
- .../dts/ti/omap/BB-HDMI-IT66121-00A0.dtso     |  228 ++++
- .../dts/ti/omap/BB-HDMI-IT66122-00A0.dtso     |  224 ++++
+ .../dts/ti/omap/BB-HDMI-IT66121-00A0.dtso     |  235 ++++
+ .../dts/ti/omap/BB-HDMI-IT66122-00A0.dtso     |  231 ++++
  .../dts/ti/omap/BB-HDMI-TDA998x-00A0.dtso     |  194 +++
  arch/arm/boot/dts/ti/omap/BB-I2C1-00A0.dtso   |   45 +
  .../boot/dts/ti/omap/BB-I2C1-FAST-00A0.dtso   |   45 +
@@ -38,10 +42,11 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../dts/ti/omap/BB-I2C2-MCP7940X-00A0.dtso    |   40 +
  .../arm/boot/dts/ti/omap/BB-I2C2-MPU6050.dtso |   53 +
  .../boot/dts/ti/omap/BB-I2C2-RTC-DS3231.dtso  |   53 +
- .../dts/ti/omap/BB-NHDMI-IT66121-00A0.dtso    |  164 +++
- .../dts/ti/omap/BB-NHDMI-IT66122-00A0.dtso    |  163 +++
+ .../dts/ti/omap/BB-NHDMI-IT66121-00A0.dtso    |  171 +++
+ .../dts/ti/omap/BB-NHDMI-IT66122-00A0.dtso    |  170 +++
  .../dts/ti/omap/BB-NHDMI-TDA998x-00A0.dtso    |  130 ++
  .../arm/boot/dts/ti/omap/BB-SPIDEV0-00A0.dtso |   81 ++
+ .../boot/dts/ti/omap/BB-SPIDEV1-00A0-CS1.dtso |   83 ++
  .../arm/boot/dts/ti/omap/BB-SPIDEV1-00A0.dtso |   81 ++
  arch/arm/boot/dts/ti/omap/BB-UART1-00A0.dtso  |   45 +
  arch/arm/boot/dts/ti/omap/BB-UART2-00A0.dtso  |   45 +
@@ -57,17 +62,18 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  arch/arm/boot/dts/ti/omap/BONE-LED-P9-42.dtso |   42 +
  arch/arm/boot/dts/ti/omap/M-BB-BBG-00A0.dtso  |   21 +
  arch/arm/boot/dts/ti/omap/M-BB-BBGG-00A0.dtso |   24 +
- arch/arm/boot/dts/ti/omap/Makefile            |   57 +-
+ arch/arm/boot/dts/ti/omap/Makefile            |   62 +-
  .../dts/ti/omap/am335x-bbb-bone-buses.dtsi    |   69 +
- .../boot/dts/ti/omap/am335x-bone-common.dtsi  |   27 +-
+ .../boot/dts/ti/omap/am335x-bone-common.dtsi  |   28 +-
  arch/arm/boot/dts/ti/omap/am335x-bone.dts     |    5 +
- .../ti/omap/am335x-boneblack-ite-hdmi.dtsi    |  175 +++
+ .../dts/ti/omap/am335x-boneblack-hdmi.dtsi    |    2 +-
+ .../ti/omap/am335x-boneblack-ite-hdmi.dtsi    |  183 +++
  .../dts/ti/omap/am335x-boneblack-revd.dts     |  180 +++
  .../dts/ti/omap/am335x-boneblack-uboot.dts    |  194 +++
  .../dts/ti/omap/am335x-boneblack-wireless.dts |    8 +
  .../arm/boot/dts/ti/omap/am335x-boneblack.dts |    5 +
  arch/arm/boot/dts/ti/omap/am335x-boneblue.dts |    2 +
- .../boot/dts/ti/omap/am335x-bonegreen-eco.dts |    9 +
+ .../boot/dts/ti/omap/am335x-bonegreen-eco.dts |  153 +++
  .../dts/ti/omap/am335x-bonegreen-wireless.dts |   71 +-
  .../arm/boot/dts/ti/omap/am335x-bonegreen.dts |  153 +++
  .../dts/ti/omap/am335x-osd3358-sm-red.dts     |    6 +
@@ -77,6 +83,8 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../am335x-sancloud-bbe-extended-wifi.dts     |    5 +
  .../dts/ti/omap/am335x-sancloud-bbe-lite.dts  |    5 +
  .../boot/dts/ti/omap/am335x-sancloud-bbe.dts  |    5 +
+ arch/arm/boot/dts/ti/omap/am33xx-l4.dtsi      |   11 +
+ arch/arm/boot/dts/ti/omap/am57-pruss.dtsi     |   11 +
  .../boot/dts/ti/omap/am5729-beagleboneai.dts  |  112 +-
  .../dts/ti/omap/am57xx-beagle-x15-revb1.dts   |    5 +
  .../dts/ti/omap/am57xx-beagle-x15-revc.dts    |    5 +
@@ -106,6 +114,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../arm64/boot/dts/ti/k3-am625-beagleplay.dts |   13 +-
  .../boot/dts/ti/k3-am625-sancloud-bbe-2.dts   | 1119 +++++++++++++++++
  .../dts/ti/k3-am62p-j722s-common-main.dtsi    |   30 +
+ .../dts/ti/k3-am62p-j722s-common-mcu.dtsi     |    2 +-
  arch/arm64/boot/dts/ti/k3-am62p-main.dtsi     |   13 +
  .../boot/dts/ti/k3-am62p-ti-ipc-firmware.dtsi |    2 +
  arch/arm64/boot/dts/ti/k3-am62p.dtsi          |    1 +
@@ -116,7 +125,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../ti/k3-am67a-beagley-ai-i2c1-ssd1306.dtso  |   32 +
  .../ti/k3-am67a-beagley-ai-mikroe-eth.dtso    |   48 +
  .../k3-am67a-beagley-ai-mikroe-microsd.dtso   |   47 +
- .../dts/ti/k3-am67a-beagley-ai-pinmux.dtsi    |  964 ++++++++++++++
+ .../dts/ti/k3-am67a-beagley-ai-pinmux.dtsi    |  947 ++++++++++++++
  .../ti/k3-am67a-beagley-ai-pps-gpio18.dtso    |   31 +
  .../k3-am67a-beagley-ai-pwm-ecap0-gpio12.dtso |   38 +
  .../k3-am67a-beagley-ai-pwm-ecap1-gpio16.dtso |   38 +
@@ -143,7 +152,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso  |   50 +
  .../dts/ti/k3-am67a-beagley-ai-spidev0.dtso   |   52 +
  .../ti/k3-am67a-beagley-ai-uart-ttyama0.dtso  |   29 +
- .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  413 ++++++
+ .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  475 +++++++
  .../k3-j721e-beagleboneai64-BBORG_MOTOR.dtso  |   95 ++
  .../dts/ti/k3-j721e-beagleboneai64-ecap0.dtso |   40 +
  .../dts/ti/k3-j721e-beagleboneai64-ecap1.dtso |   40 +
@@ -171,26 +180,30 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |    1 +
  .../dts/ti/k3-j721e-common-proc-board.dts     |    1 +
  arch/arm64/boot/dts/ti/k3-j721e-main.dtsi     |   23 +-
- arch/arm64/boot/dts/ti/k3-j721e-sk.dts        |   24 +-
+ arch/arm64/boot/dts/ti/k3-j721e-sk.dts        |   26 +-
  .../boot/dts/ti/k3-j721e-ti-ipc-firmware.dtsi |    6 +
  arch/arm64/boot/dts/ti/k3-j721e.dtsi          |    4 +-
- arch/arm64/boot/dts/ti/k3-j722s-evm.dts       |    2 +-
- arch/arm64/boot/dts/ti/k3-j722s-main.dtsi     |   36 +-
+ arch/arm64/boot/dts/ti/k3-j722s-evm.dts       |    3 +-
+ arch/arm64/boot/dts/ti/k3-j722s-main.dtsi     |   44 +-
  arch/arm64/boot/dts/ti/k3-j722s-mcu.dtsi      |   15 +
  .../boot/dts/ti/k3-j722s-ti-ipc-firmware.dtsi |    3 +
  arch/arm64/boot/dts/ti/k3-j722s-wakeup.dtsi   |   18 +
  arch/arm64/boot/dts/ti/k3-j722s.dtsi          |   62 +-
- arch/arm64/boot/dts/ti/k3-pinctrl.h           |   84 +-
+ arch/arm64/boot/dts/ti/k3-pinctrl.h           |   94 +-
  .../dt-bindings/clock/thead,th1520-clk-ap.h   |    1 +
  include/dt-bindings/leds/common.h             |    2 +-
  include/dt-bindings/phy/phy.h                 |    5 +
- include/uapi/linux/input-event-codes.h        |    4 +
- 177 files changed, 13191 insertions(+), 117 deletions(-)
+ include/uapi/linux/input-event-codes.h        |   10 +
+ 186 files changed, 14421 insertions(+), 120 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBBW-WL1835-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBGG-WL1835-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BBGW-WL1835-00A0.dtso
+ create mode 100644 arch/arm/boot/dts/ti/omap/BB-BONE-4D4C-01-00A1.dtso
+ create mode 100644 arch/arm/boot/dts/ti/omap/BB-BONE-4D5R-01-00A1.dtso
+ create mode 100644 arch/arm/boot/dts/ti/omap/BB-BONE-LCD4-01-00A1.dtso
+ create mode 100644 arch/arm/boot/dts/ti/omap/BB-BONE-LCD7-01-00A3.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-BONE-eMMC1-01-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-CAN0-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-CAN1-00A0.dtso
@@ -220,6 +233,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-NHDMI-IT66122-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-NHDMI-TDA998x-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-SPIDEV0-00A0.dtso
+ create mode 100644 arch/arm/boot/dts/ti/omap/BB-SPIDEV1-00A0-CS1.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-SPIDEV1-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-UART1-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-UART2-00A0.dtso
@@ -1124,6 +1138,896 @@ index 000000000000..cda3a4440729
 +		line-name = "MCASP0_AHCLKR";
 +	};
 +};
+diff --git a/arch/arm/boot/dts/ti/omap/BB-BONE-4D4C-01-00A1.dtso b/arch/arm/boot/dts/ti/omap/BB-BONE-4D4C-01-00A1.dtso
+new file mode 100644
+index 000000000000..24d7a3516d69
+--- /dev/null
++++ b/arch/arm/boot/dts/ti/omap/BB-BONE-4D4C-01-00A1.dtso
+@@ -0,0 +1,190 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2012 Texas Instruments Incorporated - https://www.ti.com/
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++#include <dt-bindings/pinctrl/am33xx.h>
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++ */
++&{/chosen} {
++	overlays {
++		BB-BONE-4D4C-01-00A1.kernel = __TIMESTAMP__;
++	};
++};
++
++/*
++ * Free up the pins used by the cape from the pinmux helpers.
++ */
++&ocp {
++	P8_45_pinmux { status = "disabled"; };	/* lcd: lcd_data0 */
++	P8_46_pinmux { status = "disabled"; };	/* lcd: lcd_data1 */
++	P8_43_pinmux { status = "disabled"; };	/* lcd: lcd_data2 */
++	P8_44_pinmux { status = "disabled"; };	/* lcd: lcd_data3 */
++	P8_41_pinmux { status = "disabled"; };	/* lcd: lcd_data4 */
++	P8_42_pinmux { status = "disabled"; };	/* lcd: lcd_data5 */
++	P8_39_pinmux { status = "disabled"; };	/* lcd: lcd_data6 */
++	P8_40_pinmux { status = "disabled"; };	/* lcd: lcd_data7 */
++	P8_37_pinmux { status = "disabled"; };	/* lcd: lcd_data8 */
++	P8_38_pinmux { status = "disabled"; };	/* lcd: lcd_data9 */
++	P8_36_pinmux { status = "disabled"; };	/* lcd: lcd_data10 */
++	P8_34_pinmux { status = "disabled"; };	/* lcd: lcd_data11 */
++	P8_35_pinmux { status = "disabled"; };	/* lcd: lcd_data12 */
++	P8_33_pinmux { status = "disabled"; };	/* lcd: lcd_data13 */
++	P8_31_pinmux { status = "disabled"; };	/* lcd: lcd_data14 */
++	P8_32_pinmux { status = "disabled"; };	/* lcd: lcd_data15 */
++
++	P8_27_pinmux { status = "disabled"; };	/* lcd: lcd_vsync */
++	P8_29_pinmux { status = "disabled"; };	/* lcd: lcd_hsync */
++	P8_28_pinmux { status = "disabled"; };	/* lcd: lcd_pclk */
++	P8_30_pinmux { status = "disabled"; };	/* lcd: lcd_ac_bias_en */
++
++	P9_27_pinmux { status = "disabled"; };	/* lcd: gpio3_19 DISPEN */
++
++	P9_14_pinmux { status = "disabled"; };	/* pwm: ehrpwm1a PWM_BL */
++
++	P9_18_pinmux { status = "disabled"; };	/* i2c1_sda */
++	P9_17_pinmux { status = "disabled"; };	/* i2c1_scl */
++	P9_26_pinmux { status = "disabled"; };	/* touch interrupt on gpio0_14 */
++};
++
++&am33xx_pinmux {
++	bb_lcd_pwm_backlight_pins: pinmux_bb_lcd_pwm_backlight_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A2, PIN_OUTPUT, MUX_MODE6) /* gpmc_a2.ehrpwm1a, OMAP_MUX_MODE6 | AM33XX_PIN_OUTPUT */
++		>;
++	};
++
++	bb_lcd_lcd_pins: pinmux_bb_lcd_lcd_pins {
++		pinctrl-single,pins = <
++			/*LCD enable */
++			AM33XX_PADCONF(AM335X_PIN_MCASP0_FSR, PIN_OUTPUT, MUX_MODE7) /* mcasp0_fsr.gpio3_19, OUTPUT | MODE7  LCD DISEN */
++
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA0, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA1, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA2, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA3, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA4, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA5, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA6, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA7, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA8, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA9, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA10, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA11, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA12, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA13, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA14, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA15, PIN_OUTPUT, MUX_MODE0)
++
++			AM33XX_PADCONF(AM335X_PIN_LCD_VSYNC, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_HSYNC, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_PCLK, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_AC_BIAS_EN, PIN_OUTPUT, MUX_MODE0)
++		>;
++	};
++
++	bb_i2c1_pins: pinmux_bb_i2c1_pins {
++		pinctrl-single,pins = <
++			AM33XX_IOPAD(0x958, PIN_INPUT_PULLUP | SLEWCTRL_SLOW | MUX_MODE2) /* spi0_d1.i2c1_sda */
++			AM33XX_IOPAD(0x95C, PIN_INPUT_PULLUP | SLEWCTRL_SLOW | MUX_MODE2) /* spi0_cs0.i2c1_scl */
++		>;
++	};
++
++	edt_ft5x06_pins: pinmux_edt_ft5x06_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_UART1_RXD, PIN_INPUT, MUX_MODE7)
++		>;
++	};
++};
++
++&epwmss1 {
++	status = "okay";
++};
++
++&ehrpwm1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&bb_lcd_pwm_backlight_pins>;
++	status = "okay";
++};
++
++&lcdc {
++	status = "okay";
++
++	blue-and-red-wiring = "straight";
++
++	port {
++		lcdc_0: endpoint {
++			remote-endpoint = <&panel_0>;
++		};
++	};
++};
++
++&i2c1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&bb_i2c1_pins>;
++
++	clock-frequency = <100000>;
++
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	polytouch: edt-ft5x06@38 {
++		status = "okay";
++		compatible = "edt,edt-ft5x06";
++		reg = <0x38>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&edt_ft5x06_pins>;
++		interrupt-parent = <&gpio0>;
++		interrupts = <14 2>;
++
++		touchscreen-size-y = <480>;
++		touchscreen-size-x = <272>;
++
++		touchscreen-swapped-x-y;
++	};
++};
++
++&{/} {
++	backlight: backlight {
++		status = "okay";
++		compatible = "pwm-backlight";
++		pwms = <&ehrpwm1 0 500000 0>;
++		brightness-levels = <
++			0  1  2  3  4  5  6  7  8  9
++			10 11 12 13 14 15 16 17 18 19
++			20 21 22 23 24 25 26 27 28 29
++			30 31 32 33 34 35 36 37 38 39
++			40 41 42 43 44 45 46 47 48 49
++			50 51 52 53 54 55 56 57 58 59
++			60 61 62 63 64 65 66 67 68 69
++			70 71 72 73 74 75 76 77 78 79
++			80 81 82 83 84 85 86 87 88 89
++			90 91 92 93 94 95 96 97 98 99
++			100
++		>;
++		default-brightness-level = <100>;
++	};
++
++	panel: panel {
++		status = "okay";
++		compatible = "newhaven,nhd-4.3-480272ef-atxl", "panel-dpi";
++		pinctrl-names = "default";
++		pinctrl-0 = <&bb_lcd_lcd_pins>;
++		backlight = <&backlight>;
++		enable-gpios = <&gpio3 19 0>;
++
++		port {
++			panel_0: endpoint {
++				remote-endpoint = <&lcdc_0>;
++			};
++		};
++	};
++};
+diff --git a/arch/arm/boot/dts/ti/omap/BB-BONE-4D5R-01-00A1.dtso b/arch/arm/boot/dts/ti/omap/BB-BONE-4D5R-01-00A1.dtso
+new file mode 100644
+index 000000000000..eec3e2019aba
+--- /dev/null
++++ b/arch/arm/boot/dts/ti/omap/BB-BONE-4D5R-01-00A1.dtso
+@@ -0,0 +1,190 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2012 Texas Instruments Incorporated - https://www.ti.com/
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++#include <dt-bindings/pinctrl/am33xx.h>
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++ */
++&{/chosen} {
++	overlays {
++		BB-BONE-4D5R-01-00A1.kernel = __TIMESTAMP__;
++	};
++};
++
++/*
++ * Free up the pins used by the cape from the pinmux helpers.
++ */
++&ocp {
++	P8_45_pinmux { status = "disabled"; };	/* lcd: lcd_data0 */
++	P8_46_pinmux { status = "disabled"; };	/* lcd: lcd_data1 */
++	P8_43_pinmux { status = "disabled"; };	/* lcd: lcd_data2 */
++	P8_44_pinmux { status = "disabled"; };	/* lcd: lcd_data3 */
++	P8_41_pinmux { status = "disabled"; };	/* lcd: lcd_data4 */
++	P8_42_pinmux { status = "disabled"; };	/* lcd: lcd_data5 */
++	P8_39_pinmux { status = "disabled"; };	/* lcd: lcd_data6 */
++	P8_40_pinmux { status = "disabled"; };	/* lcd: lcd_data7 */
++	P8_37_pinmux { status = "disabled"; };	/* lcd: lcd_data8 */
++	P8_38_pinmux { status = "disabled"; };	/* lcd: lcd_data9 */
++	P8_36_pinmux { status = "disabled"; };	/* lcd: lcd_data10 */
++	P8_34_pinmux { status = "disabled"; };	/* lcd: lcd_data11 */
++	P8_35_pinmux { status = "disabled"; };	/* lcd: lcd_data12 */
++	P8_33_pinmux { status = "disabled"; };	/* lcd: lcd_data13 */
++	P8_31_pinmux { status = "disabled"; };	/* lcd: lcd_data14 */
++	P8_32_pinmux { status = "disabled"; };	/* lcd: lcd_data15 */
++
++	P8_27_pinmux { status = "disabled"; };	/* lcd: lcd_vsync */
++	P8_29_pinmux { status = "disabled"; };	/* lcd: lcd_hsync */
++	P8_28_pinmux { status = "disabled"; };	/* lcd: lcd_pclk */
++	P8_30_pinmux { status = "disabled"; };	/* lcd: lcd_ac_bias_en */
++
++	P9_27_pinmux { status = "disabled"; };	/* lcd: gpio3_19 DISPEN */
++
++	P9_14_pinmux { status = "disabled"; };	/* pwm: ehrpwm1a PWM_BL */
++
++	P9_18_pinmux { status = "disabled"; };	/* i2c1_sda */
++	P9_17_pinmux { status = "disabled"; };	/* i2c1_scl */
++	P9_26_pinmux { status = "disabled"; };	/* touch interrupt on gpio0_14 */
++};
++
++&am33xx_pinmux {
++	bb_lcd_pwm_backlight_pins: pinmux_bb_lcd_pwm_backlight_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A2, PIN_OUTPUT, MUX_MODE6) /* gpmc_a2.ehrpwm1a, OMAP_MUX_MODE6 | AM33XX_PIN_OUTPUT */
++		>;
++	};
++
++	bb_lcd_lcd_pins: pinmux_bb_lcd_lcd_pins {
++		pinctrl-single,pins = <
++			/*LCD enable */
++			AM33XX_PADCONF(AM335X_PIN_MCASP0_FSR, PIN_OUTPUT, MUX_MODE7) /* mcasp0_fsr.gpio3_19, OUTPUT | MODE7  LCD DISEN */
++
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA0, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA1, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA2, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA3, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA4, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA5, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA6, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA7, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA8, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA9, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA10, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA11, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA12, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA13, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA14, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA15, PIN_OUTPUT, MUX_MODE0)
++
++			AM33XX_PADCONF(AM335X_PIN_LCD_VSYNC, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_HSYNC, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_PCLK, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_AC_BIAS_EN, PIN_OUTPUT, MUX_MODE0)
++		>;
++	};
++
++	bb_i2c1_pins: pinmux_bb_i2c1_pins {
++		pinctrl-single,pins = <
++			AM33XX_IOPAD(0x958, PIN_INPUT_PULLUP | SLEWCTRL_SLOW | MUX_MODE2) /* spi0_d1.i2c1_sda */
++			AM33XX_IOPAD(0x95C, PIN_INPUT_PULLUP | SLEWCTRL_SLOW | MUX_MODE2) /* spi0_cs0.i2c1_scl */
++		>;
++	};
++
++	ar1021_pins: pinmux_ar1021_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_UART1_RXD, PIN_INPUT, MUX_MODE7)
++		>;
++	};
++};
++
++&epwmss1 {
++	status = "okay";
++};
++
++&ehrpwm1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&bb_lcd_pwm_backlight_pins>;
++	status = "okay";
++};
++
++&lcdc {
++	status = "okay";
++
++	blue-and-red-wiring = "straight";
++
++	port {
++		lcdc_0: endpoint {
++			remote-endpoint = <&panel_0>;
++		};
++	};
++};
++
++&i2c1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&bb_i2c1_pins>;
++
++	clock-frequency = <100000>;
++
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	ar1021: ar1021@4d {
++		status = "okay";
++		compatible = "microchip,ar1021-i2c";
++		reg = <0x4d>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&ar1021_pins>;
++		interrupt-parent = <&gpio0>;
++		interrupts = <14 IRQ_TYPE_LEVEL_HIGH>;
++
++		touchscreen-offset-x=<250>;
++		touchscreen-offset-y=<300>;
++
++		touchscreen-inverted-y;
++	};
++};
++
++&{/} {
++	backlight: backlight {
++		status = "okay";
++		compatible = "pwm-backlight";
++		pwms = <&ehrpwm1 0 500000 0>;
++		brightness-levels = <
++			0  1  2  3  4  5  6  7  8  9
++			10 11 12 13 14 15 16 17 18 19
++			20 21 22 23 24 25 26 27 28 29
++			30 31 32 33 34 35 36 37 38 39
++			40 41 42 43 44 45 46 47 48 49
++			50 51 52 53 54 55 56 57 58 59
++			60 61 62 63 64 65 66 67 68 69
++			70 71 72 73 74 75 76 77 78 79
++			80 81 82 83 84 85 86 87 88 89
++			90 91 92 93 94 95 96 97 98 99
++			100
++		>;
++		default-brightness-level = <100>;
++	};
++
++	panel: panel {
++		status = "okay";
++		compatible = "tfc,s9700rtwv43tr-01b", "panel-dpi";
++		pinctrl-names = "default";
++		pinctrl-0 = <&bb_lcd_lcd_pins>;
++		backlight = <&backlight>;
++		enable-gpios = <&gpio3 19 0>;
++
++		port {
++			panel_0: endpoint {
++				remote-endpoint = <&lcdc_0>;
++			};
++		};
++	};
++};
+diff --git a/arch/arm/boot/dts/ti/omap/BB-BONE-LCD4-01-00A1.dtso b/arch/arm/boot/dts/ti/omap/BB-BONE-LCD4-01-00A1.dtso
+new file mode 100644
+index 000000000000..e42e1d1222d0
+--- /dev/null
++++ b/arch/arm/boot/dts/ti/omap/BB-BONE-LCD4-01-00A1.dtso
+@@ -0,0 +1,243 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2012 Texas Instruments Incorporated - https://www.ti.com/
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++#include <dt-bindings/pinctrl/am33xx.h>
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++ */
++&{/chosen} {
++	overlays {
++		BB-BONE-LCD4-01-00A1.kernel = __TIMESTAMP__;
++	};
++};
++
++/*
++ * Free up the pins used by the cape from the pinmux helpers.
++ */
++&ocp {
++	P9_12_pinmux { status = "disabled"; };	/* P9_12: gpmc_ben1.gpio1_28, INPUT | PULLDIS | MODE7 */
++
++	P9_14_pinmux { status = "disabled"; };	/* P9_14: gpmc_a2.ehrpwm1a */
++
++	P9_27_pinmux { status = "disabled"; };	/* P9_27: mcasp0_fsr.gpio3_19 */
++
++	P8_45_pinmux { status = "disabled"; };	/* P8_45: lcd_data0.lcd_data0 */
++	P8_46_pinmux { status = "disabled"; };	/* P8_46: lcd_data1.lcd_data1 */
++	P8_43_pinmux { status = "disabled"; };	/* P8_43: lcd_data2.lcd_data2 */
++	P8_44_pinmux { status = "disabled"; };	/* P8_44: lcd_data3.lcd_data3 */
++	P8_41_pinmux { status = "disabled"; };	/* P8_41: lcd_data4.lcd_data4 */
++	P8_42_pinmux { status = "disabled"; };	/* P8_42: lcd_data5.lcd_data5 */
++	P8_39_pinmux { status = "disabled"; };	/* P8_39: lcd_data6.lcd_data6 */
++	P8_40_pinmux { status = "disabled"; };	/* P8_40: lcd_data7.lcd_data7 */
++	P8_37_pinmux { status = "disabled"; };	/* P8_37: lcd_data8.lcd_data8 */
++	P8_38_pinmux { status = "disabled"; };	/* P8_38: lcd_data9.lcd_data9 */
++	P8_36_pinmux { status = "disabled"; };	/* P8_36: lcd_data10.lcd_data10 */
++	P8_34_pinmux { status = "disabled"; };	/* P8_34: lcd_data11.lcd_data11 */
++	P8_35_pinmux { status = "disabled"; };	/* P8_35: lcd_data12.lcd_data12 */
++	P8_33_pinmux { status = "disabled"; };	/* P8_33: lcd_data13.lcd_data13 */
++	P8_31_pinmux { status = "disabled"; };	/* P8_31: lcd_data14.lcd_data14 */
++	P8_32_pinmux { status = "disabled"; };	/* P8_32: lcd_data15.lcd_data15 */
++
++	P8_27_pinmux { status = "disabled"; };	/* P8_27: lcd_vsync.lcd_vsync */
++	P8_29_pinmux { status = "disabled"; };	/* P8_29: lcd_hsync.lcd_hsync */
++	P8_28_pinmux { status = "disabled"; };	/* P8_28: lcd_pclk.lcd_pclk */
++	P8_30_pinmux { status = "disabled"; };	/* P8_30: lcd_ac_bias_en.lcd_ac_bias_en */
++
++	P9_15_pinmux { status = "disabled"; };	/* P9_15: gpmc_a0.gpio1_16 */
++	P9_23_pinmux { status = "disabled"; };	/* P9_23: gpmc_a1.gpio1_17 */
++	P9_16_pinmux { status = "disabled"; };	/* P9_16: gpmc_a3.gpio1_19 */
++	P9_30_pinmux { status = "disabled"; };	/* P9_30: mcasp0_axr0.gpio3_16 */
++	P9_24_pinmux { status = "disabled"; };	/* P9_24: uart1_txd.gpio0_15 */
++};
++
++&am33xx_pinmux {
++	bb_lcd_led_pins: pinmux_bb_lcd_led_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_GPMC_BEN1, PIN_INPUT, MUX_MODE7)	/* P9_12: gpmc_ben1.gpio1_28, INPUT | PULLDIS | MODE7 */
++		>;
++	};
++
++	bb_lcd_pwm_backlight_pins: pinmux_bb_lcd_pwm_backlight_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A2, PIN_OUTPUT_PULLDOWN, MUX_MODE6)	/* P9_14: gpmc_a2.ehrpwm1a */
++		>;
++	};
++
++	bb_lcd_lcd_pins: pinmux_bb_lcd_lcd_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_MCASP0_FSR, PIN_OUTPUT_PULLUP, MUX_MODE7)	/* P9_27: mcasp0_fsr.gpio3_19 */
++
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA0, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA1, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA2, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA3, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA4, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA5, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA6, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA7, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA8, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA9, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA10, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA11, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA12, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA13, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA14, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA15, PIN_OUTPUT, MUX_MODE0)
++
++			AM33XX_PADCONF(AM335X_PIN_LCD_VSYNC, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_HSYNC, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_PCLK, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_AC_BIAS_EN, PIN_OUTPUT, MUX_MODE0)
++		>;
++	};
++
++	bb_lcd_keymap_pins: pinmux_bb_lcd_keymap_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A0, PIN_INPUT, MUX_MODE7)	/* P9_15: gpmc_a0.gpio1_16 */
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A1, PIN_INPUT, MUX_MODE7)	/* P9_23: gpmc_a1.gpio1_17 */
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A3, PIN_INPUT, MUX_MODE7)	/* P9_16: gpmc_a3.gpio1_19 */
++			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_INPUT, MUX_MODE7)	/* P9_30: mcasp0_axr0.gpio3_16 */
++			AM33XX_PADCONF(AM335X_PIN_UART1_TXD, PIN_INPUT, MUX_MODE7)	/* P9_24: uart1_txd.gpio0_15 */
++		>;
++	};
++};
++
++&epwmss1 {
++	status = "okay";
++};
++
++&ehrpwm1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&bb_lcd_pwm_backlight_pins>;
++	status = "okay";
++};
++
++&lcdc {
++	status = "okay";
++
++	blue-and-red-wiring = "straight";
++
++	port {
++		lcdc_0: endpoint {
++			remote-endpoint = <&panel_0>;
++		};
++	};
++};
++
++&tscadc {
++	status = "okay";
++	tsc {
++		ti,wires = <4>;
++		ti,x-plate-resistance = <200>;
++		ti,coordinate-readouts = <5>;
++		ti,wire-config = <0x00 0x11 0x22 0x33>;
++		ti,charge-delay = <0xB000>;
++	};
++
++	adc {
++		ti,adc-channels = <4 5 6 7>;
++	};
++};
++
++&{/} {
++	backlight: backlight {
++		status = "okay";
++		compatible = "pwm-backlight";
++		pwms = <&ehrpwm1 0 500000 0>;
++		brightness-levels = <
++			0  1  2  3  4  5  6  7  8  9
++			10 11 12 13 14 15 16 17 18 19
++			20 21 22 23 24 25 26 27 28 29
++			30 31 32 33 34 35 36 37 38 39
++			40 41 42 43 44 45 46 47 48 49
++			50 51 52 53 54 55 56 57 58 59
++			60 61 62 63 64 65 66 67 68 69
++			70 71 72 73 74 75 76 77 78 79
++			80 81 82 83 84 85 86 87 88 89
++			90 91 92 93 94 95 96 97 98 99
++			100
++		>;
++		default-brightness-level = <100>;
++	};
++
++	panel: panel {
++		status = "okay";
++		compatible = "newhaven,nhd-4.3-480272ef-atxl", "panel-dpi";
++		pinctrl-names = "default";
++		pinctrl-0 = <&bb_lcd_lcd_pins>;
++		backlight = <&backlight>;
++
++		port {
++			panel_0: endpoint {
++				remote-endpoint = <&lcdc_0>;
++			};
++		};
++	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++		pinctrl-names = "default";
++		pinctrl-0 = <&bb_lcd_led_pins>;
++
++		led-ld0 {
++			label = "lcd:green:usr0";
++			gpios = <&gpio1 28 0>;
++			linux,default-trigger = "heartbeat";
++			default-state = "off";
++		};
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys";
++		pinctrl-names = "default";
++		pinctrl-0 = <&bb_lcd_keymap_pins>;
++
++		button-1 {
++			debounce_interval = <50>;
++			linux,code = <105>;
++			label = "left";
++			gpios = <&gpio1 16 0x1>;
++			gpio-key,wakeup;
++			autorepeat;
++		};
++		button-2 {
++			debounce_interval = <50>;
++			linux,code = <106>;
++			label = "right";
++			gpios = <&gpio1 17 0x1>;
++			gpio-key,wakeup;
++			autorepeat;
++		};
++		button-3 {
++			debounce_interval = <50>;
++			linux,code = <103>;
++			label = "up";
++			gpios = <&gpio1 19 0x1>;
++			gpio-key,wakeup;
++			autorepeat;
++		};
++		button-4 {
++			debounce_interval = <50>;
++			linux,code = <108>;
++			label = "down";
++			gpios = <&gpio3 16 0x1>;
++			gpio-key,wakeup;
++			autorepeat;
++		};
++		button-5 {
++			debounce_interval = <50>;
++			linux,code = <28>;
++			label = "enter";
++			gpios = <&gpio0 15 0x1>;
++			gpio-key,wakeup;
++		};
++	};
++};
+diff --git a/arch/arm/boot/dts/ti/omap/BB-BONE-LCD7-01-00A3.dtso b/arch/arm/boot/dts/ti/omap/BB-BONE-LCD7-01-00A3.dtso
+new file mode 100644
+index 000000000000..f6cf318009c2
+--- /dev/null
++++ b/arch/arm/boot/dts/ti/omap/BB-BONE-LCD7-01-00A3.dtso
+@@ -0,0 +1,243 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2012 Texas Instruments Incorporated - https://www.ti.com/
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++#include <dt-bindings/pinctrl/am33xx.h>
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++ */
++&{/chosen} {
++	overlays {
++		BB-BONE-LCD7-01-00A3.kernel = __TIMESTAMP__;
++	};
++};
++
++/*
++ * Free up the pins used by the cape from the pinmux helpers.
++ */
++&ocp {
++	P9_12_pinmux { status = "disabled"; };	/* P9_12: gpmc_ben1.gpio1_28, INPUT | PULLDIS | MODE7 */
++
++	P9_14_pinmux { status = "disabled"; };	/* P9_14: gpmc_a2.ehrpwm1a */
++
++	P9_22_pinmux { status = "disabled"; };	/* P9_22: gpio0_2 DISPEN */
++
++	P8_45_pinmux { status = "disabled"; };	/* P8_45: lcd_data0.lcd_data0 */
++	P8_46_pinmux { status = "disabled"; };	/* P8_46: lcd_data1.lcd_data1 */
++	P8_43_pinmux { status = "disabled"; };	/* P8_43: lcd_data2.lcd_data2 */
++	P8_44_pinmux { status = "disabled"; };	/* P8_44: lcd_data3.lcd_data3 */
++	P8_41_pinmux { status = "disabled"; };	/* P8_41: lcd_data4.lcd_data4 */
++	P8_42_pinmux { status = "disabled"; };	/* P8_42: lcd_data5.lcd_data5 */
++	P8_39_pinmux { status = "disabled"; };	/* P8_39: lcd_data6.lcd_data6 */
++	P8_40_pinmux { status = "disabled"; };	/* P8_40: lcd_data7.lcd_data7 */
++	P8_37_pinmux { status = "disabled"; };	/* P8_37: lcd_data8.lcd_data8 */
++	P8_38_pinmux { status = "disabled"; };	/* P8_38: lcd_data9.lcd_data9 */
++	P8_36_pinmux { status = "disabled"; };	/* P8_36: lcd_data10.lcd_data10 */
++	P8_34_pinmux { status = "disabled"; };	/* P8_34: lcd_data11.lcd_data11 */
++	P8_35_pinmux { status = "disabled"; };	/* P8_35: lcd_data12.lcd_data12 */
++	P8_33_pinmux { status = "disabled"; };	/* P8_33: lcd_data13.lcd_data13 */
++	P8_31_pinmux { status = "disabled"; };	/* P8_31: lcd_data14.lcd_data14 */
++	P8_32_pinmux { status = "disabled"; };	/* P8_32: lcd_data15.lcd_data15 */
++
++	P8_27_pinmux { status = "disabled"; };	/* P8_27: lcd_vsync.lcd_vsync */
++	P8_29_pinmux { status = "disabled"; };	/* P8_29: lcd_hsync.lcd_hsync */
++	P8_28_pinmux { status = "disabled"; };	/* P8_28: lcd_pclk.lcd_pclk */
++	P8_30_pinmux { status = "disabled"; };	/* P8_30: lcd_ac_bias_en.lcd_ac_bias_en */
++
++	P9_15_pinmux { status = "disabled"; };	/* P9_15: gpmc_a0.gpio1_16 */
++	P9_23_pinmux { status = "disabled"; };	/* P9_23: gpmc_a1.gpio1_17 */
++	P9_16_pinmux { status = "disabled"; };	/* P9_16: gpmc_a3.gpio1_19 */
++	P9_30_pinmux { status = "disabled"; };	/* P9_30: mcasp0_axr0.gpio3_16 */
++	P9_21_pinmux { status = "disabled"; };	/* P9_21: spi0_d0.gpio0_3 */
++};
++
++&am33xx_pinmux {
++	bb_lcd_led_pins: pinmux_bb_lcd_led_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_GPMC_BEN1, PIN_INPUT, MUX_MODE7)	/* P9_12: gpmc_ben1.gpio1_28, INPUT | PULLDIS | MODE7 */
++		>;
++	};
++
++	bb_lcd_pwm_backlight_pins: pinmux_bb_lcd_pwm_backlight_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A2, PIN_OUTPUT_PULLDOWN, MUX_MODE6)	/* P9_14: gpmc_a2.ehrpwm1a */
++		>;
++	};
++
++	bb_lcd_lcd_pins: pinmux_bb_lcd_lcd_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_SPI0_SCLK, PIN_OUTPUT_PULLUP, MUX_MODE7)	/* P9_22: gpio0_2 */
++
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA0, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA1, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA2, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA3, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA4, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA5, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA6, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA7, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA8, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA9, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA10, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA11, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA12, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA13, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA14, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_DATA15, PIN_OUTPUT, MUX_MODE0)
++
++			AM33XX_PADCONF(AM335X_PIN_LCD_VSYNC, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_HSYNC, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_PCLK, PIN_OUTPUT, MUX_MODE0)
++			AM33XX_PADCONF(AM335X_PIN_LCD_AC_BIAS_EN, PIN_OUTPUT, MUX_MODE0)
++		>;
++	};
++
++	bb_lcd_keymap_pins: pinmux_bb_lcd_keymap_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A0, PIN_INPUT, MUX_MODE7)	/* P9_15: gpmc_a0.gpio1_16 */
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A1, PIN_INPUT, MUX_MODE7)	/* P9_23: gpmc_a1.gpio1_17 */
++			AM33XX_PADCONF(AM335X_PIN_GPMC_A3, PIN_INPUT, MUX_MODE7)	/* P9_16: gpmc_a3.gpio1_19 */
++			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_INPUT, MUX_MODE7)	/* P9_30: mcasp0_axr0.gpio3_16 */
++			AM33XX_PADCONF(AM335X_PIN_SPI0_D0, PIN_INPUT, MUX_MODE7)	/* P9_21: spi0_d0.gpio0_3 */
++		>;
++	};
++};
++
++&epwmss1 {
++	status = "okay";
++};
++
++&ehrpwm1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&bb_lcd_pwm_backlight_pins>;
++	status = "okay";
++};
++
++&lcdc {
++	status = "okay";
++
++	blue-and-red-wiring = "straight";
++
++	port {
++		lcdc_0: endpoint {
++			remote-endpoint = <&panel_0>;
++		};
++	};
++};
++
++&tscadc {
++	status = "okay";
++	tsc {
++		ti,wires = <4>;
++		ti,x-plate-resistance = <200>;
++		ti,coordinate-readouts = <5>;
++		ti,wire-config = <0x00 0x11 0x22 0x33>;
++		ti,charge-delay = <0x400>;
++	};
++
++	adc {
++		ti,adc-channels = <4 5 6 7>;
++	};
++};
++
++&{/} {
++	backlight: backlight {
++		status = "okay";
++		compatible = "pwm-backlight";
++		pwms = <&ehrpwm1 0 500000 0>;
++		brightness-levels = <
++			0  1  2  3  4  5  6  7  8  9
++			10 11 12 13 14 15 16 17 18 19
++			20 21 22 23 24 25 26 27 28 29
++			30 31 32 33 34 35 36 37 38 39
++			40 41 42 43 44 45 46 47 48 49
++			50 51 52 53 54 55 56 57 58 59
++			60 61 62 63 64 65 66 67 68 69
++			70 71 72 73 74 75 76 77 78 79
++			80 81 82 83 84 85 86 87 88 89
++			90 91 92 93 94 95 96 97 98 99
++			100
++		>;
++		default-brightness-level = <100>;
++	};
++
++	panel: panel {
++		status = "okay";
++		compatible = "tfc,s9700rtwv43tr-01b", "panel-dpi";
++		pinctrl-names = "default";
++		pinctrl-0 = <&bb_lcd_lcd_pins>;
++		backlight = <&backlight>;
++
++		port {
++			panel_0: endpoint {
++				remote-endpoint = <&lcdc_0>;
++			};
++		};
++	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++		pinctrl-names = "default";
++		pinctrl-0 = <&bb_lcd_led_pins>;
++
++		led-ld0 {
++			label = "lcd:green:usr0";
++			gpios = <&gpio1 28 0>;
++			linux,default-trigger = "heartbeat";
++			default-state = "off";
++		};
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys";
++		pinctrl-names = "default";
++		pinctrl-0 = <&bb_lcd_keymap_pins>;
++
++		button-1 {
++			debounce_interval = <50>;
++			linux,code = <105>;
++			label = "left";
++			gpios = <&gpio1 16 0x1>;
++			gpio-key,wakeup;
++			autorepeat;
++		};
++		button-2 {
++			debounce_interval = <50>;
++			linux,code = <106>;
++			label = "right";
++			gpios = <&gpio1 17 0x1>;
++			gpio-key,wakeup;
++			autorepeat;
++		};
++		button-3 {
++			debounce_interval = <50>;
++			linux,code = <103>;
++			label = "up";
++			gpios = <&gpio1 19 0x1>;
++			gpio-key,wakeup;
++			autorepeat;
++		};
++		button-4 {
++			debounce_interval = <50>;
++			linux,code = <108>;
++			label = "down";
++			gpios = <&gpio3 16 0x1>;
++			gpio-key,wakeup;
++			autorepeat;
++		};
++		button-5 {
++			debounce_interval = <50>;
++			linux,code = <28>;
++			label = "enter";
++			gpios = <&gpio0 3 0x1>;
++			gpio-key,wakeup;
++		};
++	};
++};
 diff --git a/arch/arm/boot/dts/ti/omap/BB-BONE-eMMC1-01-00A0.dtso b/arch/arm/boot/dts/ti/omap/BB-BONE-eMMC1-01-00A0.dtso
 new file mode 100644
 index 000000000000..edc70070f278
@@ -1769,10 +2673,10 @@ index 000000000000..9bd57aa78478
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/BB-HDMI-IT66121-00A0.dtso b/arch/arm/boot/dts/ti/omap/BB-HDMI-IT66121-00A0.dtso
 new file mode 100644
-index 000000000000..6095c72286b5
+index 000000000000..6ec74bac51ed
 --- /dev/null
 +++ b/arch/arm/boot/dts/ti/omap/BB-HDMI-IT66121-00A0.dtso
-@@ -0,0 +1,228 @@
+@@ -0,0 +1,235 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (C) 2012 Texas Instruments Incorporated - https://www.ti.com/
@@ -1845,6 +2749,13 @@ index 000000000000..6095c72286b5
 +		regulator-name = "it66121_vcn18_fixed";
 +		regulator-min-microvolt = <1800000>;
 +		regulator-max-microvolt = <1800000>;
++	};
++
++	it66121_vcn12_fixed: fixedregulator2 {
++		compatible = "regulator-fixed";
++		regulator-name = "it66121_vcn12_fixed";
++		regulator-min-microvolt = <1200000>;
++		regulator-max-microvolt = <1200000>;
 +	};
 +};
 +
@@ -1926,7 +2837,7 @@ index 000000000000..6095c72286b5
 +		// vcn33-supply = <&vmmcsd_fixed>;
 +		// vcn33-supply = <&v3v3>;
 +		vcn18-supply = <&it66121_vcn18_fixed>;
-+		//vrf12-supply = <&mt6358_vrf12_reg>;
++		vrf12-supply = <&it66121_vcn12_fixed>;
 +		reset-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>;
 +		interrupt-parent = <&gpio2>;
 +		interrupts = <4 IRQ_TYPE_EDGE_FALLING>;
@@ -2003,10 +2914,10 @@ index 000000000000..6095c72286b5
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/BB-HDMI-IT66122-00A0.dtso b/arch/arm/boot/dts/ti/omap/BB-HDMI-IT66122-00A0.dtso
 new file mode 100644
-index 000000000000..29923e2749d2
+index 000000000000..d967ea0d76b1
 --- /dev/null
 +++ b/arch/arm/boot/dts/ti/omap/BB-HDMI-IT66122-00A0.dtso
-@@ -0,0 +1,224 @@
+@@ -0,0 +1,231 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (C) 2025 Texas Instruments Incorporated - https://www.ti.com/
@@ -2076,6 +2987,13 @@ index 000000000000..29923e2749d2
 +		regulator-name = "it66122_vcn18_fixed";
 +		regulator-min-microvolt = <1800000>;
 +		regulator-max-microvolt = <1800000>;
++	};
++
++	it66122_vcn12_fixed: fixedregulator2 {
++		compatible = "regulator-fixed";
++		regulator-name = "it66122_vcn12_fixed";
++		regulator-min-microvolt = <1200000>;
++		regulator-max-microvolt = <1200000>;
 +	};
 +};
 +
@@ -2156,7 +3074,7 @@ index 000000000000..29923e2749d2
 +
 +		vcn33-supply = <&vmmcsd_fixed>;
 +		vcn18-supply = <&it66122_vcn18_fixed>;
-+		//vrf12-supply = <&mt6358_vrf12_reg>;
++		vrf12-supply = <&it66122_vcn12_fixed>;
 +		reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
 +		interrupt-parent = <&gpio1>;
 +		interrupts = <25 IRQ_TYPE_EDGE_FALLING>;
@@ -3067,10 +3985,10 @@ index 000000000000..b12d050ba6af
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/BB-NHDMI-IT66121-00A0.dtso b/arch/arm/boot/dts/ti/omap/BB-NHDMI-IT66121-00A0.dtso
 new file mode 100644
-index 000000000000..cc9ed17f5a70
+index 000000000000..9b9b9ded175a
 --- /dev/null
 +++ b/arch/arm/boot/dts/ti/omap/BB-NHDMI-IT66121-00A0.dtso
-@@ -0,0 +1,164 @@
+@@ -0,0 +1,171 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (C) 2012 Texas Instruments Incorporated - https://www.ti.com/
@@ -3135,6 +4053,13 @@ index 000000000000..cc9ed17f5a70
 +		regulator-name = "it66121_vcn18_fixed";
 +		regulator-min-microvolt = <1800000>;
 +		regulator-max-microvolt = <1800000>;
++	};
++
++	it66121_vcn12_fixed: fixedregulator2 {
++		compatible = "regulator-fixed";
++		regulator-name = "it66121_vcn12_fixed";
++		regulator-min-microvolt = <1200000>;
++		regulator-max-microvolt = <1200000>;
 +	};
 +};
 +
@@ -3206,7 +4131,7 @@ index 000000000000..cc9ed17f5a70
 +		// vcn33-supply = <&vmmcsd_fixed>;
 +		// vcn33-supply = <&v3v3>;
 +		vcn18-supply = <&it66121_vcn18_fixed>;
-+		//vrf12-supply = <&mt6358_vrf12_reg>;
++		vrf12-supply = <&it66121_vcn12_fixed>;
 +		reset-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>;
 +		interrupt-parent = <&gpio2>;
 +		interrupts = <4 IRQ_TYPE_EDGE_FALLING>;
@@ -3237,10 +4162,10 @@ index 000000000000..cc9ed17f5a70
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/BB-NHDMI-IT66122-00A0.dtso b/arch/arm/boot/dts/ti/omap/BB-NHDMI-IT66122-00A0.dtso
 new file mode 100644
-index 000000000000..e3d3bf9934d3
+index 000000000000..59e70c51c9a2
 --- /dev/null
 +++ b/arch/arm/boot/dts/ti/omap/BB-NHDMI-IT66122-00A0.dtso
-@@ -0,0 +1,163 @@
+@@ -0,0 +1,170 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (C) 2025 Texas Instruments Incorporated - https://www.ti.com/
@@ -3305,6 +4230,13 @@ index 000000000000..e3d3bf9934d3
 +		regulator-name = "it66122_vcn18_fixed";
 +		regulator-min-microvolt = <1800000>;
 +		regulator-max-microvolt = <1800000>;
++	};
++
++	it66122_vcn12_fixed: fixedregulator2 {
++		compatible = "regulator-fixed";
++		regulator-name = "it66122_vcn12_fixed";
++		regulator-min-microvolt = <1200000>;
++		regulator-max-microvolt = <1200000>;
 +	};
 +};
 +
@@ -3375,7 +4307,7 @@ index 000000000000..e3d3bf9934d3
 +
 +		vcn33-supply = <&vmmcsd_fixed>;
 +		vcn18-supply = <&it66122_vcn18_fixed>;
-+		//vrf12-supply = <&mt6358_vrf12_reg>;
++		vrf12-supply = <&it66122_vcn12_fixed>;
 +		reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
 +		interrupt-parent = <&gpio1>;
 +		interrupts = <25 IRQ_TYPE_EDGE_FALLING>;
@@ -3622,6 +4554,95 @@ index 000000000000..3b5b06d8453d
 +
 +		compatible = "rohm,dh2228fv";
 +		symlink = "bone/spi/0.1";
++
++		reg = <1>;
++		spi-max-frequency = <16000000>;
++	};
++};
+diff --git a/arch/arm/boot/dts/ti/omap/BB-SPIDEV1-00A0-CS1.dtso b/arch/arm/boot/dts/ti/omap/BB-SPIDEV1-00A0-CS1.dtso
+new file mode 100644
+index 000000000000..c7976e8870a0
+--- /dev/null
++++ b/arch/arm/boot/dts/ti/omap/BB-SPIDEV1-00A0-CS1.dtso
+@@ -0,0 +1,83 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2013 CircuitCo
++ * Virtual cape for SPI1 on connector pins P9.29 P9.31 P9.30 P9.28
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/pinctrl/am33xx.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++
++/*
++ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
++ */
++&{/chosen} {
++	overlays {
++		spidev1_with_cs1.kernel = __TIMESTAMP__;
++	};
++};
++
++/*
++ * Free up the pins used by the cape from the pinmux helpers.
++ */
++&ocp {
++	P9_28_pinmux { status = "disabled"; };	/* P9_28 (C12) mcasp0_ahclkr.spi1_cs0 */
++	P9_30_pinmux { status = "disabled"; };	/* P9_30 (D12) mcasp0_axr0.spi1_d1 */
++	P9_29_pinmux { status = "disabled"; };	/* P9_29 (B13) mcasp0_fsx.spi1_d0 */
++	P9_31_pinmux { status = "disabled"; };	/* P9_31 (A13) mcasp0_aclkx.spi1_sclk */
++	P9_42_pinmux { status = "disabled"; };	/* P9_42 (C18) ecap0_in_pwm0_out.spi1_cs1*/
++};
++
++&am33xx_pinmux {
++	bb_spi1_pins: pinmux_bb_spi1_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_MCASP0_ACLKX, PIN_INPUT, MUX_MODE3)	/* P9_31 (A13) mcasp0_aclkx.spi1_sclk */
++			AM33XX_PADCONF(AM335X_PIN_MCASP0_FSX, PIN_INPUT, MUX_MODE3)	/* P9_29 (B13) mcasp0_fsx.spi1_d0 */
++			AM33XX_PADCONF(AM335X_PIN_MCASP0_AXR0, PIN_INPUT, MUX_MODE3)	/* P9_30 (D12) mcasp0_axr0.spi1_d1 */
++			AM33XX_PADCONF(AM335X_PIN_MCASP0_AHCLKR, PIN_INPUT, MUX_MODE3)	/* P9_28 (C12) mcasp0_ahclkr.spi1_cs0 */
++			AM33XX_PADCONF(AM335X_PIN_ECAP0_IN_PWM0_OUT, PIN_INPUT, MUX_MODE2) /* P9_42 (C18) ecap0_in_pwm0_out.spi1_cs1 */
++		>;
++	};
++};
++
++&spi1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&bb_spi1_pins>;
++
++	/*
++	 * Select the D0 pin as output and D1 as
++	 * input. The default is D0 as input and
++	 * D1 as output.
++	 */
++	//ti,pindir-d0-out-d1-in;
++
++	channel@0 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		compatible = "rohm,dh2228fv";
++		symlink = "bone/spi/1.0";
++
++		reg = <0>;
++		spi-max-frequency = <16000000>;
++		spi-cpha;
++	};
++
++	channel@1 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		compatible = "rohm,dh2228fv";
++		symlink = "bone/spi/1.1";
 +
 +		reg = <1>;
 +		spi-max-frequency = <16000000>;
@@ -4362,7 +5383,7 @@ index 000000000000..6dc003082c03
 +	model = "SeeedStudio BeagleBone Green Gateway";
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/Makefile b/arch/arm/boot/dts/ti/omap/Makefile
-index 14e500846875..f4e6ac88f71e 100644
+index 14e500846875..39374a14aadd 100644
 --- a/arch/arm/boot/dts/ti/omap/Makefile
 +++ b/arch/arm/boot/dts/ti/omap/Makefile
 @@ -1,4 +1,9 @@
@@ -4375,7 +5396,7 @@ index 14e500846875..f4e6ac88f71e 100644
  dtb-$(CONFIG_ARCH_OMAP2) += \
  	omap2420-h4.dtb \
  	omap2420-n800.dtb \
-@@ -89,6 +94,57 @@ dtb-$(CONFIG_SOC_AM33XX) += \
+@@ -89,6 +94,62 @@ dtb-$(CONFIG_SOC_AM33XX) += \
  	am335x-base0033.dtb \
  	am335x-bone.dtb \
  	am335x-boneblack.dtb \
@@ -4393,6 +5414,7 @@ index 14e500846875..f4e6ac88f71e 100644
 +	BB-UART2-00A0.dtbo \
 +	BB-UART1-00A0.dtbo \
 +	BB-SPIDEV1-00A0.dtbo \
++	BB-SPIDEV1-00A0-CS1.dtbo \
 +	BB-SPIDEV0-00A0.dtbo \
 +	BBORG_RELAY-00A2.dtbo \
 +	BBORG_FAN-A000.dtbo \
@@ -4424,7 +5446,11 @@ index 14e500846875..f4e6ac88f71e 100644
 +	BB-EHRPWM0-P9_29-P9_31.dtbo \
 +	BB-CAN1-00A0.dtbo \
 +	BB-CAN0-00A0.dtbo \
++	BB-BONE-LCD7-01-00A3.dtbo \
++	BB-BONE-LCD4-01-00A1.dtbo \
 +	BB-BONE-eMMC1-01-00A0.dtbo \
++	BB-BONE-4D5R-01-00A1.dtbo \
++	BB-BONE-4D4C-01-00A1.dtbo \
 +	BB-BBGW-WL1835-00A0.dtbo \
 +	BB-BBGG-WL1835-00A0.dtbo \
 +	BB-BBBW-WL1835-00A0.dtbo \
@@ -4433,7 +5459,7 @@ index 14e500846875..f4e6ac88f71e 100644
  	am335x-boneblack-wireless.dtb \
  	am335x-boneblue.dtb \
  	am335x-bonegreen.dtb \
-@@ -138,7 +194,6 @@ am571x-idk-overlays-dtbs := am571x-idk.dtb \
+@@ -138,7 +199,6 @@ am571x-idk-overlays-dtbs := am571x-idk.dtb \
  am572x-idk-overlays-dtbs := am572x-idk.dtb \
  	am572x-idk-touchscreen.dtbo am57xx-idk-lcd-osd101t2045.dtbo
  
@@ -4517,7 +5543,7 @@ index 000000000000..4a99eb9355fc
 +	pinctrl-0 = <&bborg_comms_can_pins>;
 +};
 diff --git a/arch/arm/boot/dts/ti/omap/am335x-bone-common.dtsi b/arch/arm/boot/dts/ti/omap/am335x-bone-common.dtsi
-index 1d83fc116b66..96e8d72d8e0a 100644
+index 1d83fc116b66..246fbb463f2e 100644
 --- a/arch/arm/boot/dts/ti/omap/am335x-bone-common.dtsi
 +++ b/arch/arm/boot/dts/ti/omap/am335x-bone-common.dtsi
 @@ -3,6 +3,8 @@
@@ -4585,7 +5611,15 @@ index 1d83fc116b66..96e8d72d8e0a 100644
  
  	cape_eeprom0: eeprom@54 {
  		compatible = "atmel,24c256";
-@@ -442,3 +437,13 @@ &pruss_tm {
+@@ -410,6 +405,7 @@ ethphy0: ethernet-phy@0 {
+ 		reset-gpios = <&gpio1 8 GPIO_ACTIVE_LOW>;
+ 		reset-assert-us = <300>;
+ 		reset-deassert-us = <50000>;
++		smsc,disable-energy-detect;
+ 	};
+ };
+ 
+@@ -442,3 +438,13 @@ &pruss_tm {
  &wkup_m3_ipc {
  	firmware-name = "am335x-bone-scale-data.bin";
  };
@@ -4615,12 +5649,25 @@ index b5d85ef51a02..ea138cb34091 100644
  };
  
  &ldo3_reg {
+diff --git a/arch/arm/boot/dts/ti/omap/am335x-boneblack-hdmi.dtsi b/arch/arm/boot/dts/ti/omap/am335x-boneblack-hdmi.dtsi
+index 109f08fd174d..c52bc3324dea 100644
+--- a/arch/arm/boot/dts/ti/omap/am335x-boneblack-hdmi.dtsi
++++ b/arch/arm/boot/dts/ti/omap/am335x-boneblack-hdmi.dtsi
+@@ -99,7 +99,7 @@ hdmi_0: endpoint {
+ 	};
+ };
+ 
+-&mcasp0	{
++&mcasp0 {
+ 	#sound-dai-cells = <0>;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&mcasp0_pins>;
 diff --git a/arch/arm/boot/dts/ti/omap/am335x-boneblack-ite-hdmi.dtsi b/arch/arm/boot/dts/ti/omap/am335x-boneblack-ite-hdmi.dtsi
 new file mode 100644
-index 000000000000..0320fffcaff1
+index 000000000000..ff003cb620ee
 --- /dev/null
 +++ b/arch/arm/boot/dts/ti/omap/am335x-boneblack-ite-hdmi.dtsi
-@@ -0,0 +1,175 @@
+@@ -0,0 +1,183 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (C) 2012 Texas Instruments Incorporated - https://www.ti.com/
@@ -4645,6 +5692,13 @@ index 000000000000..0320fffcaff1
 +		regulator-name = "it66122_vcn18_fixed";
 +		regulator-min-microvolt = <1800000>;
 +		regulator-max-microvolt = <1800000>;
++	};
++
++	it66122_vcn12_fixed: fixedregulator2 {
++		compatible = "regulator-fixed";
++		regulator-name = "it66122_vcn12_fixed";
++		regulator-min-microvolt = <1200000>;
++		regulator-max-microvolt = <1200000>;
 +	};
 +};
 +
@@ -4713,6 +5767,7 @@ index 000000000000..0320fffcaff1
 +};
 +
 +&i2c0 {
++	status = "okay";
 +	it66122: bridge-hdmi@4c {
 +		compatible = "ite,it66122";
 +		reg = <0x4c>;
@@ -4721,7 +5776,7 @@ index 000000000000..0320fffcaff1
 +
 +		vcn33-supply = <&vmmcsd_fixed>;
 +		vcn18-supply = <&it66122_vcn18_fixed>;
-+		//vrf12-supply = <&mt6358_vrf12_reg>;
++		vrf12-supply = <&it66122_vcn12_fixed>;
 +		reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
 +		interrupt-parent = <&gpio1>;
 +		interrupts = <25 IRQ_TYPE_EDGE_FALLING>;
@@ -5238,7 +6293,7 @@ index d430f0bef165..18a3aebf7c10 100644
  
  	leds {
 diff --git a/arch/arm/boot/dts/ti/omap/am335x-bonegreen-eco.dts b/arch/arm/boot/dts/ti/omap/am335x-bonegreen-eco.dts
-index d21118cdb6c2..6b47591e3524 100644
+index d21118cdb6c2..efe2ec1bca96 100644
 --- a/arch/arm/boot/dts/ti/omap/am335x-bonegreen-eco.dts
 +++ b/arch/arm/boot/dts/ti/omap/am335x-bonegreen-eco.dts
 @@ -13,6 +13,11 @@ / {
@@ -5264,6 +6319,154 @@ index d21118cdb6c2..6b47591e3524 100644
  	};
  };
  
+@@ -167,3 +176,147 @@ AM33XX_IOPAD(AM335X_PIN_NNMI, PIN_INPUT_PULLUP | MUX_MODE0)
+ 		>;
+ 	};
+ };
++
++&gpio0 {
++	gpio-line-names =
++		"[mdio_data]",
++		"[mdio_clk]",
++		"P9_22 [spi0_sclk]",
++		"P9_21 [spi0_d0]",
++		"P9_18 [spi0_d1]",
++		"P9_17 [spi0_cs0]",
++		"[mmc0_cd]",
++		"P9_42A [ecappwm0]",
++		"P8_35 [lcd d12]",
++		"P8_33 [lcd d13]",
++		"P8_31 [lcd d14]",
++		"P8_32 [lcd d15]",
++		"P9_20 [i2c2_sda]",
++		"P9_19 [i2c2_scl]",
++		"P9_26 [uart1_rxd]",
++		"P9_24 [uart1_txd]",
++		"[rmii1_txd3]",
++		"[rmii1_txd2]",
++		"[usb0_drvvbus]",
++		"[hdmi cec]",
++		"P9_41B",
++		"[rmii1_txd1]",
++		"P8_19 [ehrpwm2a]",
++		"P8_13 [ehrpwm2b]",
++		"NC",
++		"NC",
++		"P8_14",
++		"P8_17",
++		"[rmii1_txd0]",
++		"[rmii1_refclk]",
++		"P9_11 [uart4_rxd]",
++		"P9_13 [uart4_txd]";
++};
++
++&gpio1 {
++	gpio-line-names =
++		"P8_25 [mmc1_dat0]",
++		"[mmc1_dat1]",
++		"P8_5 [mmc1_dat2]",
++		"P8_6 [mmc1_dat3]",
++		"P8_23 [mmc1_dat4]",
++		"P8_22 [mmc1_dat5]",
++		"P8_3 [mmc1_dat6]",
++		"P8_4 [mmc1_dat7]",
++		"NC",
++		"NC",
++		"NC",
++		"NC",
++		"P8_12",
++		"P8_11",
++		"P8_16",
++		"P8_15",
++		"P9_15A",
++		"P9_23",
++		"P9_14 [ehrpwm1a]",
++		"P9_16 [ehrpwm1b]",
++		"[emmc rst]",
++		"[usr0 led]",
++		"[usr1 led]",
++		"[usr2 led]",
++		"[usr3 led]",
++		"[hdmi irq]",
++		"[usb vbus oc]",
++		"[hdmi audio]",
++		"P9_12",
++		"P8_26",
++		"P8_21 [emmc]",
++		"P8_20 [emmc]";
++};
++
++&gpio2 {
++	gpio-line-names =
++		"P9_15B",
++		"P8_18",
++		"P8_7",
++		"P8_8",
++		"P8_10",
++		"P8_9",
++		"P8_45",
++		"P8_46",
++		"P8_43",
++		"P8_44",
++		"P8_41",
++		"P8_42",
++		"P8_39",
++		"P8_40",
++		"P8_37",
++		"P8_38",
++		"P8_36",
++		"P8_34",
++		"[rmii1_rxd3]",
++		"[rmii1_rxd2]",
++		"[rmii1_rxd1]",
++		"[rmii1_rxd0]",
++		"P8_27",
++		"P8_29",
++		"P8_28",
++		"P8_30",
++		"[mmc0_dat3]",
++		"[mmc0_dat2]",
++		"[mmc0_dat1]",
++		"[mmc0_dat0]",
++		"[mmc0_clk]",
++		"[mmc0_cmd]";
++};
++
++&gpio3 {
++	gpio-line-names =
++		"[mii col]",
++		"[mii crs]",
++		"[mii rx err]",
++		"[mii tx en]",
++		"[mii rx dv]",
++		"[i2c0 sda]",
++		"[i2c0 scl]",
++		"[jtag emu0]",
++		"[jtag emu1]",
++		"[mii tx clk]",
++		"[mii rx clk]",
++		"NC",
++		"NC",
++		"[usb vbus en]",
++		"P9_31 [spi1_sclk]",
++		"P9_29 [spi1_d0]",
++		"P9_30 [spi1_d1]",
++		"P9_28 [spi1_cs0]",
++		"P9_42B [ecappwm0]",
++		"P9_27",
++		"P9_41A",
++		"P9_25",
++		"NC",
++		"NC",
++		"NC",
++		"NC",
++		"NC",
++		"NC",
++		"NC",
++		"NC",
++		"NC",
++		"NC";
++};
 diff --git a/arch/arm/boot/dts/ti/omap/am335x-bonegreen-wireless.dts b/arch/arm/boot/dts/ti/omap/am335x-bonegreen-wireless.dts
 index a4f5b5262645..3759a69734a8 100644
 --- a/arch/arm/boot/dts/ti/omap/am335x-bonegreen-wireless.dts
@@ -5658,6 +6861,50 @@ index 32669346cefe..4110677c43bc 100644
  };
  
  &am33xx_pinmux {
+diff --git a/arch/arm/boot/dts/ti/omap/am33xx-l4.dtsi b/arch/arm/boot/dts/ti/omap/am33xx-l4.dtsi
+index 89d16fcc773e..a63ef307d918 100644
+--- a/arch/arm/boot/dts/ti/omap/am33xx-l4.dtsi
++++ b/arch/arm/boot/dts/ti/omap/am33xx-l4.dtsi
+@@ -896,6 +896,17 @@ pruss_mii_rt: mii-rt@32000 {
+ 					reg = <0x32000 0x58>;
+ 				};
+ 
++				pruss_iep: iep@2e000 {
++					compatible = "ti,am3356-icss-iep";
++					reg = <0x2e000 0x31c>;
++					clocks = <&pruss_iepclk_mux>;
++				};
++
++				pruss_ecap: ecap@30000 {
++					compatible = "ti,pruss-ecap";
++					reg = <0x30000 0x60>;
++				};
++
+ 				pruss_intc: interrupt-controller@20000 {
+ 					compatible = "ti,pruss-intc";
+ 					reg = <0x20000 0x2000>;
+diff --git a/arch/arm/boot/dts/ti/omap/am57-pruss.dtsi b/arch/arm/boot/dts/ti/omap/am57-pruss.dtsi
+index 46c5383f0eee..f73316625608 100644
+--- a/arch/arm/boot/dts/ti/omap/am57-pruss.dtsi
++++ b/arch/arm/boot/dts/ti/omap/am57-pruss.dtsi
+@@ -170,6 +170,17 @@ pruss2_iepclk_mux: iepclk-mux@30 {
+ 				};
+ 			};
+ 
++			pruss2_iep: iep@2e000 {
++				compatible = "ti,am5728-icss-iep";
++				reg = <0x2e000 0x31c>;
++				clocks = <&pruss2_iepclk_mux>;
++			};
++
++			pruss2_ecap: ecap@30000 {
++				compatible = "ti,pruss-ecap";
++				reg = <0x30000 0x60>;
++			};
++
+ 			pruss2_mii_rt: mii-rt@32000 {
+ 				compatible = "ti,pruss-mii", "syscon";
+ 				reg = <0x32000 0x58>;
 diff --git a/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts b/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts
 index 43cf4ade950b..23ccc377a390 100644
 --- a/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts
@@ -10081,6 +11328,19 @@ index 3cf7c2b3ce2d..788d807793c9 100644
 +		status = "reserved";
 +	};
  };
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-mcu.dtsi b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-mcu.dtsi
+index 5288c959f3c1..2394a4fb5a94 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-mcu.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-mcu.dtsi
+@@ -149,7 +149,7 @@ mcu_rti0: watchdog@4880000 {
+ 		power-domains = <&k3_pds 131 TI_SCI_PD_EXCLUSIVE>;
+ 		assigned-clocks = <&k3_clks 131 0>;
+ 		assigned-clock-parents = <&k3_clks 131 2>;
+-		/* Tightly coupled to M4F */
++		/* Tightly coupled to R5F */
+ 		status = "reserved";
+ 	};
+ 
 diff --git a/arch/arm64/boot/dts/ti/k3-am62p-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62p-main.dtsi
 index 13d32cbff186..a5dbc9f48ebe 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62p-main.dtsi
@@ -10450,10 +11710,10 @@ index 000000000000..d6e02c011e21
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-pinmux.dtsi b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-pinmux.dtsi
 new file mode 100644
-index 000000000000..010c15d3a5e3
+index 000000000000..4a374e96b9a2
 --- /dev/null
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai-pinmux.dtsi
-@@ -0,0 +1,964 @@
+@@ -0,0 +1,947 @@
 +// SPDX-License-Identifier: GPL-2.0-only OR MIT
 +/*
 + * https://beagley-ai.org/
@@ -11340,31 +12600,14 @@ index 000000000000..010c15d3a5e3
 +
 +&main_gpio0 {
 +	pinctrl-names = "default";
-+	gpio-line-names = "", "", "", "", "", /* 0-4 */
-+			  "", "", "", "", "", /* 5-9 */
-+			  "", "", "", "", "", /* 10-14 */
-+			  "", "", "", "", "", /* 15-19 */
-+			  "", "", "", "", "", /* 20-24 */
-+			  "", "", "", "", "", /* 25-29 */
-+			  "", "", "USB_RST", "GPIO27", "", /* 30-34 */
-+			  "", "GPIO26", "", "GPIO4", "", /* 35-39 */
-+			  "", "GPIO22", "GPIO25", "", ""; /* 40-44 */
 +};
 +
 +&main_gpio1 {
 +	pinctrl-names = "default";
-+	gpio-line-names = "", "", "", "", "", /* 0-4 */
-+			  "", "", "GPIO16", "GPIO17", "GPIO21", /* 5-9 */
-+			  "GPIO20", "GPIO18", "GPIO19", "GPIO15", "GPIO14", /* 10-14 */
-+			  "GPIO5", "GPIO12", "GPIO6", "GPIO13", ""; /* 15-19 */
 +};
 +
 +&mcu_gpio0 {
 +	pinctrl-names = "default";
-+	gpio-line-names = "GPIO8", "", "GPIO11", "GPIO10", "GPIO9", /* 0-4 */
-+			  "", "", "GPIO23", "", "GPIO7", /* 5-9 */
-+			  "GPIO24", "", "", "HDMI_RSTn", "HDMI_INTn", /* 10-14 */
-+			  "", "", "GPIO3", "GPIO2", ""; /* 15-19 */
 +};
 +
 +&ecap0 {
@@ -12602,7 +13845,7 @@ index 000000000000..bf41c0488af1
 +	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
-index 5255e04b9ac7..129006dde678 100644
+index 5255e04b9ac7..cf9b1a3705a7 100644
 --- a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 @@ -10,7 +10,11 @@
@@ -12666,10 +13909,23 @@ index 5255e04b9ac7..129006dde678 100644
  	leds {
  		compatible = "gpio-leds";
  		pinctrl-names = "default";
-@@ -146,6 +183,22 @@ led-1 {
+@@ -146,6 +183,35 @@ led-1 {
  			default-state = "on";
  		};
  	};
++
++	dsi_csi_mux: mux-controller {
++		compatible = "gpio-mux";
++		#mux-state-cells = <1>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&dsi_csi_mux_pins_default>;
++
++		mux-gpios = <&main_gpio0 2 GPIO_ACTIVE_HIGH>,
++			    <&main_gpio0 1 GPIO_ACTIVE_HIGH>;
++
++		/* state = SEL + 2*OE : 0 = DSI0, 1 = CSI1, 2,3 = off */
++		idle-state = <2>;
++	};
 +
 +	fan: cooling_fan {
 +		compatible = "pwm-fan";
@@ -12689,7 +13945,29 @@ index 5255e04b9ac7..129006dde678 100644
  };
  
  &main_pmx0 {
-@@ -165,6 +218,14 @@ J722S_IOPAD(0x01cc, PIN_OUTPUT, 0)	/* (B22) UART0_TXD */
+@@ -157,6 +223,21 @@ J722S_IOPAD(0x01e4, PIN_INPUT_PULLUP, 0) /* (B22) I2C0_SDA */
+ 		bootph-all;
+ 	};
+ 
++	main_i2c1_pins_default: main-i2c1-default-pins {
++		pinctrl-single,pins = <
++			J722S_IOPAD(0x01e8, PIN_INPUT_PULLUP, 0) /* (C24) I2C1_SCL */
++			J722S_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A22) I2C1_SDA */
++		>;
++		bootph-all;
++	};
++
++	main_i2c2_pins_default: main-i2c2-default-pins {
++		pinctrl-single,pins = <
++			J722S_IOPAD(0x00b0, PIN_INPUT_PULLUP, 1) /* (P22) GPMC0_CSn2.I2C2_SCL */
++			J722S_IOPAD(0x00b4, PIN_INPUT_PULLUP, 1) /* (P23) GPMC0_CSn3.I2C2_SDA */
++		>;
++	};
++
+ 	main_uart0_pins_default: main-uart0-default-pins {
+ 		pinctrl-single,pins = <
+ 			J722S_IOPAD(0x01c8, PIN_INPUT, 0)	/* (A22) UART0_RXD */
+@@ -165,6 +246,14 @@ J722S_IOPAD(0x01cc, PIN_OUTPUT, 0)	/* (B22) UART0_TXD */
  		bootph-all;
  	};
  
@@ -12704,18 +13982,10 @@ index 5255e04b9ac7..129006dde678 100644
  	vdd_sd_dv_pins_default: vdd-sd-dv-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x0244, PIN_OUTPUT, 7) /* (A24) MMC1_SDWP.GPIO1_49 */
-@@ -185,6 +246,20 @@ J722S_IOPAD(0x0240, PIN_INPUT, 7) /* (B24) MMC1_SDCD.GPIO1_48 */
+@@ -185,6 +274,12 @@ J722S_IOPAD(0x0240, PIN_INPUT, 7) /* (B24) MMC1_SDCD.GPIO1_48 */
  		bootph-all;
  	};
  
-+	main_i2c1_pins_default: main-i2c1-default-pins {
-+		pinctrl-single,pins = <
-+			J722S_IOPAD(0x01e8, PIN_INPUT_PULLUP, 0) /* (C24) I2C1_SCL */
-+			J722S_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A22) I2C1_SDA */
-+		>;
-+		bootph-all;
-+	};
-+
 +	main_gpio0_ioexp_intr_pins_default: main-gpio0-ioexp-intr-default-pins {
 +		pinctrl-single,pins = <
 +			J722S_IOPAD(0x0110, PIN_INPUT, 7) /* (G27) MMC2_DAT1.GPIO0_67 */
@@ -12725,7 +13995,21 @@ index 5255e04b9ac7..129006dde678 100644
  	mdio_pins_default: mdio-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x0160, PIN_OUTPUT, 0) /* (AC24) MDIO0_MDC */
-@@ -209,6 +284,18 @@ J722S_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AF25) RGMII1_TX_CTL */
+@@ -192,6 +287,13 @@ J722S_IOPAD(0x015c, PIN_INPUT, 0) /* (AD25) MDIO0_MDIO */
+ 		>;
+ 	};
+ 
++	dsi_csi_mux_pins_default: dsi-csi-mux-default-pins {
++		pinctrl-single,pins = <
++			J722S_IOPAD(0x0004, PIN_OUTPUT, 7) /* (L23) OSPI0_LBCLKO.GPIO0_1 */
++			J722S_IOPAD(0x0008, PIN_OUTPUT, 7) /* (L22) OSPI0_DQS.GPIO0_2 */
++		>;
++	};
++
+ 	rgmii1_pins_default: rgmii1-default-pins {
+ 		pinctrl-single,pins = <
+ 			J722S_IOPAD(0x014c, PIN_INPUT, 0) /* (AC25) RGMII1_RD0 */
+@@ -209,6 +311,18 @@ J722S_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AF25) RGMII1_TX_CTL */
  		>;
  	};
  
@@ -12744,7 +14028,7 @@ index 5255e04b9ac7..129006dde678 100644
  	led_pins_default: led-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x002c, PIN_OUTPUT, 7) /* (K26) OSPI0_CSn0.GPIO0_11 */
-@@ -227,6 +314,87 @@ vdd_3v3_sd_pins_default: vdd-3v3-sd-default-pins {
+@@ -227,6 +341,87 @@ vdd_3v3_sd_pins_default: vdd-3v3-sd-default-pins {
  			J722S_IOPAD(0x0254, PIN_OUTPUT, 7) /* (E25) USB0_DRVVBUS.GPIO1_50 */
  		>;
  	};
@@ -12832,27 +14116,42 @@ index 5255e04b9ac7..129006dde678 100644
  };
  
  &cpsw3g {
-@@ -254,11 +422,19 @@ &cpsw_port1 {
+@@ -254,9 +449,34 @@ &cpsw_port1 {
  	status = "okay";
  };
  
 +&main_gpio0 {
 +	status = "okay";
++	gpio-line-names = "", "", "", "", "", /* 0-4 */
++			  "", "", "", "", "", /* 5-9 */
++			  "", "", "", "", "", /* 10-14 */
++			  "", "", "", "", "", /* 15-19 */
++			  "", "", "", "", "", /* 20-24 */
++			  "", "", "", "", "", /* 25-29 */
++			  "", "", "USB_RST", "GPIO27", "", /* 30-34 */
++			  "", "GPIO26", "", "GPIO4", "", /* 35-39 */
++			  "", "GPIO22", "GPIO25", "", ""; /* 40-44 */
 +};
 +
  &main_gpio1 {
  	bootph-all;
  	status = "okay";
- };
- 
-+&mcu_gpio0 {
-+	status = "okay";
++	gpio-line-names = "", "", "", "", "", /* 0-4 */
++			  "", "", "GPIO16", "GPIO17", "GPIO21", /* 5-9 */
++			  "GPIO20", "GPIO18", "GPIO19", "GPIO15", "GPIO14", /* 10-14 */
++			  "GPIO5", "GPIO12", "GPIO6", "GPIO13", ""; /* 15-19 */
 +};
 +
++&mcu_gpio0 {
++	status = "okay";
++	gpio-line-names = "GPIO8", "", "GPIO11", "GPIO10", "GPIO9", /* 0-4 */
++			  "", "", "GPIO23", "", "GPIO7", /* 5-9 */
++			  "GPIO24", "", "", "HDMI_RSTn", "HDMI_INTn", /* 10-14 */
++			  "", "", "GPIO3", "GPIO2", ""; /* 15-19 */
+ };
+ 
  &main_uart0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&main_uart0_pins_default>;
-@@ -266,7 +442,55 @@ &main_uart0 {
+@@ -266,7 +486,55 @@ &main_uart0 {
  	status = "okay";
  };
  
@@ -12908,7 +14207,7 @@ index 5255e04b9ac7..129006dde678 100644
  	wkup_uart0_pins_default: wkup-uart0-default-pins {
  		pinctrl-single,pins = <
  			J722S_MCU_IOPAD(0x02c, PIN_INPUT, 0)	/* (C7) WKUP_UART0_CTSn */
-@@ -284,6 +508,40 @@ J722S_MCU_IOPAD(0x050, PIN_INPUT_PULLUP, 0)	/* (C6) WKUP_I2C1_SDA */
+@@ -284,6 +552,40 @@ J722S_MCU_IOPAD(0x050, PIN_INPUT_PULLUP, 0)	/* (C6) WKUP_I2C1_SDA */
  		>;
  		bootph-all;
  	};
@@ -12949,7 +14248,7 @@ index 5255e04b9ac7..129006dde678 100644
  };
  
  &wkup_uart0 {
-@@ -294,6 +552,15 @@ &wkup_uart0 {
+@@ -294,6 +596,15 @@ &wkup_uart0 {
  	status = "reserved";
  };
  
@@ -12965,7 +14264,7 @@ index 5255e04b9ac7..129006dde678 100644
  &wkup_i2c0 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&wkup_i2c0_pins_default>;
-@@ -385,6 +652,22 @@ rtc: rtc@68 {
+@@ -385,6 +696,22 @@ rtc: rtc@68 {
  	};
  };
  
@@ -12988,10 +14287,28 @@ index 5255e04b9ac7..129006dde678 100644
  &sdhci1 {
  	/* SD/MMC */
  	vmmc-supply = <&vdd_mmc1>;
-@@ -399,4 +682,134 @@ &sdhci1 {
+@@ -399,4 +726,152 @@ &sdhci1 {
  	status = "okay";
  };
  
++&main_i2c0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_i2c0_pins_default>;
++	clock-frequency = <400000>;
++
++	/* Only used by the CSI1/DSI0 connector; enable it in the overlay */
++	status = "disabled";
++};
++
++&main_i2c2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_i2c2_pins_default>;
++	clock-frequency = <400000>;
++
++	/* Only used by the CSI0 connector; enable it in the overlay */
++	status = "disabled";
++};
++
 +&sdhci2 {
 +	vmmc-supply = <&wlan_en>;
 +	pinctrl-names = "default";
@@ -14940,7 +16257,7 @@ index d5fd30a01032..e108fbf5cc61 100644
  		compatible = "bosch,m_can";
  		reg = <0x00 0x02701000 0x00 0x200>,
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-sk.dts b/arch/arm64/boot/dts/ti/k3-j721e-sk.dts
-index 050776cb4df8..689ba2ff81f7 100644
+index 050776cb4df8..d66e71db4697 100644
 --- a/arch/arm64/boot/dts/ti/k3-j721e-sk.dts
 +++ b/arch/arm64/boot/dts/ti/k3-j721e-sk.dts
 @@ -443,29 +443,29 @@ J721E_IOPAD(0x154, PIN_INPUT_PULLUP, 2) /* (AA27) PRG0_MDIO0_MDC.I2C5_SDA */
@@ -14985,6 +16302,15 @@ index 050776cb4df8..689ba2ff81f7 100644
  		>;
  	};
  
+@@ -1068,7 +1068,7 @@ &dss_ports {
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+ 
+-	port@0  {
++	port@0 {
+ 		reg = <0>;
+ 
+ 		dpi0_out: endpoint {
 diff --git a/arch/arm64/boot/dts/ti/k3-j721e-ti-ipc-firmware.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-ti-ipc-firmware.dtsi
 index 40c6cc99c405..5d4fc26b413b 100644
 --- a/arch/arm64/boot/dts/ti/k3-j721e-ti-ipc-firmware.dtsi
@@ -15060,10 +16386,18 @@ index b6e22c242951..ba109cc5b2bc 100644
  			i-cache-sets = <256>;
  			d-cache-size = <0x8000>;
 diff --git a/arch/arm64/boot/dts/ti/k3-j722s-evm.dts b/arch/arm64/boot/dts/ti/k3-j722s-evm.dts
-index 7baf5764862b..e66330c71593 100644
+index 7baf5764862b..e875c047d52c 100644
 --- a/arch/arm64/boot/dts/ti/k3-j722s-evm.dts
 +++ b/arch/arm64/boot/dts/ti/k3-j722s-evm.dts
-@@ -436,7 +436,7 @@ J722S_MCU_IOPAD(0x034, PIN_OUTPUT, 0) /* (B2) MCU_MCAN0_TX */
+@@ -23,6 +23,7 @@ aliases {
+ 		serial3 = &main_uart5;
+ 		mmc0 = &sdhci0;
+ 		mmc1 = &sdhci1;
++		ethernet0 = &cpsw_port1;
+ 	};
+ 
+ 	chosen {
+@@ -436,7 +437,7 @@ J722S_MCU_IOPAD(0x034, PIN_OUTPUT, 0) /* (B2) MCU_MCAN0_TX */
  	mcu_mcan1_pins_default: mcu-mcan1-default-pins {
  		pinctrl-single,pins = <
  			J722S_MCU_IOPAD(0x040, PIN_INPUT, 0) /* (B1) MCU_MCAN1_RX */
@@ -15073,9 +16407,27 @@ index 7baf5764862b..e66330c71593 100644
  	};
  
 diff --git a/arch/arm64/boot/dts/ti/k3-j722s-main.dtsi b/arch/arm64/boot/dts/ti/k3-j722s-main.dtsi
-index 873415ec4fa3..d1dbf1e24fbf 100644
+index 873415ec4fa3..5a5b9a1bfd9e 100644
 --- a/arch/arm64/boot/dts/ti/k3-j722s-main.dtsi
 +++ b/arch/arm64/boot/dts/ti/k3-j722s-main.dtsi
+@@ -18,7 +18,7 @@ serdes_refclk: clk-0 {
+ 
+ &cbass_main {
+ 	serdes_wiz0: phy@f000000 {
+-		compatible = "ti,am64-wiz-10g";
++		compatible = "ti,j722s-wiz-10g", "ti,am64-wiz-10g";
+ 		ranges = <0x0f000000 0x0 0x0f000000 0x00010000>;
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -56,7 +56,7 @@ serdes0: serdes@f000000 {
+ 	};
+ 
+ 	serdes_wiz1: phy@f010000 {
+-		compatible = "ti,am64-wiz-10g";
++		compatible = "ti,j722s-wiz-10g", "ti,am64-wiz-10g";
+ 		ranges = <0x0f010000 0x0 0x0f010000 0x00010000>;
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
 @@ -154,6 +154,19 @@ usb1: usb@31200000 {
  		};
  	};
@@ -15115,7 +16467,7 @@ index 873415ec4fa3..d1dbf1e24fbf 100644
  };
  
  &main_conf {
-@@ -439,13 +444,6 @@ serdes_ln_ctrl: mux-controller@4080 {
+@@ -439,11 +444,12 @@ serdes_ln_ctrl: mux-controller@4080 {
  	};
  };
  
@@ -15124,12 +16476,16 @@ index 873415ec4fa3..d1dbf1e24fbf 100644
 -		compatible = "ti,j784s4-pcie-ctrl", "syscon";
 -		reg = <0x4070 0x4>;
 -	};
--};
--
++&cpsw3g {
++	compatible = "ti,j722s-cpsw-nuss", "ti,am642-cpsw-nuss";
++};
++
++&phy_gmii_sel {
++	compatible = "ti,j722s-phy-gmii-sel", "ti,am654-phy-gmii-sel";
+ };
+ 
  &oc_sram {
- 	reg = <0x00 0x70000000 0x00 0x40000>;
- 	ranges = <0x00 0x00 0x70000000 0x40000>;
-@@ -455,6 +453,10 @@ &inta_main_dmss {
+@@ -455,6 +461,10 @@ &inta_main_dmss {
  	ti,interrupt-ranges = <7 71 21>;
  };
  
@@ -15332,15 +16688,16 @@ index cdc8570e54b2..b715f71e5b1f 100644
 +#include "k3-j722s-mcu.dtsi"
 +#include "k3-j722s-wakeup.dtsi"
 diff --git a/arch/arm64/boot/dts/ti/k3-pinctrl.h b/arch/arm64/boot/dts/ti/k3-pinctrl.h
-index dc8e03ae74c8..e146d0928863 100644
+index dc8e03ae74c8..9fdaf2ae3088 100644
 --- a/arch/arm64/boot/dts/ti/k3-pinctrl.h
 +++ b/arch/arm64/boot/dts/ti/k3-pinctrl.h
-@@ -8,23 +8,24 @@
+@@ -8,23 +8,25 @@
  #ifndef DTS_ARM64_TI_K3_PINCTRL_H
  #define DTS_ARM64_TI_K3_PINCTRL_H
  
 -#define WKUP_LVL_EN_SHIFT       (7)
 -#define WKUP_LVL_POL_SHIFT      (8)
++#define VGPIO_SEL_SHIFT		(4)
 +#define WKUP_LVL_EN_SHIFT	(7)
 +#define WKUP_LVL_POL_SHIFT	(8)
 +#define DEBOUNCE_SHIFT		(11)
@@ -15368,7 +16725,7 @@ index dc8e03ae74c8..e146d0928863 100644
  
  /* Schmitt trigger configuration */
  #define ST_DISABLE		(0 << ST_EN_SHIFT)
-@@ -39,28 +40,28 @@
+@@ -39,28 +41,28 @@
  #define INPUT_EN		(1 << RXACTIVE_SHIFT)
  #define INPUT_DISABLE		(0 << RXACTIVE_SHIFT)
  
@@ -15413,7 +16770,7 @@ index dc8e03ae74c8..e146d0928863 100644
  
  /* Only these macros are expected be used directly in device tree files */
  #define PIN_OUTPUT		(INPUT_DISABLE | PULL_DISABLE)
-@@ -73,6 +74,7 @@
+@@ -73,6 +75,7 @@
  #define PIN_INPUT_NOST		(INPUT_EN | PULL_DISABLE)
  #define PIN_INPUT_PULLUP_NOST	(INPUT_EN | PULL_UP)
  #define PIN_INPUT_PULLDOWN_NOST	(INPUT_EN | PULL_DOWN)
@@ -15421,7 +16778,7 @@ index dc8e03ae74c8..e146d0928863 100644
  
  #define PIN_DEBOUNCE_DISABLE	(0 << DEBOUNCE_SHIFT)
  #define PIN_DEBOUNCE_CONF1	(1 << DEBOUNCE_SHIFT)
-@@ -82,14 +84,14 @@
+@@ -82,14 +85,14 @@
  #define PIN_DEBOUNCE_CONF5	(5 << DEBOUNCE_SHIFT)
  #define PIN_DEBOUNCE_CONF6	(6 << DEBOUNCE_SHIFT)
  
@@ -15441,7 +16798,7 @@ index dc8e03ae74c8..e146d0928863 100644
  #define PIN_DS_OUT_ENABLE		(0 << DS_OUT_DIS_SHIFT)
  #define PIN_DS_OUT_DISABLE		(1 << DS_OUT_DIS_SHIFT)
  #define PIN_DS_OUT_VALUE_ZERO		(0 << DS_OUT_VAL_SHIFT)
-@@ -98,18 +100,18 @@
+@@ -98,18 +101,27 @@
  #define PIN_DS_PULLUD_DISABLE		(1 << DS_PULLUD_EN_SHIFT)
  #define PIN_DS_PULL_DOWN		(0 << DS_PULLTYPE_SEL_SHIFT)
  #define PIN_DS_PULL_UP			(1 << DS_PULLTYPE_SEL_SHIFT)
@@ -15469,6 +16826,15 @@ index dc8e03ae74c8..e146d0928863 100644
 +#define PIN_WKUP_EN_LEVEL_LOW		(WKUP_ENABLE | WKUP_ON_LEVEL | WKUP_LEVEL_LOW)
 +#define PIN_WKUP_EN_LEVEL_HIGH		(WKUP_ENABLE | WKUP_ON_LEVEL | WKUP_LEVEL_HIGH)
 +#define PIN_WKUP_EN			(WKUP_ENABLE | WKUP_ON_EDGE)
++
++/*
++ * SoC-specific field - Refer to the SoC Technical Reference Manual to
++ * determine which GPIO controller each value selects.
++ */
++#define PIN_VGPIO_SEL0		(0 << VGPIO_SEL_SHIFT)
++#define PIN_VGPIO_SEL1		(1 << VGPIO_SEL_SHIFT)
++#define PIN_VGPIO_SEL2		(2 << VGPIO_SEL_SHIFT)
++#define PIN_VGPIO_SEL3		(3 << VGPIO_SEL_SHIFT)
  
  /* Default mux configuration for gpio-ranges to use with pinctrl */
  #define PIN_GPIO_RANGE_IOPAD	(PIN_INPUT | 7)
@@ -15510,7 +16876,7 @@ index 6b901b342348..979b5dfd8353 100644
  
  #endif /* _DT_BINDINGS_PHY */
 diff --git a/include/uapi/linux/input-event-codes.h b/include/uapi/linux/input-event-codes.h
-index 4bdb6a165987..3528168f7c6d 100644
+index 4bdb6a165987..4217950e5d16 100644
 --- a/include/uapi/linux/input-event-codes.h
 +++ b/include/uapi/linux/input-event-codes.h
 @@ -643,6 +643,10 @@
@@ -15524,6 +16890,19 @@ index 4bdb6a165987..3528168f7c6d 100644
  #define KEY_KBDINPUTASSIST_PREV		0x260
  #define KEY_KBDINPUTASSIST_NEXT		0x261
  #define KEY_KBDINPUTASSIST_PREVGROUP		0x262
+@@ -966,6 +970,12 @@
+ 
+ /*
+  * LEDs
++ *
++ * Do not add any new LED definitions to the input subsystem. The existing
++ * definitions are legacy and grandfathered for backwards compatibility with
++ * userspace (via evdev). Any new LEDs should be implemented using the
++ * LED subsystem (struct led_classdev). The input core provides a bridge to
++ * the LED subsystem in drivers/input/input-leds.c.
+  */
+ 
+ #define LED_NUML		0x00
 -- 
-2.53.0
+2.55.0
 
