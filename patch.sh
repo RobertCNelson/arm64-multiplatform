@@ -166,10 +166,10 @@ wireless_regdb () {
 }
 
 cc33xx_firmware () {
-	FIRMWARE_VERSION="1_0_2_14"
-	CC33XX_FIRMWARE="1.0.2.14"
+	FIRMWARE_VERSION="1_0_2_17"
+	CC33XX_FIRMWARE="1.0.2.17"
 	#https://www.ti.com/tool/CC33XX-SOFTWARE
-	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.14
+	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.17
 	#https://github.com/beagleboard/CC33XX-LINUX-MPU
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
@@ -695,12 +695,20 @@ cc33xx_drivers () {
 	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.10
 	dir 'drivers/cc33xx/1.0.2.10'
 
+	#exit 2
 	#start_cleanup
 	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.14
 	dir 'drivers/cc33xx/1.0.2.14'
 
 	#exit 2
+	#start_cleanup
+	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.17
+	dir 'drivers/cc33xx/1.0.2.17'
+
+	#exit 2
 	cc33xx_firmware
+
+	#exit 2
 }
 
 drivers () {

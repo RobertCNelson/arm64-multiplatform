@@ -1,4 +1,4 @@
-From 10ace29082a4a50765d64e4145ca6a57d17d85a2 Mon Sep 17 00:00:00 2001
+From eeff33455849e7adc8c9f96766a61825b9ce6e46 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Fri, 23 Oct 2026 14:32:32 -0500
 Subject: [PATCH] wifi: cc33xx: update driver to match cc33xx SDK 1.0.2.14
