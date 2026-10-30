@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 7.2.13 Kernel Configuration
+# Linux/arm64 7.2.14 Kernel Configuration
 #
 CONFIG_CC_VERSION_TEXT="aarch64-linux-gcc (GCC) 16.2.0"
 CONFIG_CC_IS_GCC=y
@@ -9112,10 +9112,8 @@ CONFIG_RAS=y
 #
 # Android
 #
-CONFIG_ANDROID_BINDER_IPC=m
+# CONFIG_ANDROID_BINDER_IPC is not set
 # CONFIG_ANDROID_BINDER_IPC_RUST is not set
-# CONFIG_ANDROID_BINDERFS is not set
-CONFIG_ANDROID_BINDER_DEVICES="binder"
 # end of Android
 
 CONFIG_LIBNVDIMM=m

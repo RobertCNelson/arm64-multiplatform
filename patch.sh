@@ -495,7 +495,6 @@ beagleboard_dtbs () {
 		device="k3-j721e-beagleboneai64-spi-mcspi7-cs0" ; k3_dtbo_makefile_append
 
 		#K3 Devices
-		device="k3-am6232-pocketbeagle2.dtb" ; k3_dtb_makefile_append
 		device="k3-am625-sancloud-bbe-2.dtb" ; k3_dtb_makefile_append
 		device="k3-am62l3-beaglebadge.dtb" ; k3_dtb_makefile_append
 
@@ -693,8 +692,6 @@ drivers () {
 	dir 'drivers/davinci-mcasp'
 	dir 'drivers/ite'
 	dir 'drivers/mspm0'
-
-	dir 'external/android'
 
 	dir 'drivers/cpufreq'
 }
