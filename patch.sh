@@ -88,6 +88,9 @@ external_git () {
 }
 
 mainline_patches () {
+	#b4 am https://lore.kernel.org/all/20260903-tidss-pre-beagley-v1-0-93928baa8b12@ideasonboard.com/
+	#exit 2
+
 	#echo "dir: mainline/v3_20260529_drm_beagley_ai"
 	#b4 am https://lore.kernel.org/all/20260529-beagley-ai-display-v3-0-7fefdc5d1adf@ideasonboard.com/
 	#${git} "${DIR}/patches/mainline/v3_20260529_drm_beagley_ai/v3_20260529_tomi_valkeinen_drm_tidss_add_beagley_ai_display_support_and_some_more.mbx"
@@ -432,7 +435,9 @@ beagleboard_dtbs () {
 		device="k3-am62-pocketbeagle2-pru0-out" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-spi2-eth-wiz-click" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-techlab-cape" ; k3_dtbo_makefile_append
+		device="k3-am67a-beagley-ai-cpts-genf-csi1" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-cpts-hw1tspush-gpio13" ; k3_dtbo_makefile_append
+		device="k3-am67a-beagley-ai-cpts-hw1tspush-gpio13-genf-csi1" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-i2c1-400000" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-i2c1-ads1115" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-i2c1-rtc-rv3028" ; k3_dtbo_makefile_append
