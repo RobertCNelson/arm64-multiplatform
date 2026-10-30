@@ -2,7 +2,7 @@
 
 - Name: unknown
 - Type: cpe
-- Date: 2026-10-30T16:36:54.557836995-05:00
+- Date: 2026-10-30T17:13:22.63875171-05:00
 - Kernel Version: 6.18.60
 
 | Package | Vulnerability ID | Severity | Fixed | Fixed in Kernel Version | Summary |
