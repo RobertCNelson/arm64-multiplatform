@@ -1,0 +1,98 @@
+From a90b348b49d36808d7af8a50be8a38cbc898cebe Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 29 Oct 2026 12:18:48 +0200
+Subject: [PATCH 02/14] drm/tidss: Add helper to identify the AM65x OLDI video
+ port
+
+On AM65x the OLDI TX is modeled as a part of the DSS, not as a separate
+bridge as the newer SoCs do, and is fed by the first video port. To
+handle the AM65x OLDI, we check for it in multiple places using the
+feat's vp_bus_type.
+
+However, vp_bus_type is problematic concept and should be removed, so
+this commit adds a helper function to check for the AM65x OLDI by
+looking at the DSS subrevision and videoport number.
+
+No functional change.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_dispc.c | 8 ++++----
+ drivers/gpu/drm/tidss/tidss_dispc.h | 7 +++++++
+ drivers/gpu/drm/tidss/tidss_kms.c   | 2 +-
+ 3 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_dispc.c b/drivers/gpu/drm/tidss/tidss_dispc.c
+index e516f493d6d9..efdabf046d64 100644
+--- a/drivers/gpu/drm/tidss/tidss_dispc.c
++++ b/drivers/gpu/drm/tidss/tidss_dispc.c
+@@ -1034,7 +1034,7 @@ int dispc_vp_bus_check(struct dispc_device *dispc, u32 hw_videoport,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (dispc->feat->vp_bus_type[hw_videoport] != DISPC_VP_OLDI_AM65X &&
++	if (!dispc_vp_is_am65x_oldi(dispc->feat, hw_videoport) &&
+ 	    fmt->is_oldi_fmt) {
+ 		drm_dbg(dev, "%s: %s is not OLDI-port\n",
+ 			__func__, dispc->feat->vp_name[hw_videoport]);
+@@ -1143,7 +1143,7 @@ void dispc_vp_prepare(struct dispc_device *dispc, u32 hw_videoport,
+ 	if (WARN_ON(!fmt))
+ 		return;
+ 
+-	if (dispc->feat->vp_bus_type[hw_videoport] == DISPC_VP_OLDI_AM65X) {
++	if (dispc_vp_is_am65x_oldi(dispc->feat, hw_videoport)) {
+ 		dispc_am65x_oldi_tx_power(dispc, true);
+ 
+ 		dispc_enable_am65x_oldi(dispc, hw_videoport, fmt);
+@@ -1186,7 +1186,7 @@ void dispc_vp_prepare(struct dispc_device *dispc, u32 hw_videoport,
+ 	align = true;
+ 
+ 	/* always use DE_HIGH for OLDI */
+-	if (dispc->feat->vp_bus_type[hw_videoport] == DISPC_VP_OLDI_AM65X)
++	if (dispc_vp_is_am65x_oldi(dispc->feat, hw_videoport))
+ 		ieo = false;
+ 
+ 	dispc_vp_write(dispc, hw_videoport, DISPC_VP_POL_FREQ,
+@@ -1229,7 +1229,7 @@ void dispc_vp_unprepare(struct dispc_device *dispc, u32 hw_videoport)
+ 		VP_REG_FLD_MOD(dispc, hw_videoport, DISPC_VP_CONTROL, 0,
+ 			       DISPC_VP_CONTROL_DPIENABLE_MASK);
+ 
+-	if (dispc->feat->vp_bus_type[hw_videoport] == DISPC_VP_OLDI_AM65X) {
++	if (dispc_vp_is_am65x_oldi(dispc->feat, hw_videoport)) {
+ 		dispc_vp_write(dispc, hw_videoport, DISPC_VP_DSS_OLDI_CFG, 0);
+ 
+ 		dispc_am65x_oldi_tx_power(dispc, false);
+diff --git a/drivers/gpu/drm/tidss/tidss_dispc.h b/drivers/gpu/drm/tidss/tidss_dispc.h
+index df3daccf3f31..3dff391d3fec 100644
+--- a/drivers/gpu/drm/tidss/tidss_dispc.h
++++ b/drivers/gpu/drm/tidss/tidss_dispc.h
+@@ -96,6 +96,13 @@ struct dispc_features {
+ 	bool has_vp_control_dpienable;
+ };
+ 
++/* On AM65x the OLDI TX is a part of the DSS, on the first video port */
++static inline bool dispc_vp_is_am65x_oldi(const struct dispc_features *feat,
++					  u32 hw_videoport)
++{
++	return feat->subrev == DISPC_AM65X && hw_videoport == 0;
++}
++
+ extern const struct dispc_features dispc_k2g_feats;
+ extern const struct dispc_features dispc_am625_feats;
+ extern const struct dispc_features dispc_am62a7_feats;
+diff --git a/drivers/gpu/drm/tidss/tidss_kms.c b/drivers/gpu/drm/tidss/tidss_kms.c
+index eefe2221bdde..e55e7532e2f7 100644
+--- a/drivers/gpu/drm/tidss/tidss_kms.c
++++ b/drivers/gpu/drm/tidss/tidss_kms.c
+@@ -175,7 +175,7 @@ static bool tidss_is_dpi_output(struct tidss_device *tidss, u32 hw_videoport,
+ 	 * for the OLDI TX on AM65x, we cannot detect this from the DT data, and
+ 	 * have to special-case it here.
+ 	 */
+-	if (tidss->feat->subrev == DISPC_AM65X && hw_videoport == 0)
++	if (dispc_vp_is_am65x_oldi(tidss->feat, hw_videoport))
+ 		return false;
+ 
+ 	if (!bridge)
+-- 
+2.55.0
+

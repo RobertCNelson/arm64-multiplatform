@@ -1,0 +1,47 @@
+From 7261c2fd50a30b8ddd4c54e29302fc7c9468e9f2 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 3 Sep 2026 15:09:59 +0300
+Subject: [PATCH 09/10] drm/tidss: Drop WARN_ON() from tidss_runtime_put()
+
+At the moment tidss driver has a WARN_ON(r < 0) for the
+pm_runtime_put_autosuspend() return value, to catch unexpected
+situations, and at the moment we never hit that warn. However, with the
+upcoming change in tidss_oldi.c to change the OLDI to an auxiliary
+device, we will get a child-parent relationship between tidss and OLDI.
+
+The OLDI aux devices are children of the DSS device, so when an OLDI is
+active, the DSS's child_count is non-zero, and
+pm_runtime_put_autosuspend() on the DSS device returns -EBUSY. Which
+then triggers the WARN_ON().
+
+To avoid that, drop the WARN_ON. The -EBUSY is not an error, and it's a
+normal situation with parent-child devices. Also, with a quick grep, it
+looks like almost no driver in the kernel checks
+pm_runtime_put_autosuspend()'s return value.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Reviewed-by: Swamil Jain <s-jain1@ti.com>
+Tested-by: Swamil Jain <s-jain1@ti.com>
+---
+ drivers/gpu/drm/tidss/tidss_drv.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_drv.c b/drivers/gpu/drm/tidss/tidss_drv.c
+index 5cb3e746aeb3..44b0b009c29a 100644
+--- a/drivers/gpu/drm/tidss/tidss_drv.c
++++ b/drivers/gpu/drm/tidss/tidss_drv.c
+@@ -40,10 +40,7 @@ int tidss_runtime_get(struct tidss_device *tidss)
+ 
+ void tidss_runtime_put(struct tidss_device *tidss)
+ {
+-	int r;
+-
+-	r = pm_runtime_put_autosuspend(tidss->dev);
+-	WARN_ON(r < 0);
++	pm_runtime_put_autosuspend(tidss->dev);
+ }
+ 
+ static int __maybe_unused tidss_pm_runtime_suspend(struct device *dev)
+-- 
+2.55.0
+

@@ -1,0 +1,112 @@
+From 7791e6456589ea75999200c0ad92bbc024d682d4 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 3 Sep 2026 15:09:52 +0300
+Subject: [PATCH 02/10] dt-bindings: display: ti,am65x-dss: Simplify binding
+
+In principle the DT binding for the DSS IP should mainly cover the DSS
+IP. The current binding also covers the SoC integration topics outside
+the DSS, mainly via the endpoint related rules and descriptions.
+
+A more recent SoC, AM62P, has two instances of the DSS IP, and while
+both DSS IPs are identical, they are integrated slightly differently
+(e.g. which DSS output goes to an in-SoC DSI bridge, which goes to
+DPI pins, etc.).
+
+To make the bindings usable for both DSS instances, relax the binding
+slightly: remove the explicit endpoint rules, and generalize the
+descriptions.
+
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Tested-by: Swamil Jain <s-jain1@ti.com>
+---
+ .../bindings/display/ti/ti,am65x-dss.yaml     | 55 +++++++------------
+ 1 file changed, 20 insertions(+), 35 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+index 4e9e441308cc..db7d3d216b64 100644
+--- a/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
++++ b/Documentation/devicetree/bindings/display/ti/ti,am65x-dss.yaml
+@@ -12,12 +12,21 @@ maintainers:
+   - Tomi Valkeinen <tomi.valkeinen@ti.com>
+ 
+ description: |
+-  The AM625 and AM65x TI Keystone Display SubSystem has two output
+-  ports and two video planes. In AM65x DSS, the first video port
+-  supports 1 OLDI TX and in AM625 DSS, the first video port output is
+-  internally routed to 2 OLDI TXes. The second video port supports DPI
+-  format. The first plane is full video plane with all features and the
+-  second is a "lite plane" without scaling support.
++  The Display Subsystem (DSS) used in e.g. AM65x and AM625 SoCs has two output
++  video ports (VP) and two video planes. The integration varies from SoC to SoC,
++  affecting the routing of the video ports.
++
++  The first plane is full video plane with all features and the second is a
++  "lite plane" without scaling support.
++
++  On AM65x, the first VP has an integrated OLDI TX, thus the first output port
++  is OLDI output. The second VP is routed to external MIPI DPI pins.
++
++  On AM625, the first VP is connected to two OLDI TX instances, and the second
++  VP is routed to external MIPI DPI pins.
++
++  On AM62A7, the first VP is tied off in the SoC, and the second VP is routed to
++  external MIPI DPI pins.
+ 
+ properties:
+   compatible:
+@@ -85,34 +94,15 @@ properties:
+     properties:
+       port@0:
+         $ref: /schemas/graph.yaml#/properties/port
+-        description:
+-          For AM65x DSS, the OLDI output port node from video port 1.
+-          For AM625 DSS, the internal DPI output port node from video
+-          port 1.
+-          For AM62A7 DSS, the port is tied off inside the SoC.
+-        properties:
+-          endpoint@0:
+-            $ref: /schemas/graph.yaml#/properties/endpoint
+-            description:
+-              For AM625 DSS, VP Connection to OLDI0.
+-              For AM65X DSS, OLDI output from the SoC.
+-
+-          endpoint@1:
+-            $ref: /schemas/graph.yaml#/properties/endpoint
+-            description:
+-              For AM625 DSS, VP Connection to OLDI1.
+-
+-        anyOf:
+-          - required:
+-              - endpoint
+-          - required:
+-              - endpoint@0
+-              - endpoint@1
++        description: |
++          AM65x: OLDI output from video port 1
++          AM62A7: Not available, tied off inside the SoC
++          Other SoCs: Parallel video from video port 1
+ 
+       port@1:
+         $ref: /schemas/graph.yaml#/properties/port
+         description:
+-          The DSS DPI output port node from video port 2
++          Parallel video from video port 2
+ 
+   ti,am65x-oldi-io-ctrl:
+     $ref: /schemas/types.yaml#/definitions/phandle
+@@ -168,11 +158,6 @@ allOf:
+     then:
+       properties:
+         oldi-transmitters: false
+-        ports:
+-          properties:
+-            port@0:
+-              properties:
+-                endpoint@1: false
+ 
+ required:
+   - compatible
+-- 
+2.55.0
+

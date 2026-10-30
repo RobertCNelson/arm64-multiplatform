@@ -1,0 +1,41 @@
+From ac2b13008d89d63af9775f906d34320dae6947e4 Mon Sep 17 00:00:00 2001
+From: Swamil Jain <s-jain1@ti.com>
+Date: Thu, 29 Oct 2026 12:18:58 +0200
+Subject: [PATCH 12/14] drm/tidss: Add support for AM62P display subsystem
+
+The DSS controller on TI's AM62P SoC features two instances of the TI
+DSS. Each DSS instance supports two video ports, similar to the DSS
+controller found on the TI AM62X SoC. This allows three independent
+video streams to be supported: OLDI, DPI, and DSI.
+
+Since the DSS instances on AM62P are architecturally similar to those
+on the AM62X DSS controller, the existing dispc_am625_feats
+configuration can be reused for the AM62P DSS support.
+
+This commit adds the necessary device tree compatibility entry for
+"ti,am62p-dss" in the tidss driver, pointing to dispc_am625_feats,
+thereby enabling DSS support on AM62P devices.
+
+Signed-off-by: Swamil Jain <s-jain1@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Reviewed-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Tested-by: Swamil Jain <s-jain1@ti.com>
+---
+ drivers/gpu/drm/tidss/tidss_drv.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_drv.c b/drivers/gpu/drm/tidss/tidss_drv.c
+index 44b0b009c29a..8e3cbfb5ef87 100644
+--- a/drivers/gpu/drm/tidss/tidss_drv.c
++++ b/drivers/gpu/drm/tidss/tidss_drv.c
+@@ -240,6 +240,7 @@ static const struct of_device_id tidss_of_table[] = {
+ 	{ .compatible = "ti,am625-dss", .data = &dispc_am625_feats, },
+ 	{ .compatible = "ti,am62a7-dss", .data = &dispc_am62a7_feats, },
+ 	{ .compatible = "ti,am62l-dss", .data = &dispc_am62l_feats, },
++	{ .compatible = "ti,am62p-dss", .data = &dispc_am625_feats, },
+ 	{ .compatible = "ti,am65x-dss", .data = &dispc_am65x_feats, },
+ 	{ .compatible = "ti,j721e-dss", .data = &dispc_j721e_feats, },
+ 	{ }
+-- 
+2.55.0
+

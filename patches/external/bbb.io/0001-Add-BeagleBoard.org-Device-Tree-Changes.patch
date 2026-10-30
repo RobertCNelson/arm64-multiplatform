@@ -1,11 +1,11 @@
-From 2a06534ef01dbf296b4f8f6bd546b431b3ae67e8 Mon Sep 17 00:00:00 2001
+From 0b143f35a982b7f7264c5d3d4ce61d2488a24c4c Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 30 Oct 2026 13:27:39 -0500
+Date: Fri, 30 Oct 2026 14:32:18 -0500
 Subject: [PATCH] Add BeagleBoard.org Device Tree Changes
 
 https://github.com/beagleboard/BeagleBoard-DeviceTrees/tree/v7.3.x
 
-https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/2faa07fcba963a04b262863149424951415c0787
+https://github.com/beagleboard/BeagleBoard-DeviceTrees/commit/7bed0ef2afc7e5d1bfc02684ab4dc9e191d77b39
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso  |   80 ++
@@ -116,7 +116,6 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../arm64/boot/dts/ti/k3-am625-beagleplay.dts |   19 +-
  .../boot/dts/ti/k3-am625-sancloud-bbe-2.dts   | 1119 +++++++++++++++++
  .../arm64/boot/dts/ti/k3-am625-sk-common.dtsi |    3 +-
- .../dts/ti/k3-am62p-j722s-common-main.dtsi    |   23 +-
  .../dts/ti/k3-am62p-j722s-common-mcu.dtsi     |    2 +-
  .../boot/dts/ti/k3-am62p-ti-ipc-firmware.dtsi |    1 +
  .../arm64/boot/dts/ti/k3-am62x-sk-common.dtsi |    2 +-
@@ -156,7 +155,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  .../dts/ti/k3-am67a-beagley-ai-spi0-2cs.dtso  |   50 +
  .../dts/ti/k3-am67a-beagley-ai-spidev0.dtso   |   52 +
  .../ti/k3-am67a-beagley-ai-uart-ttyama0.dtso  |   29 +
- .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  345 ++++-
+ .../arm64/boot/dts/ti/k3-am67a-beagley-ai.dts |  345 +++++
  .../k3-j721e-beagleboneai64-BBORG_MOTOR.dtso  |   95 ++
  .../dts/ti/k3-j721e-beagleboneai64-ecap0.dtso |   40 +
  .../dts/ti/k3-j721e-beagleboneai64-ecap1.dtso |   40 +
@@ -183,10 +182,10 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  ...3-j721e-beagleboneai64-spi-mcspi7-cs0.dtso |   62 +
  .../boot/dts/ti/k3-j721e-beagleboneai64.dts   |    1 +
  arch/arm64/boot/dts/ti/k3-j721e-main.dtsi     |   23 +-
- arch/arm64/boot/dts/ti/k3-j722s-evm.dts       |   26 +-
+ arch/arm64/boot/dts/ti/k3-j722s-evm.dts       |    1 +
  arch/arm64/boot/dts/ti/k3-j722s.dtsi          |   54 +
  arch/arm64/boot/dts/ti/k3-pinctrl.h           |   12 +
- 178 files changed, 14576 insertions(+), 66 deletions(-)
+ 177 files changed, 14553 insertions(+), 41 deletions(-)
  create mode 100644 arch/arm/boot/dts/ti/omap/AM3359-PWM012.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/AM335X-PRU-UIO-00A0.dtso
  create mode 100644 arch/arm/boot/dts/ti/omap/BB-ADC-00A0.dtso
@@ -11534,68 +11533,6 @@ index 9c8362682645..8e07d2c2e62f 100644
  	status = "okay";
  	pinctrl-names = "default";
  	pinctrl-0 = <&main_mmc0_pins_default>;
-diff --git a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
-index 9f584e49ef58..790badc834d4 100644
---- a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-main.dtsi
-@@ -64,6 +64,11 @@ audio_refclk1: clock-controller@82e4 {
- 			#clock-cells = <0>;
- 		};
- 
-+		dss_dpi0_clk_ctrl: dss-dpi0-clk-ctrl@8300 {
-+			compatible = "ti,am625-dss-dpi0-clk-ctrl", "syscon";
-+			reg = <0x8300 0x4>;
-+		};
-+
- 		dss_oldi_io_ctrl: dss-oldi-io-ctrl@8600 {
- 			compatible = "ti,am625-dss-oldi-io-ctrl", "syscon";
- 			reg = <0x8600 0x200>;
-@@ -784,6 +789,19 @@ cpts@3d000 {
- 		};
- 	};
- 
-+	gpu: gpu@fd80000 {
-+		compatible = "ti,am62p-pvr", "img,pvr-bxs64";
-+		reg = <0x00 0x0fd80000 0x00 0x80000>;
-+		interrupts = <GIC_SPI 241 IRQ_TYPE_LEVEL_HIGH>;
-+		power-domains = <&k3_pds 237 TI_SCI_PD_EXCLUSIVE>,
-+		                <&k3_pds 242 TI_SCI_PD_EXCLUSIVE>;
-+		assigned-clocks = <&k3_clks 237 3>;
-+		assigned-clock-rates = <800000000>;
-+		power-domain-names = "firmware", "dust";
-+		clocks = <&k3_clks 237 3>;
-+		clock-names = "core";
-+	};
-+
- 	hwspinlock: spinlock@2a000000 {
- 		compatible = "ti,am64-hwspinlock";
- 		reg = <0x00 0x2a000000 0x00 0x1000>;
-@@ -1134,7 +1152,7 @@ dss0: dss@30200000 {
- 			 <&k3_clks 186 2>;
- 		clock-names = "fck", "vp1", "vp2";
- 		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
--		ti,dpi-io-ctrl = <&main_conf 0x8300>;
-+		#ti,dpi-io-ctrl = <&main_conf 0x8300>;
- 		status = "disabled";
- 
- 		oldi-transmitters {
-@@ -1179,7 +1197,7 @@ dss1: dss@30220000 {
- 			 <&k3_clks 232 4>;
- 		clock-names = "fck", "vp1", "vp2";
- 		interrupts = <GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
--		ti,dpi-io-ctrl = <&main_conf 0x8300>;
-+		#ti,dpi-io-ctrl = <&main_conf 0x8300>;
- 		status = "disabled";
- 
- 		oldi-transmitters {
-@@ -1229,6 +1247,7 @@ vpu: video-codec@30210000 {
- 		interrupts = <GIC_SPI 225 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&k3_clks 204 2>;
- 		power-domains = <&k3_pds 204 TI_SCI_PD_EXCLUSIVE>;
-+		sram = <&oc_sram>;
- 	};
- 
- 	hsm: remoteproc@43c00000 {
 diff --git a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-mcu.dtsi b/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-mcu.dtsi
 index 5288c959f3c1..2394a4fb5a94 100644
 --- a/arch/arm64/boot/dts/ti/k3-am62p-j722s-common-mcu.dtsi
@@ -14332,7 +14269,7 @@ index 000000000000..bf41c0488af1
 +	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
-index a54d66a50ce3..86a7f9d7faf0 100644
+index be3f5349345f..1670d1498ff3 100644
 --- a/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 +++ b/arch/arm64/boot/dts/ti/k3-am67a-beagley-ai.dts
 @@ -10,7 +10,11 @@
@@ -14419,22 +14356,7 @@ index a54d66a50ce3..86a7f9d7faf0 100644
  };
  
  &main_pmx0 {
-@@ -198,6 +251,14 @@ J722S_IOPAD(0x01e4, PIN_INPUT_PULLUP, 0) /* (B22) I2C0_SDA */
- 		bootph-all;
- 	};
- 
-+	main_i2c1_pins_default: main-i2c1-default-pins {
-+		pinctrl-single,pins = <
-+			J722S_IOPAD(0x01e8, PIN_INPUT_PULLUP, 0) /* (C24) I2C1_SCL */
-+			J722S_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A22) I2C1_SDA */
-+		>;
-+		bootph-all;
-+	};
-+
- 	main_i2c2_pins_default: main-i2c2-default-pins {
- 		pinctrl-single,pins = <
- 			J722S_IOPAD(0x00b0, PIN_INPUT_PULLUP, 1) /* (P22) GPMC0_CSn2.I2C2_SCL */
-@@ -213,6 +274,14 @@ J722S_IOPAD(0x01cc, PIN_OUTPUT, 0)	/* (B22) UART0_TXD */
+@@ -213,6 +266,14 @@ J722S_IOPAD(0x01cc, PIN_OUTPUT, 0)	/* (B22) UART0_TXD */
  		bootph-all;
  	};
  
@@ -14449,22 +14371,21 @@ index a54d66a50ce3..86a7f9d7faf0 100644
  	vdd_sd_dv_pins_default: vdd-sd-dv-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x0244, PIN_OUTPUT, 7) /* (A24) MMC1_SDWP.GPIO1_49 */
-@@ -233,12 +302,10 @@ J722S_IOPAD(0x0240, PIN_INPUT, 7) /* (B24) MMC1_SDCD.GPIO1_48 */
- 		bootph-all;
- 	};
- 
--	main_i2c1_pins_default: main-i2c1-default-pins {
-+	main_gpio0_ioexp_intr_pins_default: main-gpio0-ioexp-intr-default-pins {
- 		pinctrl-single,pins = <
--			J722S_IOPAD(0x01e8, PIN_INPUT_PULLUP, 0) /* (C24) I2C1_SCL */
--			J722S_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A22) I2C1_SDA */
-+			J722S_IOPAD(0x0110, PIN_INPUT, 7) /* (G27) MMC2_DAT1.GPIO0_67 */
+@@ -238,6 +299,13 @@ main_i2c1_pins_default: main-i2c1-default-pins {
+ 			J722S_IOPAD(0x01e8, PIN_INPUT_PULLUP, 0) /* (C24) I2C1_SCL */
+ 			J722S_IOPAD(0x01ec, PIN_INPUT_PULLUP, 0) /* (A22) I2C1_SDA */
  		>;
--		bootph-all;
++		bootph-all;
++	};
++
++	main_gpio0_ioexp_intr_pins_default: main-gpio0-ioexp-intr-default-pins {
++		pinctrl-single,pins = <
++			J722S_IOPAD(0x0110, PIN_INPUT, 7) /* (G27) MMC2_DAT1.GPIO0_67 */
++		>;
  	};
  
  	mdio_pins_default: mdio-default-pins {
-@@ -272,6 +339,18 @@ J722S_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AF25) RGMII1_TX_CTL */
+@@ -271,6 +339,18 @@ J722S_IOPAD(0x012c, PIN_OUTPUT, 0) /* (AF25) RGMII1_TX_CTL */
  		>;
  	};
  
@@ -14483,14 +14404,10 @@ index a54d66a50ce3..86a7f9d7faf0 100644
  	led_pins_default: led-default-pins {
  		pinctrl-single,pins = <
  			J722S_IOPAD(0x002c, PIN_OUTPUT, 7) /* (K26) OSPI0_CSn0.GPIO0_11 */
-@@ -328,7 +407,47 @@ main_mcasp1_pins_default: main-mcasp1-default-pins {
- 		pinctrl-single,pins = <
- 			J722S_IOPAD(0x0090, PIN_INPUT, 2) /* (P27) GPMC0_BE0n_CLE.MCASP1_ACLKX */
- 			J722S_IOPAD(0x0098, PIN_INPUT, 2) /* (V21) GPMC0_WAIT0.MCASP1_AFSX */
--			J722S_IOPAD(0x008c, PIN_OUTPUT, 2) /* (N23) GPMC0_WEn.MCASP1_AXR0 */
-+			J722S_IOPAD(0x008c, PIN_INPUT, 2) /* (N23) GPMC0_WEn.MCASP1_AXR0 */
-+		>;
-+	};
+@@ -330,6 +410,46 @@ J722S_IOPAD(0x0098, PIN_INPUT, 2) /* (V21) GPMC0_WAIT0.MCASP1_AFSX */
+ 			J722S_IOPAD(0x008c, PIN_OUTPUT, 2) /* (N23) GPMC0_WEn.MCASP1_AXR0 */
+ 		>;
+ 	};
 +
 +	main_mmc2_pins_default: main-mmc2-pins-default {
 +		pinctrl-single,pins = <
@@ -14529,10 +14446,12 @@ index a54d66a50ce3..86a7f9d7faf0 100644
 +			J722S_IOPAD(0x0024, PIN_OUTPUT, 3)	/* (N27) OSPI0_D6.UART6_RTSn */
 +			J722S_IOPAD(0x001c, PIN_INPUT, 3)	/* (L21) OSPI0_D4.UART6_RXD */
 +			J722S_IOPAD(0x0020, PIN_OUTPUT, 3)	/* (M26) OSPI0_D5.UART6_TXD */
- 		>;
- 	};
++		>;
++	};
  };
-@@ -359,6 +478,7 @@ &cpsw_port1 {
+ 
+ &cpsw3g {
+@@ -358,6 +478,7 @@ &cpsw_port1 {
  };
  
  &main_gpio0 {
@@ -14540,7 +14459,7 @@ index a54d66a50ce3..86a7f9d7faf0 100644
  	gpio-line-names = "", "", "", "", "", /* 0-4 */
  			  "", "", "", "", "", /* 5-9 */
  			  "", "", "", "", "", /* 10-14 */
-@@ -380,6 +500,7 @@ &main_gpio1 {
+@@ -379,6 +500,7 @@ &main_gpio1 {
  };
  
  &mcu_gpio0 {
@@ -14548,7 +14467,7 @@ index a54d66a50ce3..86a7f9d7faf0 100644
  	gpio-line-names = "GPIO8", "", "GPIO11", "GPIO10", "GPIO9", /* 0-4 */
  			  "", "", "GPIO23", "", "GPIO7", /* 5-9 */
  			  "GPIO24", "", "", "HDMI_RSTn", "HDMI_INTn", /* 10-14 */
-@@ -393,7 +514,55 @@ &main_uart0 {
+@@ -392,7 +514,55 @@ &main_uart0 {
  	status = "okay";
  };
  
@@ -14604,7 +14523,7 @@ index a54d66a50ce3..86a7f9d7faf0 100644
  	wkup_uart0_pins_default: wkup-uart0-default-pins {
  		pinctrl-single,pins = <
  			J722S_MCU_IOPAD(0x02c, PIN_INPUT, 0)	/* (C7) WKUP_UART0_CTSn */
-@@ -418,6 +587,33 @@ J722S_MCU_IOPAD(0x0038, PIN_INPUT_PULLUP | PIN_DEBOUNCE_CONF6, 7) /* (D8) MCU_MC
+@@ -417,6 +587,33 @@ J722S_MCU_IOPAD(0x0038, PIN_INPUT_PULLUP | PIN_DEBOUNCE_CONF6, 7) /* (D8) MCU_MC
  			J722S_MCU_IOPAD(0x0034, PIN_OUTPUT_PULLUP, 7) /* (B2) MCU_MCAN0_TX.MCU_GPIO0_13 HDMI_RSTn */
  		>;
  	};
@@ -14638,7 +14557,7 @@ index a54d66a50ce3..86a7f9d7faf0 100644
  };
  
  &wkup_uart0 {
-@@ -428,6 +624,15 @@ &wkup_uart0 {
+@@ -427,6 +624,15 @@ &wkup_uart0 {
  	status = "reserved";
  };
  
@@ -14654,7 +14573,30 @@ index a54d66a50ce3..86a7f9d7faf0 100644
  &wkup_i2c0 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&wkup_i2c0_pins_default>;
-@@ -608,6 +813,33 @@ &main_i2c2 {
+@@ -523,6 +729,7 @@ &main_i2c1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&main_i2c1_pins_default>;
+ 	clock-frequency = <400000>;
++	bootph-all;
+ 
+ 	it66122: bridge-hdmi@4c {
+ 		compatible = "ite,it66122";
+@@ -566,6 +773,14 @@ it66122_out: endpoint {
+ 	};
+ };
+ 
++&main_gpio0 {
++	status = "okay";
++};
++
++&mcu_gpio0 {
++	status = "okay";
++};
++
+ &sdhci1 {
+ 	/* SD/MMC */
+ 	vmmc-supply = <&vdd_mmc1>;
+@@ -598,6 +813,33 @@ &main_i2c2 {
  	status = "disabled";
  };
  
@@ -14688,7 +14630,7 @@ index a54d66a50ce3..86a7f9d7faf0 100644
  &dss1 {
  	status = "okay";
  	pinctrl-names = "default";
-@@ -658,4 +890,107 @@ &mcasp1 {
+@@ -647,4 +889,107 @@ &mcasp1 {
  	rx-num-evt = <32>;
  };
  
@@ -16601,7 +16543,7 @@ index d5fd30a01032..e108fbf5cc61 100644
  		compatible = "bosch,m_can";
  		reg = <0x00 0x02701000 0x00 0x200>,
 diff --git a/arch/arm64/boot/dts/ti/k3-j722s-evm.dts b/arch/arm64/boot/dts/ti/k3-j722s-evm.dts
-index e66330c71593..c6486cf5a05c 100644
+index e66330c71593..e875c047d52c 100644
 --- a/arch/arm64/boot/dts/ti/k3-j722s-evm.dts
 +++ b/arch/arm64/boot/dts/ti/k3-j722s-evm.dts
 @@ -23,6 +23,7 @@ aliases {
@@ -16612,66 +16554,6 @@ index e66330c71593..c6486cf5a05c 100644
  	};
  
  	chosen {
-@@ -162,6 +163,12 @@ vsys_io_1v2: regulator-vsys-io-1v2 {
- 		regulator-boot-on;
- 	};
- 
-+	tlv320_mclk: clock-12288000 {
-+		compatible = "fixed-clock";
-+		clock-frequency = <12288000>;
-+		#clock-cells = <0>;
-+	};
-+
- 	codec_audio: sound {
- 		compatible = "simple-audio-card";
- 		simple-audio-card,name = "J722S-EVM";
-@@ -187,7 +194,7 @@ simple-audio-card,cpu {
- 
- 		sound_master: simple-audio-card,codec {
- 			sound-dai = <&tlv320aic3106>;
--			clocks = <&audio_refclk1>;
-+			clocks = <&tlv320_mclk>;
- 		};
- 	};
- 
-@@ -228,11 +235,6 @@ csi23_mux: mux-controller-1 {
- 	};
- };
- 
--&audio_refclk1 {
--	assigned-clocks = <&k3_clks 157 0>;
--	assigned-clock-parents = <&k3_clks 157 15>;
--};
--
- &cpsw_mac_syscon {
- 	bootph-all;
- };
-@@ -358,12 +360,6 @@ J722S_IOPAD(0x0084, PIN_INPUT, 2) /* (N21) GPMC0_ADVn_ALE.MCASP1_AXR2 */
- 		>;
- 	};
- 
--	audio_ext_refclk1_pins_default: audio-ext-refclk1-default-pins {
--		pinctrl-single,pins = <
--			J722S_IOPAD(0x00a0, PIN_OUTPUT, 1) /* (N24) GPMC0_WPn.AUDIO_EXT_REFCLK1 */
--		>;
--	};
--
- 	pmic_irq_pins_default: pmic-irq-default-pins {
- 		pinctrl-single,pins = <
- 			J722S_IOPAD(0x030, PIN_INPUT, 7) /* (K23) GPIO0_12 */
-@@ -562,12 +558,6 @@ ldo3: ldo3 {
- 	};
- };
- 
--&k3_clks {
--	/* Configure AUDIO_EXT_REFCLK1 pin as output */
--	pinctrl-names = "default";
--	pinctrl-0 = <&audio_ext_refclk1_pins_default>;
--};
--
- &main_i2c0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&main_i2c0_pins_default>;
 diff --git a/arch/arm64/boot/dts/ti/k3-j722s.dtsi b/arch/arm64/boot/dts/ti/k3-j722s.dtsi
 index dd04accfc518..07aeb4fc1d92 100644
 --- a/arch/arm64/boot/dts/ti/k3-j722s.dtsi

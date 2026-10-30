@@ -1,0 +1,36 @@
+From 237fa13afe77ce0b0f398c08ced7819cb8773179 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 3 Sep 2026 15:09:53 +0300
+Subject: [PATCH 03/10] dt-bindings: display: ti,am625-oldi: Add optional
+ power-domain for OLDI
+
+On some SoCs the OLDI blocks belong to the same power-domain as the main
+DSS block, but on some more recent SoCs the OLDI blocks have a
+controllable power-domain.
+
+Add the power-domain to the DT binding.
+
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Tested-by: Swamil Jain <s-jain1@ti.com>
+---
+ .../devicetree/bindings/display/ti/ti,am625-oldi.yaml          | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/display/ti/ti,am625-oldi.yaml b/Documentation/devicetree/bindings/display/ti/ti,am625-oldi.yaml
+index 8203ec5e5bb3..5dbf1f76dd3f 100644
+--- a/Documentation/devicetree/bindings/display/ti/ti,am625-oldi.yaml
++++ b/Documentation/devicetree/bindings/display/ti/ti,am625-oldi.yaml
+@@ -29,6 +29,9 @@ properties:
+   clock-names:
+     const: serial
+ 
++  power-domains:
++    maxItems: 1
++
+   ti,companion-oldi:
+     $ref: /schemas/types.yaml#/definitions/phandle
+     description:
+-- 
+2.55.0
+

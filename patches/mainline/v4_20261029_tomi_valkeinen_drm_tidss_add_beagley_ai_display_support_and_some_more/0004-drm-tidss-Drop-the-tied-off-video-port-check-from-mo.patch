@@ -1,0 +1,39 @@
+From c50e2b9ebafe0910b143e86201c728de79c62f0a Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 29 Oct 2026 12:18:50 +0200
+Subject: [PATCH 04/14] drm/tidss: Drop the tied off video port check from mode
+ validation
+
+dispc_vp_mode_valid() WARNs and rejects every mode on a video port that
+is marked as DISPC_VP_TIED_OFF in the 'vp_bus_type' feat.
+
+The check is redundant, as nothing in the DT will be connected to the
+tied off VP, and thus the driver can never do a mode_valid call for it.
+
+Remove the check, and rely on the DT to be correct.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_dispc.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_dispc.c b/drivers/gpu/drm/tidss/tidss_dispc.c
+index efdabf046d64..8c537280faf5 100644
+--- a/drivers/gpu/drm/tidss/tidss_dispc.c
++++ b/drivers/gpu/drm/tidss/tidss_dispc.c
+@@ -1342,12 +1342,6 @@ enum drm_mode_status dispc_vp_mode_valid(struct dispc_device *dispc,
+ 					 const struct drm_display_mode *mode)
+ {
+ 	u32 hsw, hfp, hbp, vsw, vfp, vbp;
+-	enum dispc_vp_bus_type bus_type;
+-
+-	bus_type = dispc->feat->vp_bus_type[hw_videoport];
+-
+-	if (WARN_ON(bus_type == DISPC_VP_TIED_OFF))
+-		return MODE_BAD;
+ 
+ 	if (mode->hdisplay > 4096)
+ 		return MODE_BAD;
+-- 
+2.55.0
+

@@ -88,19 +88,17 @@ external_git () {
 }
 
 mainline_patches () {
-	dir 'mainline/beagleboneblackrevd'
-
 	#b4 am https://lore.kernel.org/all/20260903-tidss-pre-beagley-v1-0-93928baa8b12@ideasonboard.com/
 	#exit 2
+	dir 'mainline/20260903_tomi_valkeinen_drm_tidss_preparation_for_am62p_and_beagley_ai_display_support'
 
 	#b4 am https://lore.kernel.org/all/20261029-beagley-ai-display-v4-0-dc7f2b532478@ideasonboard.com/
 	#exit 2
+	dir 'mainline/v4_20261029_tomi_valkeinen_drm_tidss_add_beagley_ai_display_support_and_some_more'
 
-	#echo "dir: mainline/v3_20260529_drm_beagley_ai"
-	#b4 am https://lore.kernel.org/all/20260529-beagley-ai-display-v3-0-7fefdc5d1adf@ideasonboard.com/
-	#${git} "${DIR}/patches/mainline/v3_20260529_drm_beagley_ai/v3_20260529_tomi_valkeinen_drm_tidss_add_beagley_ai_display_support_and_some_more.mbx"
+	dir 'mainline/beagleboneblackrevd'
 
-	dir 'mainline/tidss/rfc'
+	#exit 2
 }
 
 rt_cleanup () {
@@ -698,8 +696,6 @@ drivers () {
 	dir 'drivers/davinci-mcasp'
 	dir 'drivers/ite'
 	dir 'drivers/mspm0'
-
-	dir 'external/android'
 
 	dir 'drivers/cpufreq'
 }
