@@ -558,11 +558,6 @@ post_backports () {
 	exit 2
 }
 
-patch_backports () {
-	echo "dir: backports/${subsystem}"
-	${git} "${DIR}/patches/backports/${subsystem}/0001-backports-${subsystem}-from-linux.git.patch"
-}
-
 pre_rpibackports () {
 	echo "dir: backports/${subsystem}"
 
@@ -614,7 +609,7 @@ backports () {
 
 		post_rpibackports
 	else
-		patch_backports
+		dir 'backports/rpi-backports'
 	fi
 }
 
