@@ -98,6 +98,7 @@ mainline_patches () {
 
 	dir 'mainline/beagleboneblackrevd'
 
+	dir 'mainline/tidss'
 	#exit 2
 }
 
