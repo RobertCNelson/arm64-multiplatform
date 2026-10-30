@@ -431,7 +431,9 @@ beagleboard_dtbs () {
 		device="k3-am62-pocketbeagle2-pru0-out" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-spi2-eth-wiz-click" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-techlab-cape" ; k3_dtbo_makefile_append
+		device="k3-am67a-beagley-ai-cpts-genf-csi1" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-cpts-hw1tspush-gpio13" ; k3_dtbo_makefile_append
+		device="k3-am67a-beagley-ai-cpts-hw1tspush-gpio13-genf-csi1" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-i2c1-400000" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-i2c1-ads1115" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-i2c1-rtc-rv3028" ; k3_dtbo_makefile_append
@@ -697,8 +699,6 @@ drivers () {
 	dir 'drivers/davinci-mcasp'
 	dir 'drivers/ite'
 	dir 'drivers/mspm0'
-
-	dir 'external/android'
 
 	dir 'drivers/cpufreq'
 }
