@@ -1,0 +1,36 @@
+From d3b3a5b6f6cdae1dff5613bcf5b8e0509a877c2d Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 29 Oct 2026 12:18:53 +0200
+Subject: [PATCH 07/14] drm/tidss: oldi: Fix wrong return value from
+ tidss_oldi_mode_valid()
+
+tidss_oldi_mode_valid() returns 'enum drm_mode_status', but the current
+code returns -EINVAL or 0.
+
+Fix it to return proper enum values.
+
+Fixes: 86db652fc22f ("drm/tidss: Move OLDI mode validation to OLDI bridge mode_valid hook")
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_oldi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.c b/drivers/gpu/drm/tidss/tidss_oldi.c
+index 82b059f85244..ae27ebc7306e 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.c
++++ b/drivers/gpu/drm/tidss/tidss_oldi.c
+@@ -346,9 +346,9 @@ tidss_oldi_mode_valid(struct drm_bridge *bridge,
+ 	 * we use the same 5% check here.
+ 	 */
+ 	if (dispc_pclk_diff(mode->clock * 7 * 1000, round_clock) > 5)
+-		return -EINVAL;
++		return MODE_CLOCK_RANGE;
+ 
+-	return 0;
++	return MODE_OK;
+ }
+ 
+ static const struct drm_bridge_funcs tidss_oldi_bridge_funcs = {
+-- 
+2.55.0
+

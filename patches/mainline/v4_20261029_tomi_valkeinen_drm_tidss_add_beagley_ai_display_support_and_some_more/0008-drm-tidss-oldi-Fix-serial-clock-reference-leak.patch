@@ -1,0 +1,34 @@
+From bdb2bac9fe244d297bcd11e5a0d376078b172fcb Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 29 Oct 2026 12:18:54 +0200
+Subject: [PATCH 08/14] drm/tidss: oldi: Fix serial clock reference leak
+
+tidss_oldi_init() gets the OLDI serial clock with of_clk_get_by_name()
+and never puts it. A clock reference leaks each time tidss unbinds, and
+each time its probe fails or defers after the OLDI setup.
+
+Get the clock with devm_get_clk_from_child() instead.
+
+Fixes: 7246e0929945 ("drm/tidss: Add OLDI bridge support")
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_oldi.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.c b/drivers/gpu/drm/tidss/tidss_oldi.c
+index ae27ebc7306e..506507e83112 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.c
++++ b/drivers/gpu/drm/tidss/tidss_oldi.c
+@@ -609,7 +609,8 @@ int tidss_oldi_init(struct tidss_device *tidss)
+ 				goto err_put_node;
+ 			}
+ 
+-			oldi->serial = of_clk_get_by_name(child, "serial");
++			oldi->serial = devm_get_clk_from_child(tidss->dev, child,
++							       "serial");
+ 			if (IS_ERR(oldi->serial)) {
+ 				ret = dev_err_probe(oldi->dev, PTR_ERR(oldi->serial),
+ 						    "OLDI%u: Failed to get serial clock.\n",
+-- 
+2.55.0
+

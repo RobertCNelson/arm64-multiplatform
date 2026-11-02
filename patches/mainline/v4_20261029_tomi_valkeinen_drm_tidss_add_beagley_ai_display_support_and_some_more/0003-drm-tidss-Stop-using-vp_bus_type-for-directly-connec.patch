@@ -1,0 +1,49 @@
+From 04aef28f4debc7c44319ccda74f26e04687f2c76 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 29 Oct 2026 12:18:49 +0200
+Subject: [PATCH 03/14] drm/tidss: Stop using vp_bus_type for directly
+ connected panels
+
+When a panel is connected directly to a video port,
+tidss_dispc_modeset_init() sets the encoder and connector types using
+the 'vp_bus_type' feat. DISPC_VP_DPI selects DPI and DISPC_VP_OLDI_AM65X
+selects LVDS. Any other type triggers a WARN and fails the probe.
+
+vp_bus_type is problematic and is going to be removed. Change
+tidss_dispc_modeset_init() to use dispc_vp_is_am65x_oldi() for detecting
+the OLDI case, and default to DPI.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_kms.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_kms.c b/drivers/gpu/drm/tidss/tidss_kms.c
+index e55e7532e2f7..8b9c5fa96e47 100644
+--- a/drivers/gpu/drm/tidss/tidss_kms.c
++++ b/drivers/gpu/drm/tidss/tidss_kms.c
+@@ -232,19 +232,12 @@ static int tidss_dispc_modeset_init(struct tidss_device *tidss)
+ 
+ 			dev_dbg(dev, "Setting up panel for port %d\n", i);
+ 
+-			switch (feat->vp_bus_type[i]) {
+-			case DISPC_VP_OLDI_AM65X:
++			if (dispc_vp_is_am65x_oldi(feat, i)) {
+ 				enc_type = DRM_MODE_ENCODER_LVDS;
+ 				conn_type = DRM_MODE_CONNECTOR_LVDS;
+-				break;
+-			case DISPC_VP_DPI:
++			} else {
+ 				enc_type = DRM_MODE_ENCODER_DPI;
+ 				conn_type = DRM_MODE_CONNECTOR_DPI;
+-				break;
+-			default:
+-				WARN_ON(1);
+-				ret = -EINVAL;
+-				goto put_panel;
+ 			}
+ 
+ 			if (panel->connector_type != conn_type) {
+-- 
+2.55.0
+

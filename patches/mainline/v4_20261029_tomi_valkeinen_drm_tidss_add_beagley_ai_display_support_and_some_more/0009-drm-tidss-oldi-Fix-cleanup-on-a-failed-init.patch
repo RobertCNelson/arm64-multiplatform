@@ -1,0 +1,31 @@
+From f5de856d818ff66190c6031914a45974761049ff Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 29 Oct 2026 12:18:55 +0200
+Subject: [PATCH 09/14] drm/tidss: oldi: Fix cleanup on a failed init
+
+tidss_oldi_init() registers a bridge for each OLDI TX in turn. If a later
+OLDI TX fails, the bridges registered for the earlier ones are not
+removed.
+
+Fix this by calling tidss_oldi_deinit() in the error path.
+
+Fixes: 7246e0929945 ("drm/tidss: Add OLDI bridge support")
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_oldi.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.c b/drivers/gpu/drm/tidss/tidss_oldi.c
+index 506507e83112..7344d86e1f13 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.c
++++ b/drivers/gpu/drm/tidss/tidss_oldi.c
+@@ -638,5 +638,6 @@ int tidss_oldi_init(struct tidss_device *tidss)
+ err_put_node:
+ 	of_node_put(child);
+ 	of_node_put(oldi_parent);
++	tidss_oldi_deinit(tidss);
+ 	return ret;
+ }
+-- 
+2.55.0
+

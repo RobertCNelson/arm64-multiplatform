@@ -1,0 +1,29 @@
+From 4d9f80e0890345c76a1fad4e244d3574bb907417 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 29 Oct 2026 12:18:52 +0200
+Subject: [PATCH 06/14] drm/tidss: oldi: Drop unnecessary forward declaration
+
+Nothing needs "struct tidss_oldi" in tidss_oldi.h, so drop the forward
+declaration.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+---
+ drivers/gpu/drm/tidss/tidss_oldi.h | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.h b/drivers/gpu/drm/tidss/tidss_oldi.h
+index a361e6dbfce3..ef9597fe5409 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.h
++++ b/drivers/gpu/drm/tidss/tidss_oldi.h
+@@ -10,8 +10,6 @@
+ 
+ #include "tidss_drv.h"
+ 
+-struct tidss_oldi;
+-
+ /* OLDI PORTS */
+ #define OLDI_INPUT_PORT		0
+ #define OLDI_OUTPUT_PORT	1
+-- 
+2.55.0
+

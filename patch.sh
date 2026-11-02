@@ -88,16 +88,18 @@ external_git () {
 }
 
 mainline_patches () {
-	dir 'mainline/beagleboneblackrevd'
+	#b4 am https://lore.kernel.org/all/20260903-tidss-pre-beagley-v1-0-93928baa8b12@ideasonboard.com/
 	#exit 2
+	dir 'mainline/20260903_tomi_valkeinen_drm_tidss_preparation_for_am62p_and_beagley_ai_display_support'
 
-	#${git} "${DIR}/patches/mainline/tidss/0001-tidss-pre-revert.patch"
+	#b4 am https://lore.kernel.org/all/20261029-beagley-ai-display-v4-0-dc7f2b532478@ideasonboard.com/
+	#exit 2
+	dir 'mainline/v4_20261029_tomi_valkeinen_drm_tidss_add_beagley_ai_display_support_and_some_more'
 
-	#echo "dir: mainline/v3_20260529_drm_beagley_ai"
-	#b4 am https://lore.kernel.org/all/20260529-beagley-ai-display-v3-0-7fefdc5d1adf@ideasonboard.com/
-	#${git} "${DIR}/patches/mainline/v3_20260529_drm_beagley_ai/v3_20260529_tomi_valkeinen_drm_tidss_add_beagley_ai_display_support_and_some_more.mbx"
+	dir 'mainline/beagleboneblackrevd'
 
-	#${git} "${DIR}/patches/mainline/tidss/0002-tidss-post-revert.patch"
+	dir 'mainline/tidss'
+	#exit 2
 }
 
 rt_cleanup () {
@@ -172,10 +174,10 @@ wireless_regdb () {
 }
 
 cc33xx_firmware () {
-	FIRMWARE_VERSION="1_0_2_10"
-	CC33XX_FIRMWARE="1.0.2.10"
+	FIRMWARE_VERSION="1_0_2_17"
+	CC33XX_FIRMWARE="1.0.2.17"
 	#https://www.ti.com/tool/CC33XX-SOFTWARE
-	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.10
+	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.17
 	#https://github.com/beagleboard/CC33XX-LINUX-MPU
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
@@ -195,7 +197,7 @@ cc33xx_firmware () {
 		${git_bin} commit -a -m 'ti: add CC33XX-LINUX-MPU firmware' -m "https://www.ti.com/tool/download/CC33XX-LINUX-MPU/${CC33XX_FIRMWARE}" -s
 
 		${git_bin} format-patch -1 -o ../patches/external/cc33xx_firmware/
-		echo "CC33XX_FIRMWARE: https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.10" > ../patches/external/git/CC33XX_FIRMWARE
+		echo "CC33XX_FIRMWARE: https://www.ti.com/tool/download/CC33XX-LINUX-MPU/${CC33XX_FIRMWARE}" > ../patches/external/git/CC33XX_FIRMWARE
 
 		rm -rf ../src/ || true
 
@@ -329,7 +331,7 @@ regenerate_arm64_dtbo_list () {
 }
 
 beagleboard_dtbs () {
-	branch="v7.3.x"
+	branch="v7.4.x"
 	https_repo="https://github.com/beagleboard/BeagleBoard-DeviceTrees.git"
 	work_dir="BeagleBoard-DeviceTrees"
 	#regenerate="enable"
@@ -438,6 +440,9 @@ beagleboard_dtbs () {
 		device="k3-am62-pocketbeagle2-pru0-out" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-spi2-eth-wiz-click" ; k3_dtbo_makefile_append
 		device="k3-am62-pocketbeagle2-techlab-cape" ; k3_dtbo_makefile_append
+		device="k3-am67a-beagley-ai-cpts-genf-csi1" ; k3_dtbo_makefile_append
+		device="k3-am67a-beagley-ai-cpts-hw1tspush-gpio13" ; k3_dtbo_makefile_append
+		device="k3-am67a-beagley-ai-cpts-hw1tspush-gpio13-genf-csi1" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-i2c1-400000" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-i2c1-ads1115" ; k3_dtbo_makefile_append
 		device="k3-am67a-beagley-ai-i2c1-rtc-rv3028" ; k3_dtbo_makefile_append
@@ -495,7 +500,6 @@ beagleboard_dtbs () {
 		device="k3-j721e-beagleboneai64-spi-mcspi7-cs0" ; k3_dtbo_makefile_append
 
 		#K3 Devices
-		device="k3-am6232-pocketbeagle2.dtb" ; k3_dtb_makefile_append
 		device="k3-am625-sancloud-bbe-2.dtb" ; k3_dtb_makefile_append
 
 		${git_bin} add -f arch/arm/boot/dts/
@@ -599,7 +603,7 @@ post_rpibackports () {
 }
 
 backports () {
-	backport_tag="rpi-7.3.y"
+	backport_tag="rpi-7.4.y"
 
 	subsystem="rpi-backports"
 	#regenerate="enable"
@@ -613,13 +617,13 @@ backports () {
 		cp -v ~/linux-rpi/drivers/regulator/rpi-panel-v2-regulator.c ./drivers/regulator/
 
 		post_rpibackports
-	else
+	#else
 		dir 'backports/rpi-backports'
 	fi
 
 	dir 'drivers/ti/uio_revert'
 
-	backport_tag="v6.6.156"
+	backport_tag="v6.6.161"
 
 	subsystem="uio"
 	#regenerate="enable"
@@ -641,13 +645,49 @@ cc33xx_drivers () {
 	${git} "${DIR}/patches/drivers/cc33xx/v5_20241107/v5_20241107_michael_nemanov_wifi_cc33xx_add_driver_for_new_ti_cc33xx_wireless_device_family.mbx"
 
 	#exit 2
+	#git checkout origin/ti-linux-6.18.y -b tmp
+	#cd KERNEL/
+	#mkdir -p drivers/net/wireless/ti/cc33xx/
+	#cp -rv ~/linux-ti/drivers/net/wireless/ti/cc33xx/* drivers/net/wireless/ti/cc33xx/
+	#git add drivers/net/wireless/ti/cc33xx/
+	#git commit -a -m 'wifi: cc33xx: update driver to match cc33xx SDK 1.0.2.10' -s
+
+	#cp -v ~/linux-ti/drivers/bluetooth/Makefile drivers/bluetooth/
+	#cp -v ~/linux-ti/drivers/bluetooth/Kconfig drivers/bluetooth/
+	#cp -rv ~/linux-ti/drivers/bluetooth/btti_* drivers/bluetooth/
+	#git add drivers/bluetooth/
+	#git commit -a -m 'bluetooth: cc33xx: update driver to match cc33xx SDK 1.0.2.10' -s
+	#git format-patch -2 -o ../patches/drivers/cc33xx/1.0.2.10/
+
+	#exit 2
 	#start_cleanup
 	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.10
 	dir 'drivers/cc33xx/1.0.2.10'
+
+	#exit 2
+	#wget https://raw.githubusercontent.com/TexasInstruments-Sandbox/cc33xx-linux-mpu-ports/refs/heads/main/ti-linux-6.18.y/0001-drivers-cc33xx-forwardport-ti-linux-6.18.y-to-1.0.2..patch
+	#git am 0001-drivers-cc33xx-forwardport-ti-linux-6.18.y-to-1.0.2..patch
+
+	#cd KERNEL/
+	#cp -rv ~/linux-ti/drivers/net/wireless/ti/cc33xx/* drivers/net/wireless/ti/cc33xx/
+	#git add drivers/net/wireless/ti/cc33xx/
+	#git commit -a -m 'wifi: cc33xx: update driver to match cc33xx SDK 1.0.2.17' -s
+
+	#cp -rv ~/linux-ti/drivers/bluetooth/btti_* drivers/bluetooth/
+	#git add drivers/bluetooth/
+	#git commit -a -m 'bluetooth: cc33xx: update driver to match cc33xx SDK 1.0.2.17' -s
+	#git format-patch -2 -o ../patches/drivers/cc33xx/1.0.2.17/
+
+	#exit 2
+	#start_cleanup
+	#https://www.ti.com/tool/download/CC33XX-LINUX-MPU/1.0.2.17
+	dir 'drivers/cc33xx/1.0.2.17'
+
+	#exit 2
 	cc33xx_firmware
 
 	#exit 2
-#	dir 'drivers/cc33xx/fixes'
+	dir 'drivers/cc33xx/fixes'
 }
 
 drivers () {
@@ -656,8 +696,6 @@ drivers () {
 	dir 'drivers/davinci-mcasp'
 	dir 'drivers/ite'
 	dir 'drivers/mspm0'
-
-	dir 'external/android'
 
 	dir 'drivers/cpufreq'
 }

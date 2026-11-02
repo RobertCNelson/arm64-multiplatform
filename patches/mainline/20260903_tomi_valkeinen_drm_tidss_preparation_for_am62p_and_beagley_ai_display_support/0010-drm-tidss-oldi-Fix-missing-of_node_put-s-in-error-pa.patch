@@ -1,0 +1,43 @@
+From 680811fbfc318c525e35e19f6781a10992cc6798 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Date: Thu, 3 Sep 2026 15:10:00 +0300
+Subject: [PATCH 10/10] drm/tidss: oldi: Fix missing of_node_put()s in error
+ paths
+
+If get_oldi_mode() errors early in the function, we don't put the
+'companion' device_node. Add the of_node_put() calls.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Fixes: 7246e0929945 ("drm/tidss: Add OLDI bridge support")
+Reviewed-by: Swamil Jain <s-jain1@ti.com>
+Tested-by: Swamil Jain <s-jain1@ti.com>
+---
+ drivers/gpu/drm/tidss/tidss_oldi.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/tidss/tidss_oldi.c b/drivers/gpu/drm/tidss/tidss_oldi.c
+index 624f1646fb07..82b059f85244 100644
+--- a/drivers/gpu/drm/tidss/tidss_oldi.c
++++ b/drivers/gpu/drm/tidss/tidss_oldi.c
+@@ -383,12 +383,16 @@ static int get_oldi_mode(struct device_node *oldi_tx, int *companion_instance)
+ 		 */
+ 		return OLDI_MODE_SINGLE_LINK;
+ 
+-	if (of_property_read_u32(companion, "reg", &companion_reg))
++	if (of_property_read_u32(companion, "reg", &companion_reg)) {
++		of_node_put(companion);
+ 		return OLDI_MODE_UNSUPPORTED;
++	}
+ 
+-	if (companion_reg > (TIDSS_MAX_OLDI_TXES - 1))
++	if (companion_reg > (TIDSS_MAX_OLDI_TXES - 1)) {
+ 		/* Invalid companion OLDI reg value. */
++		of_node_put(companion);
+ 		return OLDI_MODE_UNSUPPORTED;
++	}
+ 
+ 	*companion_instance = (int)companion_reg;
+ 
+-- 
+2.55.0
+
