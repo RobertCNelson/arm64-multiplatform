@@ -617,13 +617,13 @@ backports () {
 		cp -v ~/linux-rpi/drivers/regulator/rpi-panel-v2-regulator.c ./drivers/regulator/
 
 		post_rpibackports
-	#else
+	else
 		dir 'backports/rpi-backports'
 	fi
 
 	dir 'drivers/ti/uio_revert'
 
-	backport_tag="v6.6.161"
+	backport_tag="v6.6.162"
 
 	subsystem="uio"
 	#regenerate="enable"
