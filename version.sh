@@ -31,9 +31,8 @@ WIRELESS_REGDB="2026-09-03"
 
 #Linux Firmware
 #https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=main
-#https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=20260916
 #https://packages.debian.org/source/sid/firmware-nonfree
-FIRMWARE_TAG="20260916"
+FIRMWARE_TAG="20261019"
 #regenerate_linux_firmware=enable
 
 #Kernel
@@ -41,11 +40,11 @@ linux_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/li
 linux_stable_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git"
 #
 KERNEL_REL=6.18
-KERNEL_TAG=${KERNEL_REL}.63
+KERNEL_TAG=${KERNEL_REL}.64
 #https://mirrors.edge.kernel.org/pub/linux/kernel/projects/rt/x.y/
 kernel_rt=".X-rtY"
 #Kernel Build
-BUILD=${build_prefix}66.1
+BUILD=${build_prefix}66.2
 
 #git branch
 BRANCH="${branch_prefix}${KERNEL_REL}${branch_postfix}"
