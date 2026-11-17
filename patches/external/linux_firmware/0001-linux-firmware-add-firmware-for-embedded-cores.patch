@@ -1,9 +1,9 @@
-From 55db2cb67354b3e3e091d7a5a72c58be96a15a36 Mon Sep 17 00:00:00 2001
+From 9a3c515f36e85721220a8d692760fc0f9204db6d Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Thu, 1 Oct 2026 15:49:25 -0500
+Date: Mon, 16 Nov 2026 12:18:44 -0600
 Subject: [PATCH] linux-firmware: add firmware for embedded cores
 
-https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=20260916
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/log/?h=20261019
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  firmware/cadence/mhdp8546.bin              | Bin 0 -> 131072 bytes
