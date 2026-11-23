@@ -1,9 +1,9 @@
-From 71693b199a6894d574ac2074c72089109201080f Mon Sep 17 00:00:00 2001
+From 8f5d5aef931a7c10db89f0b0913694816afe9fb8 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 16 Nov 2026 12:09:25 -0600
+Date: Mon, 23 Nov 2026 09:13:22 -0600
 Subject: [PATCH] backports uio from linux
 
-Reference: v6.6.162
+Reference: v6.6.163
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  drivers/uio/uio_pruss.c | 6 ++----
